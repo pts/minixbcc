@@ -7,6 +7,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
 #include <stdio.h>
 
 #define fail(fp)	(fclose(fp), -1)	/* ret. exp. when nlist fails */

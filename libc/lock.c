@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <fcntl.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 typedef enum {
@@ -38,7 +39,7 @@ char *name;
 void unlock(name)		/* free lock */
 char *name;
 {
-  if (unlink(lockpath(name)) == -1) syserr("unlock");
+  if (unlink(lockpath(name)) == -1) perror("unlock");
 }
 
 PRIVATE char *lockpath(name)	/* generate lock file path */
