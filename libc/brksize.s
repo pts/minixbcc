@@ -1,4 +1,4 @@
 .define _brksize
 .data
-.globl endbss, _brksize
-_brksize: .word endbss
+.extern _end
+_brksize: dd _end
