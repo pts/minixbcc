@@ -35,13 +35,11 @@
  *  and sets errno like execv().
  */
 
-#include <errno.h>
-#include <limits.h>
+#include <lib.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <unistd.h>
-#include <stdarg.h>
 
 #undef NULL
 #define NULL 0			/* kludge for ACK not understanding void * */

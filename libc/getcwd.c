@@ -13,7 +13,7 @@
 
 #define  DIRECT_SIZE  (sizeof (struct direct))
 
-extern char *rindex();
+PRIVATE _PROTOTYPE( void go_back, (char * path) );
 
 char *getcwd(buffer, size)
 char *buffer;
@@ -92,14 +92,14 @@ int size;
 	return(buffer);
   }
   *buffer = '\0';
-  while ((r = rindex(path, '/')) != (char *)NULL) {
+  while ((r = strrchr(path, '/')) != (char *)NULL) {
 	strcat(buffer, r);
 	*r = '\0';
   }
   return(chdir(buffer) ? (char *)NULL : buffer);
 }
 
-PRIVATE go_back(path)
+PRIVATE void go_back(path)
 char *path;
 {
 /* If getcwd() gets in trouble and can't complete normally, reverse the
@@ -109,7 +109,7 @@ char *path;
 
   char *r;
 
-  while ((r = rindex(path, '/')) != (char *)NULL) {
+  while ((r = strrchr(path, '/')) != (char *)NULL) {
 	chdir(r+1);
 	*r = '\0';
   }
