@@ -1,23 +1,32 @@
-#include <lib.h>
-/* strcspn - find length of initial segment of s consisting entirely
- * of characters not from reject
- */
+/* strcspn.c */
+
+/* from Schumacher's Atari library, improved */
 
 #include <string.h>
 
-size_t strcspn(s, reject)
-_CONST char *s;
-_CONST char *reject;
+size_t strcspn(string, set)
+_CONST register char *string;
+_CONST char *set;
+/*
+ *	Return the length of the sub-string of <string> that consists
+ *	entirely of characters not found in <set>.  The terminating '\0'
+ *	in <set> is not considered part of the match set.  If the first
+ *	character if <string> is in <set>, 0 is returned.
+ */
 {
-  register _CONST char *scan;
-  register _CONST char *rscan;
-  register size_t count;
+    _CONST register char *setptr;
+    _CONST char *start;
 
-  count = 0;
-  for (scan = s; *scan != '\0'; scan++) {
-	for (rscan = reject; *rscan != '\0';)	/* ++ moved down. */
-		if (*scan == *rscan++) return(count);
-	count++;
-  }
-  return(count);
+    start = string;
+    while (*string)
+    {
+	setptr = set;
+	do
+	    if (*setptr == *string)
+		goto break2;
+	while (*setptr++);
+	++string;
+    }
+break2:
+    return string - start;
 }

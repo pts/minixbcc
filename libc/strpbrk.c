@@ -1,18 +1,27 @@
-#include <lib.h>
-/* strpbrk - find first occurrence of any char from breakat in s */
+/* strpbrk.c */
+
+/* from Schumacher's Atari library, improved */
 
 #include <string.h>
 
-char *strpbrk(s, breakat)	/* found char, or NULL if none */
-_CONST char *s;
-_CONST char *breakat;
+char *strpbrk(string, set)
+register _CONST char *string;
+_CONST char *set;
+/*
+ *	Return a pointer to the first occurance in <string> of any
+ *	character in <set>.
+ */
 {
-  register _CONST char *sscan;
-  register _CONST char *bscan;
+    _CONST register char *setptr;
 
-  for (sscan = s; *sscan != '\0'; sscan++) {
-	for (bscan = breakat; *bscan != '\0';)	/* ++ moved down. */
-		if (*sscan == *bscan++) return((char *) sscan);
-  }
-  return( (char *) NULL);
+    while (*string)
+    {
+	setptr = set;
+	do
+	    if (*setptr == *string)
+		return (char *) string;
+	while (*setptr++);
+	++string;
+    }
+    return 0;
 }

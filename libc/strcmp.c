@@ -1,31 +1,111 @@
-#include <lib.h>
-/* strcmp - compare string s1 to s2 */
+/* strcmp.c - int strcmp(char *s1, char *s2)*/
+
+/* strcmp  compares  s1  to  s2  (lexicographically with unsigned chars) */
+/* it returns */
+/*		positive  if  s1 > s2 */
+/*		zero      if  s1 = s2 */
+/*		negative  if  s1 < s2 */
 
 #include <string.h>
 
-int  strcmp(s1, s2)			/* <0 for <, 0 for ==, >0 for > */
+int strcmp(s1, s2)
 _CONST char *s1;
 _CONST char *s2;
 {
-  register _CONST char *scan1;
-  register _CONST char *scan2;
+#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+    unsigned char ch;
 
-  scan1 = s1;
-  scan2 = s2;
-  while (*scan1 != '\0' && *scan1 == *scan2) {
-	scan1++;
-	scan2++;
-  }
+    while ((ch = *s1++) != 0)
+	if ((ch -= *s2++) != 0)
+	    return ch;
+    return ch - *s2;
+#else /* !C_CODE etc */
 
-  /* The following case analysis is necessary so that characters which
-   * look negative collate low against normal characters but high
-   * against the end-of-string NUL. */
-  if (*scan1 == '\0' && *scan2 == '\0')
-	return(0);
-  else if (*scan1 == '\0')
-	return(-1);
-  else if (*scan2 == '\0')
-	return(1);
-  else
-	return(*scan1 - *scan2);
+#if __AS09__
+# asm
+	LDU	_strcmp.s2,S	s1 is already in X
+	CLRA			set up for char extension by SBCA
+STRCMP.LOOP
+	LDB	,X+
+	BEQ	STRCMP.STRING1.ENDED
+	SUBB	,U+
+	BEQ	STRCMP.LOOP	
+	SBCA	#0
+	TFR	D,X
+	RTS
+STRCMP.STRING1.ENDED
+	SUBB	,U		negative unless ,U is 0 (unsigned chars)
+	SBCA	#0
+	TFR	D,X
+# endasm
+#endif /* __AS09__ */
+
+#if __AS386_16__
+# asm
+# if !__CALLER_SAVES__
+	mov	bx,si
+	mov	dx,di
+# endif
+# if __FIRST_ARG_IN_AX__
+	xchg	si,ax
+	pop	cx
+	pop	di
+	dec	sp
+	dec	sp
+# else
+	pop	cx
+	pop	si
+	pop	di
+	sub	sp,#4
+# endif
+	sub	ax,ax
+STRCMP_LOOP:
+	lodsb
+	test	al,al
+	je	STRCMP_EXIT
+	scasb
+	je	STRCMP_LOOP
+	dec	di
+STRCMP_EXIT:
+	sub	al,[di]
+	sbb	ah,#0
+# if !__CALLER_SAVES__
+	mov	si,bx
+	mov	di,dx
+# endif
+	jmp	cx
+# endasm
+#endif /* __AS386_16__ */
+
+#if __AS386_32__
+# asm
+# if !__CALLER_SAVES__
+	mov	ecx,esi
+	mov	edx,edi
+# endif
+# if __FIRST_ARG_IN_AX__
+	xchg	esi,eax
+# else
+	mov	esi,_strcmp.s1[esp]
+# endif
+	mov	edi,_strcmp.s2[esp]
+	sub	eax,eax
+STRCMP_LOOP:
+	lodsb
+	test	al,al
+	je	STRCMP_EXIT
+	scasb
+	je	STRCMP_LOOP
+	dec	edi
+STRCMP_EXIT:
+	sub	al,[edi]
+	sbb	ah,#0
+	cwde
+# if !__CALLER_SAVES__
+	mov	esi,ecx
+	mov	edi,edx
+# endif
+# endasm
+#endif /* __AS386_32__ */
+#endif /* C_CODE etc */
 }
