@@ -37,12 +37,16 @@ _PROTOTYPE( double atof, (const char *_nptr)				);
 _PROTOTYPE( int atoi, (const char *_nptr)				);
 _PROTOTYPE( long atol, (const char *_nptr)				);
 _PROTOTYPE( void *calloc, (size_t _nmemb, size_t _size)			);
+#ifndef __BCC__
 _PROTOTYPE( div_t div, (int _numer, int _denom)				);
+#endif
 _PROTOTYPE( void exit, (int _status)					);
 _PROTOTYPE( void free, (void *_ptr)					);
 _PROTOTYPE( char *getenv, (const char *_name)				);
 _PROTOTYPE( long labs, (long _j)					);
+#ifndef __BCC__
 _PROTOTYPE( ldiv_t ldiv, (long _numer, long _denom)			);
+#endif
 _PROTOTYPE( void *malloc, (size_t _size)				);
 _PROTOTYPE( int mblen, (const char *_s, size_t _n)			);
 _PROTOTYPE( size_t mbstowcs, (wchar_t *_pwcs, const char *_s, size_t _n));

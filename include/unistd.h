@@ -96,6 +96,7 @@ _PROTOTYPE( unsigned int sleep, (unsigned int _seconds)			);
 _PROTOTYPE( int isatty, (int _fd)					);
 _PROTOTYPE( int link, (const char *_path1, const char *_path2)		);
 _PROTOTYPE( off_t lseek, (int _fd, off_t _offset, int _whence)		);
+_PROTOTYPE( int mkfifo, (const char *_name, int _mode)			);
 _PROTOTYPE( long pathconf, (char *_path, int _name)			);
 _PROTOTYPE( int pause, (void)						);
 _PROTOTYPE( int pipe, (int _fildes[2])					);
@@ -114,6 +115,9 @@ _PROTOTYPE( int write, (int _fd, char *_buf, unsigned int _n)		);
 
 #ifdef _MINIX
 _PROTOTYPE( char *brk, (char *_addr)					);
+_PROTOTYPE( int mknod, (const char *_name, int _mode, int _addr)	);
+_PROTOTYPE( int mknod4, (const char *_name, int _mode, int _addr,
+	    unsigned _size)						);
 _PROTOTYPE( char *mktemp, (char *_template)				);
 _PROTOTYPE( char *sbrk, (int _incr)					);
 #endif

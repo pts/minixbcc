@@ -3,7 +3,7 @@
 #ifndef _MATH_H
 #define _MATH_H
 
-#define HUGE_VAL	9.9e+999	/* though it will generate a warning */
+#define HUGE_VAL	  1.7976931348623157e+308
 
 /* Function Prototypes. */
 #ifndef _ANSI_H

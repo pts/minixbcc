@@ -12,23 +12,38 @@
 #define CHAR_MAX         127	/* maximum value of a char */
 #define SCHAR_MIN       -128	/* minimum value of a signed char */
 #define SCHAR_MAX        127	/* maximum value of a signed char */
-#define UCHAR_MAX        255	/* maximum value of an unsigned char */
+#define UCHAR_MAX ((unsigned char) 255)	/* maximum value of an unsigned char */
 #define MB_LEN_MAX         1	/* maximum length of a multibyte char */
 
 /* Definitions about shorts (16 bits in MINIX). */
 #define SHRT_MIN  (-32767-1)	/* minimum value of a short */
 #define SHRT_MAX       32767	/* maximum value of a short */
-#define USHRT_MAX     0xFFFF	/* maximum value of unsigned short */
+#define USHRT_MAX ((unsigned short) 0xFFFF)	/* maximum value of unsigned short */
 
 /* Definitions about ints (16 bits in MINIX for 8088, 80286, Atari etc) */
+#ifdef __GNUC__
+# define INT_MIN LONG_MIN
+# define INT_MAX LONG_MAX
+# define UINT_MAX ULONG_MAX
+#else
+# ifdef __BCC__
+#  if sizeof(int) == sizeof(long)
+#   define INT_MIN LONG_MIN
+#   define INT_MAX LONG_MAX
+#   define UINT_MAX ULONG_MAX
+#  endif 
+# endif 
+#endif 
+#ifndef INT_MIN
 #define INT_MIN   (-32767-1)	/* minimum value of an int */
 #define INT_MAX        32767	/* maximum value of an int */
-#define UINT_MAX      0xFFFF	/* maximum value of an unsigned int */
+#define UINT_MAX ((unsigned) 0xFFFF)	/* maximum value of an unsigned int */
+#endif
 
 /*Definitions about longs (32 bits in MINIX). */
 #define LONG_MIN (-2147483647-1)/* minimum value of a long */
 #define LONG_MAX  2147483647L	/* maximum value of a long */
-#define ULONG_MAX 4294967295L	/* maximum value of an unsigned long */
+#define ULONG_MAX ((unsigned long) 4294967295L)	/* maximum value of an unsigned long */
 
 /* Minimum sizes required by the POSIX P1003.1 standard (Table 2-2). */
 #ifdef _POSIX_SOURCE		/* these are only visible for POSIX */
