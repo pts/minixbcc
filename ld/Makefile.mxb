@@ -1,0 +1,32 @@
+# This is a version of BCC (Dev86) ld by Bruce Evans newer than in
+# bccbin32.tar.Z (also by Bruce Evans), with patches by pts.
+#
+# The patches by pts change this:
+#
+# * It supports Minix .a archives in addition to GNU `!<arch>` .a archives.
+#   ld in bccbin32.tar.Z had it, but the newer ld didn't.
+# * It checks that i86 a_text and a_data+a_bss don't overflow 64 KiB.
+# * It marks global variables like _environ (with C_MASK) as C_EXT.
+# * It reserves 0x8000 bytes for the stack (including argv and environ
+#   strings etc.) for i386.
+#
+# The ld.bugc (-DMINIXBUGCOMPAT) retains the following buggy behavior for
+# compatibility with earlier versions of BCC (Dev86) ld:
+#
+# * It marks global variables like _environ (with C_MASK) as C_STAT
+#   (incorrectly). ld below always marks as C_EXT instead.
+# * It reserves less than 0x8000 bytes for the stack (including argv and
+#   environ strings etc.) for i386, can be as little as 1 byte, if
+#   a_data+a_bss is between 0x8001 and 0xffff (incorrectly). ld below always
+#   reserves the correct 0x8000 bytes i386.
+#
+
+all: ld ld.bugc
+
+ld: dumps.c io.c ld.c readobj.c table.c typeconv.c writebin.c a.out.gnu.h align.h ar.h bsd-a.out.h byteord.h config.h const.h globvar.h minixar.h obj.h type.h
+	$(CC) -O -o ld dumps.c io.c ld.c readobj.c table.c typeconv.c writebin.c
+	chmem =150000 ld
+
+ld.bugc: dumps.c io.c ld.c readobj.c table.c typeconv.c writebin.c a.out.gnu.h align.h ar.h bsd-a.out.h byteord.h config.h const.h globvar.h minixar.h obj.h type.h
+	$(CC) -O -DMINIXBUGCOMPAT -o ld.bugc dumps.c io.c ld.c readobj.c table.c typeconv.c writebin.c
+	chmem =150000 ld.bugc
