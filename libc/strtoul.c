@@ -14,23 +14,20 @@
 #undef strtoul
 #endif
 
-PUBLIC unsigned long int strtoul(nptr, endptr, base)
-_CONST char *nptr;
+PUBLIC unsigned long int strtoul(s, endptr, base)
+_CONST char *s;
 char **endptr;
 int base;
 {
   register int c;
+  register _CONST char *nptr = s;
   unsigned long int result = 0L;
   unsigned long int limit;
   int negative = 0;
-  int overflow = 0;
   int saw_a_digit = 0;			/* it's not a number without a digit */
 
-  if (endptr != (char **) NULL)		/* set up default final pointer */
-	*endptr = nptr;
-
-  while ((c = *nptr) && isspace(c))	/* skip leading white space */
-	++nptr;
+  while ((c = (unsigned char) *nptr) != 0 && isspace(c))
+	++nptr;				/* skip leading white space */
 
   if (c == '+' || c == '-') {		/* handle signs */
 	negative = (c == '-');
@@ -40,11 +37,14 @@ int base;
   if (base == 0) {			/* determine base if unknown */
 	base = 10;
 	if (*nptr == '0') {
-		base = 8;
 		++nptr;
 		if ((c = *nptr) == 'x' || c == 'X') {
-			base = 16;
 			++nptr;
+			base = 16;
+		}
+		else {
+			saw_a_digit = 1;	/* in case '0' is only digit */
+			base = 8;
 		}
 	}
   }
@@ -58,7 +58,7 @@ int base;
   limit = ULONG_MAX / base;		/* ensure no overflow */
 
   --nptr;				/* convert the number */
-  while ((c = *++nptr) != 0) {
+  while ((c = (unsigned char) *++nptr) != 0) {
 	if (isdigit(c))
 		c -= '0';
 	else
@@ -66,27 +66,18 @@ int base;
 	if (c < 0 || c >= base)
 		break;
 	saw_a_digit = 1;
-	if (result > limit)
-		overflow = 1;
-	if (!overflow) {
-		result = base * result;
-		if (c > ULONG_MAX - result)
-			overflow = 1;
-		else	
-			result += c;
+	if (result > limit || (result *= base) > ULONG_MAX - c) {
+		result = ULONG_MAX;
+		errno = ERANGE;
+		negative = 0;		/* keep ULONG_MAX as the result */
 	}
+	else
+		result += c;
   }
-  if (!saw_a_digit)
-	return 0;
-
-  if (negative && !overflow)	/* BIZARRE, but ANSI says we should do this! */
+  if (negative)			/* BIZARRE, but ANSI says we should do this! */
 	result = 0L - result;
-  if (overflow) {
-	errno = ERANGE;
-	result = ULONG_MAX;
-  }
 
-  if (endptr != (char **) NULL)		/* record good final pointer */
-	*endptr = nptr;
+  if (endptr != (char **) NULL)		/* record final pointer */
+	*endptr = (char *) (saw_a_digit ? nptr : s);
   return result;
 }

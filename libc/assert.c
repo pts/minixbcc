@@ -7,8 +7,8 @@
 
 /* ANSI version */
 void __bad_assertion(expr, file, line)
-char *expr;
-char *file;
+_CONST char *expr;
+_CONST char *file;
 int line;
 {
   fprintf(stderr,"Assertion \"%s\" failed, file \"%s\", line %d\n", 
@@ -24,4 +24,3 @@ int line;
   fprintf(stderr, "Assertion error in file \"%s\" on line %u\n", file, line);
   abort();
 }
-

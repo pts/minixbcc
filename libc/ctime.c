@@ -3,6 +3,7 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdio.h>
 
 #define toint(X)  (X - '0')
 
@@ -77,7 +78,7 @@ PRIVATE int dst = -1;	/* whether dst holds in current timezone */
  */
 
 time_t mktime(t)
-_CONST struct tm *t;
+struct tm *t;
 {
         time_t s;
         int y;
@@ -285,12 +286,4 @@ _CONST struct tm *t;
         }
 /* Otherwise, see if it's a month between April and October exclusive */
         return (t->tm_mon > 3 && t->tm_mon < 9);
-}
-
-/* return difference between two time_t types -- ERS*/
-
-double difftime(t1, t2)
-time_t t1, t2;
-{
-	return (double) (t2 - t1);
 }
