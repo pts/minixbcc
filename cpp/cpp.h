@@ -35,7 +35,7 @@
 
 #define	MAC_PARM	0x7F		/* Macro formals start here	*/
 #if PAR_MAC >= 33
-	assertion fails -- PAR_MAC isn't less than 33
+# error	assertion fails -- PAR_MAC is not less than 33
 #endif
 #define	LASTPARM	(PAR_MAC - 1)
 
@@ -116,7 +116,7 @@
 #define	T_UNSIGNED	128
 #define	T_PTR		256		/* Pointer			*/
 #define	T_FPTR		512		/* Pointer to functions		*/
-
+
 /*
  * The DEFBUF structure stores information about #defined
  * macros.  Note that the defbuf->repl information is always
@@ -227,13 +227,40 @@ extern int	debug;			/* Debug level			*/
 #endif
 extern int	keepcomments;		/* Don't remove comments if set	*/
 extern SIZES	size_table[];		/* For #if sizeof sizes		*/
-extern char	*getmem();		/* Get memory or die.		*/
-extern DEFBUF	*lookid();		/* Look for a #define'd thing	*/
-extern DEFBUF	*defendel();		/* Symbol table enter/delete	*/
-extern char	*savestring();		/* Stuff string in malloc mem.	*/
-extern char	*strcpy();
-extern char	*strcat();
-extern char	*strrchr();
-extern char	*strchr();
-extern long	time();
-extern char	*sprintf();		/* Lint needs this		*/
+
+extern char *getmem();		/* Get memory or die.		*/
+extern DEFBUF *lookid();		/* Look for a #define'd thing	*/
+extern DEFBUF *defendel();		/* Symbol table enter/delete	*/
+extern char *savestring();		/* Stuff string in malloc mem.	*/
+extern int initdefines();
+extern int dooptions();
+extern void cierror();
+extern void cerror();
+extern void cfatal();
+extern void setincdirs();
+extern void addfile();
+extern void ciwarn();
+extern void cwarn();
+extern int get();
+extern void unget();
+extern int control();
+extern void skipnl();
+extern int macroid();
+extern int catenate();
+extern void scannumber();
+extern int scanstring();
+extern int skipws();
+extern void scanid();
+extern void save();  /* Save char in work[] */
+extern int eval();
+extern void dodefine();
+extern void doundef();
+extern int openfile();
+extern FILEINFO	*getfile();
+extern void charput();
+extern void textput();
+extern void checkparm();
+extern void stparmscan();
+extern void ungetstring();
+extern int cget();
+extern void expand();

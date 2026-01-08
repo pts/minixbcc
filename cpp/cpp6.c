@@ -17,8 +17,11 @@
  *  6-Dec-84 MM		\<nl> is everywhere invisible.
  */
 
-#include	<stdio.h>
 #include	<ctype.h>
+#include	<stdio.h>
+#include	<stdlib.h>
+#include	<string.h>
+#include	<time.h>
 #include	"cppdef.h"
 #include	"cpp.h"
 
@@ -70,7 +73,7 @@
  *		cierror & ciwarn take a format and a single int (char) argument.
  *		cfatal takes a format and a single string argument.
  */
-
+
 /*
  * This table must be rewritten for a non-Ascii machine.
  *
@@ -80,7 +83,7 @@
  * Hex 1F COM_SEP   -- a zero-width whitespace for comment concatenation
  */
 #if TOK_SEP != 0x1E || COM_SEP != 0x1F || DEF_MAGIC != 0x1D
-	<< error type table isn't correct >>
+#  error error type table is not correct
 #endif
 
 #if OK_DOLLAR
@@ -115,8 +118,8 @@ OP_LPA,OP_RPA,OP_MUL,OP_ADD,   000,OP_SUB,   DOT,OP_DIV, /* 28 ()*+,-./	*/
    000,   000,   000,   000,   000,   000,   000,   000, /*   80 .. FF	*/
    000,   000,   000,   000,   000,   000,   000,   000, /*   80 .. FF	*/
 };
-
-skipnl()
+
+void skipnl()
 /*
  * Skip to the end of the current input line.
  */
@@ -145,8 +148,8 @@ skipws()
 #endif
 	return (c);
 }
-
-scanid(c)
+
+void scanid(c)
 register int	c;				/* First char of id	*/
 /*
  * Get the next token (an id) into the token buffer.
@@ -188,7 +191,7 @@ register int		c;
 	}
 	return (c);
 }
-
+
 int
 catenate()
 /*
@@ -254,9 +257,8 @@ catenate()
 	return (FALSE);				/* Not supported	*/
 #endif
 }
-
-int
-scanstring(delim, outfun)
+
+int scanstring(delim, outfun)
 register int	delim;			/* ' or "			*/
 int		(*outfun)();		/* Output function		*/
 /*
@@ -289,8 +291,8 @@ int		(*outfun)();		/* Output function		*/
 	    return (FALSE);
 	}
 }
-
-scannumber(c, outfun)
+
+void scannumber(c, outfun)
 register int	c;				/* First char of number	*/
 register int	(*outfun)();			/* Output/store func	*/
 /*
@@ -415,8 +417,8 @@ nomore:	unget();				/* Not part of a number	*/
 	if (octal89 && radix == 8)
 	    cwarn("Illegal digit in octal number", NULLST);
 }
-
-save(c)
+
+void save(c)
 register int	c;
 {
 	if (workp >= &work[NWORK]) {
@@ -476,13 +478,12 @@ int		size;
  */
 {
 	register char	*result;
-	extern char	*malloc();
 
 	if ((result = malloc((unsigned) size)) == NULL)
 	    cfatal("Out of memory", NULLST);
 	return (result);
 }
-
+
 /*
  *			C P P   S y m b o l   T a b l e s
  */
@@ -540,7 +541,7 @@ int	c;				/* First character of token	*/
 	}
 	return ((temp == 0) ? dp : NULL);
 }
-
+
 DEFBUF *
 defendel(name, delete)
 char		*name;
@@ -590,7 +591,7 @@ int		delete;			/* TRUE to delete a symbol	*/
 	}
 	return (dp);
 }
-
+
 #if DEBUG
 
 dumpdef(why)
@@ -639,7 +640,7 @@ register DEFBUF	*dp;
 	putchar('\n');
 }
 #endif
-
+
 /*
  *			G E T
  */
@@ -825,8 +826,8 @@ test:		if (keepcomments && c != EOF_CHAR)
 	    c = ' ';				/* Tab are whitespace	*/
 	return (c);				/* Just return the char	*/
 }
-
-unget()
+
+void unget()
 /*
  * Backup the pointer to reread the last character.  Fatal error
  * (code bug) if we backup too far.  unget() may be called,
@@ -844,7 +845,7 @@ unget()
 	    --line;			/* Unget the line number, too	*/
 }
 
-ungetstring(text)
+void ungetstring(text)
 char		*text;
 /*
  * Push a string back on the input stream.  This is done by treating
@@ -876,7 +877,7 @@ cget()
 #endif
 	return (c);
 }
-
+
 /*
  * Error messages and other hacks.  The first byte of severity
  * is 'S' for string arguments and 'I' for int arguments.  This
@@ -884,8 +885,8 @@ cget()
  * are shorter than  char *'s.
  */
 
-static
-domsg(severity, format, arg)
+FILE_LOCAL
+void domsg(severity, format, arg)
 char		*severity;		/* "Error", "Warning", "Fatal"	*/
 char		*format;		/* Format for the error message	*/
 char		*arg;			/* Something for the message	*/
@@ -925,7 +926,7 @@ char		*arg;			/* Something for the message	*/
 	}
 }
 
-cerror(format, sarg)
+void cerror(format, sarg)
 char		*format;
 char		*sarg;		/* Single string argument		*/
 /*
@@ -936,7 +937,7 @@ char		*sarg;		/* Single string argument		*/
 	errors++;
 }
 
-cierror(format, narg)
+void cierror(format, narg)
 char		*format;
 int		narg;		/* Single numeric argument		*/
 /*
@@ -947,7 +948,7 @@ int		narg;		/* Single numeric argument		*/
 	errors++;
 }
 
-cfatal(format, sarg)
+void cfatal(format, sarg)
 char		*format;
 char		*sarg;			/* Single string argument	*/
 /*
@@ -958,7 +959,7 @@ char		*sarg;			/* Single string argument	*/
 	exit(IO_ERROR);
 }
 
-cwarn(format, sarg)
+void cwarn(format, sarg)
 char		*format;
 char		*sarg;			/* Single string argument	*/
 /*
@@ -968,7 +969,7 @@ char		*sarg;			/* Single string argument	*/
 	domsg("SWarning", format, sarg);
 }
 
-ciwarn(format, narg)
+void ciwarn(format, narg)
 char		*format;
 int		narg;			/* Single numeric argument	*/
 /*

@@ -7,8 +7,10 @@
  * 13-Nov-84	MM	Split from cpp1.c
  */
 
-#include	<stdio.h>
 #include	<ctype.h>
+#include	<stdio.h>
+#include	<stdlib.h>
+#include	<string.h>
 #include	"cppdef.h"
 #include	"cpp.h"
 #if HOST == SYS_VMS
@@ -22,6 +24,11 @@
 #include	<rab.h>
 #include	<rmsdef.h>
 #endif
+
+FILE_LOCAL void doinclude();
+FILE_LOCAL void doif();
+FILE_LOCAL int openinclude();
+FILE_LOCAL int hasdirectory();
 
 /*
  * Generate (by hand-inspection) a set of unique values for each control
@@ -280,9 +287,9 @@ nest_err:	cerror("#%s must be in an #if", token);
 	}
 	return (counter + 1);
 }
-
+
 FILE_LOCAL
-doif(hash)
+void doif(hash)
 int		hash;
 /*
  * Process an #if, #ifdef, or #ifndef.  The latter two are straightforward,
@@ -326,9 +333,9 @@ badif:	cerror("#if, #ifdef, or #ifndef without an argument", NULLST);
 #endif
 	return;
 }
-
+
 FILE_LOCAL
-doinclude()
+void doinclude()
 /*
  * Process the #include control line.
  * There are three variations:
@@ -396,9 +403,9 @@ doinclude()
 incerr:	cerror("#include syntax error", NULLST);
 	return;
 }
-
-FILE_LOCAL int
-openinclude(filename, searchlocal)
+
+FILE_LOCAL
+int openinclude(filename, searchlocal)
 char		*filename;		/* Input file name		*/
 int		searchlocal;		/* TRUE if #include "file"	*/
 /*
@@ -413,7 +420,7 @@ int		searchlocal;		/* TRUE if #include "file"	*/
 	register char		**incptr;
 #if HOST == SYS_VMS
 #if NWORK < (NAM$C_MAXRSS + 1)
-    << error, NWORK isn't greater than NAM$C_MAXRSS >>
+#  error NWORK is not greater than NAM$C_MAXRSS
 #endif
 #endif
 	char			tmpname[NWORK];	/* Filename work area	*/
@@ -468,9 +475,9 @@ int		searchlocal;		/* TRUE if #include "file"	*/
 	}
 	return (FALSE);
 }
-
-FILE_LOCAL int
-hasdirectory(source, result)
+
+FILE_LOCAL
+int hasdirectory(source, result)
 char		*source;	/* Directory to examine			*/
 char		*result;	/* Put directory stuff here		*/
 /*
@@ -514,7 +521,7 @@ char		*result;	/* Put directory stuff here		*/
 #endif
 #endif
 }
-
+
 #if HOST == SYS_VMS
 
 /*

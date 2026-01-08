@@ -16,8 +16,14 @@
 
 #include	<stdio.h>
 #include	<ctype.h>
+#include	<string.h>
+#include	<stdlib.h>
 #include	"cppdef.h"
 #include	"cpp.h"
+
+FILE_LOCAL int expcollect();
+FILE_LOCAL void expstuff();
+
 /*
  * parm[], parmp, and parlist[] are used to store #define() argument
  * lists.  nargs contains the actual number of parameters stored.
@@ -27,7 +33,7 @@ static char	*parmp;			/* Free space in parm		*/
 static char	*parlist[LASTPARM];	/* -> start of each parameter	*/
 static int	nargs;			/* Parameters for this macro	*/
 
-dodefine()
+void dodefine()
 /*
  * Called from control when a #define is scanned.  This module
  * parses formal parameters and the replacement string.  When
@@ -70,7 +76,6 @@ dodefine()
 	register DEFBUF		*dp;		/* -> new definition	*/
 	int			isredefine;	/* TRUE if redefined	*/
 	char			*old;		/* Remember redefined	*/
-	extern int		save();		/* Save char in work[]	*/
 
 	if (type[(c = skipws())] != LET)
 	    goto bad_define;
@@ -212,8 +217,8 @@ bad_define:
 	cerror("#define syntax error", NULLST);
 	inmacro = FALSE;			/* Stop <newline> hack	*/
 }
-
-checkparm(c, dp)
+
+void checkparm(c, dp)
 register int	c;
 DEFBUF		*dp;
 /*
@@ -239,9 +244,9 @@ DEFBUF		*dp;
 	for (cp = token; *cp != EOS;)		/* And save		*/
 	    save(*cp++);			/* The token itself	*/
 }
-
+
 #if STRING_FORMAL
-stparmscan(delim, dp)
+void stparmscan(delim, dp)
 int		delim;
 register DEFBUF	*dp;
 /*
@@ -278,7 +283,7 @@ register DEFBUF	*dp;
 	save(c);
 }
 #else
-stparmscan(delim)
+void stparmscan(delim)
 int		delim;
 /*
  * Normal string parameter scan.
@@ -286,7 +291,6 @@ int		delim;
 {
 	register char		*wp;
 	register int		i;
-	extern int		save();
 
 	wp = workp;			/* Here's where it starts	*/
 	if (!scanstring(delim, save))
@@ -305,8 +309,8 @@ int		delim;
 	workp[-1] = wp[-1];		/* Nope, reset end quote.	*/
 }
 #endif
-
-doundef()
+
+void doundef()
 /*
  * Remove the symbol from the defined list.
  * Called from the #control processor.
@@ -326,7 +330,7 @@ doundef()
 	}
 }
 
-textput(text)
+void textput(text)
 char		*text;
 /*
  * Put the string in the parm[] buffer.
@@ -343,7 +347,7 @@ char		*text;
 	}
 }
 
-charput(c)
+void charput(c)
 register int	c;
 /*
  * Put the byte in the parm[] buffer.
@@ -355,14 +359,14 @@ register int	c;
 	    *parmp++ = c;
 	}
 }
-
+
 /*
  *		M a c r o   E x p a n s i o n
  */
 
 static DEFBUF	*macro;		/* Catches start of infinite macro	*/
 
-expand(tokenp)
+void expand(tokenp)
 register DEFBUF	*tokenp;
 /*
  * Expand a macro.  Called from the cpp mainline routine (via subroutine
@@ -376,7 +380,6 @@ register DEFBUF	*tokenp;
 {
 	register int		c;
 	register FILEINFO	*file;
-	extern FILEINFO		*getfile();
 
 #if DEBUG
 	if (debug)
@@ -457,16 +460,15 @@ register DEFBUF	*tokenp;
 	    expstuff(tokenp);		/* Do actual parameters		*/
 	}				/* nargs switch			*/
 }
-
-FILE_LOCAL int
-expcollect()
+
+FILE_LOCAL
+int expcollect()
 /*
  * Collect the actual parameters for this macro.  TRUE if ok.
  */
 {
 	register int	c;
 	register int	paren;			/* For embedded ()'s	*/
-	extern int	charput();
 
 	for (;;) {
 	    paren = 0;				/* Collect next arg.	*/
@@ -520,9 +522,9 @@ expcollect()
 	}					/* Collect all args.	*/
 	return (TRUE);				/* Normal return	*/
 }
-
+
 FILE_LOCAL
-expstuff(tokenp)
+void expstuff(tokenp)
 DEFBUF		*tokenp;		/* Current macro being expanded	*/
 /*
  * Stuff the macro body, replacing formal parameters by actual parameters.
@@ -535,7 +537,6 @@ DEFBUF		*tokenp;		/* Current macro being expanded	*/
 	char		*defend;		/* -> output buff end	*/
 	int		string_magic;		/* String formal hack	*/
 	FILEINFO	*file;			/* Funny #include	*/
-	extern FILEINFO	*getfile();
 
 	file = getfile(NBUFF, tokenp->name);
 	inp = tokenp->repl;			/* -> macro replacement	*/
@@ -582,7 +583,7 @@ nospace:	    cfatal("Out of space in macro \"%s\" arg expansion",
 	    printf("macroline: \"%s\"\n", file->buffer);
 #endif
 }
-
+
 #if DEBUG
 dumpparm(why)
 char		*why;

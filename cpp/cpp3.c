@@ -7,13 +7,16 @@
  * 13-Nov-84	MM	Split from cpp1.c
  */
 
-#include	<stdio.h>
 #include	<ctype.h>
+#include	<stdio.h>
+#include	<stdlib.h>
+#include	<string.h>
+#include	<time.h>
 #include	"cppdef.h"
 #include	"cpp.h"
 #if DEBUG && (HOST == SYS_VMS || HOST == SYS_UNIX)
 #include	<signal.h>
-extern int	abort();		/* For debugging		*/
+/*extern int	abort();*/		/* For debugging		*/
 #endif
 
 int
@@ -40,7 +43,7 @@ char		*filename;
 	return (TRUE);
 }
 
-addfile(fp, filename)
+void addfile(fp, filename)
 FILE		*fp;			/* Open file pointer		*/
 char		*filename;		/* Name of the file		*/
 /*
@@ -52,7 +55,6 @@ char		*filename;		/* Name of the file		*/
  */
 {
 	register FILEINFO	*file;
-	extern FILEINFO		*getfile();
 
 	file = getfile(NBUFF, filename);
 	file->fp = fp;			/* Better remember FILE *	*/
@@ -60,8 +62,8 @@ char		*filename;		/* Name of the file		*/
 	line = 1;			/* Working on line 1 now	*/
 	wrongline = TRUE;		/* Force out initial #line	*/
 }
-
-setincdirs()
+
+void setincdirs()
 /*
  * Append system-specific directories to the include directory list.
  * Called only when cpp is started.
@@ -122,7 +124,7 @@ setincdirs()
 #define	MAXINCLUDE	(NINCLUDE - 3 - IS_INCLUDE)
 #endif
 }
-
+
 int
 dooptions(argc, argv)
 int		argc;
@@ -262,7 +264,7 @@ char		*argv[];
 	}
 	return (j);			/* Return new argc		*/
 }
-
+
 #if HOST != SYS_UNIX
 FILE_LOCAL
 zap_uc(ap)
@@ -284,7 +286,7 @@ register char	*ap;
 }
 #endif
 
-initdefines()
+int initdefines()
 /*
  * Initialize the built-in #define's.  There are two flavors:
  * 	#define decus	1		(static definitions)
@@ -300,7 +302,6 @@ initdefines()
 	register DEFBUF		*dp;
 	int			i;
 	long			tvec;
-	extern char		*ctime();
 
 	/*
 	 * Predefine the built-in symbols.  Allow the
@@ -341,7 +342,7 @@ initdefines()
 #endif
 	}
 }
-
+
 #if HOST == SYS_VMS
 /*
  * getredirection() is intended to aid in porting C programs

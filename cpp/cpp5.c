@@ -15,10 +15,18 @@
  * 19-Nov-84	ado	#if error returns TRUE for (sigh) compatibility
  */
 
-#include	<stdio.h>
 #include	<ctype.h>
+#include	<stdio.h>
+#include	<string.h>
 #include	"cppdef.h"
 #include	"cpp.h"
+
+FILE_LOCAL int evallex();
+FILE_LOCAL int dosizeof();
+FILE_LOCAL int bittest();
+FILE_LOCAL int evalnum();
+FILE_LOCAL int evalchar();
+FILE_LOCAL int *evaleval();  /* Does actual evaluation. */
 
 /*
  * Evaluate an #if expression.
@@ -103,7 +111,7 @@ register int	op;
 #define	isbinary(op)	(op >= FIRST_BINOP && op <= LAST_BINOP)
 #define	isunary(op)	(op >= FIRST_UNOP  && op <= LAST_UNOP)
 #endif
-
+
 /*
  * The following definitions are used to specify basic variable sizes.
  */
@@ -147,7 +155,7 @@ register int	op;
 #ifndef	S_PFPTR
 #define S_PFPTR		(sizeof (int (*)()))
 #endif
-
+
 typedef struct types {
     short	type;			/* This is the bit if		*/
     char	*name;			/* this is the token word	*/
@@ -192,7 +200,7 @@ SIZES size_table[] = {
     { T_FPTR,	0,		S_PFPTR		},	/* int (*()) 	*/
     { 0,	0,		0		},	/* End of table	*/
 };
-
+
 int
 eval()
 /*
@@ -217,7 +225,6 @@ eval()
 	int		skip;		/* For short-circuit testing	*/
 	int		value[NEXP];	/* Value stack			*/
 	OPTAB		opstack[NEXP];	/* Operand stack		*/
-	extern int	*evaleval();	/* Does actual evaluation	*/
 
 	valp = value;
 	opp = opstack;
@@ -361,9 +368,9 @@ again:	;
 	    }					/* op1 switch end	*/
 	}					/* Stack unwind loop	*/
 }
-
-FILE_LOCAL int
-evallex(skip)
+
+FILE_LOCAL
+int evallex(skip)
 int		skip;		/* TRUE if short-circuit evaluation	*/
 /*
  * Return next eval operator or value.  Called from eval().  It
@@ -480,9 +487,9 @@ again:  do {					/* Collect the token	*/
 	}
 	return (t);
 }
-
-FILE_LOCAL int
-dosizeof()
+
+FILE_LOCAL
+int dosizeof()
 /*
  * Process the sizeof (basic type) operation in an #if string.
  * Sets evalue to the size and returns
@@ -588,11 +595,12 @@ nogood:	unget();
 	return (OP_FAIL);
 }
 
-FILE_LOCAL int
-bittest(value)
+FILE_LOCAL
+int bittest(value)
 /*
  * TRUE if value is zero or exactly one bit is set in value.
  */
+int value;
 {
 #if (4096 & ~(-4096)) == 0
 	return ((value & ~(-value)) == 0);
@@ -603,9 +611,9 @@ bittest(value)
 	return (value == 0 || value ^ (value - 1) == (value * 2 - 1));
 #endif
 }
-
-FILE_LOCAL int
-evalnum(c)
+
+FILE_LOCAL
+int evalnum(c)
 register int	c;
 /*
  * Expand number for #if lexical analysis.  Note: evalnum recognizes
@@ -642,9 +650,9 @@ register int	c;
 	unget();
 	return (value);
 }
-
-FILE_LOCAL int
-evalchar(skip)
+
+FILE_LOCAL
+int evalchar(skip)
 int		skip;		/* TRUE if short-circuit evaluation	*/
 /*
  * Get a character constant
@@ -745,9 +753,9 @@ int		skip;		/* TRUE if short-circuit evaluation	*/
 	instring = FALSE;
 	return (value);
 }
-
-FILE_LOCAL int *
-evaleval(valp, op, skip)
+
+FILE_LOCAL
+int *evaleval(valp, op, skip)
 register int	*valp;
 int		op;
 int		skip;		/* TRUE if short-circuit evaluation	*/
@@ -886,7 +894,7 @@ int		skip;		/* TRUE if short-circuit evaluation	*/
 	*valp++ = v1;
 	return (valp);
 }
-
+
 #ifdef	DEBUG_EVAL
 dumpstack(opstack, opp, value, valp)
 OPTAB		opstack[NEXP];	/* Operand stack		*/
