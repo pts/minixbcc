@@ -232,7 +232,7 @@ extern char *getmem();		/* Get memory or die.		*/
 extern DEFBUF *lookid();		/* Look for a #define'd thing	*/
 extern DEFBUF *defendel();		/* Symbol table enter/delete	*/
 extern char *savestring();		/* Stuff string in malloc mem.	*/
-extern int initdefines();
+extern void initdefines();
 extern int dooptions();
 extern void cierror();
 extern void cerror();

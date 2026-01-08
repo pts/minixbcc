@@ -195,7 +195,7 @@ char		*argv[];
 
 		case 'S':
 		    sizp = size_table;
-		    if (isdatum = (*ap != '*'))	/* If it's just -S,	*/
+		    if ((isdatum = (*ap != '*')))  /* If it's just -S,	*/
 			endtest = T_FPTR;	/* Stop here		*/
 		    else {			/* But if it's -S*	*/
 			ap++;			/* Step over '*'	*/
@@ -286,7 +286,7 @@ register char	*ap;
 }
 #endif
 
-int initdefines()
+void initdefines()
 /*
  * Initialize the built-in #define's.  There are two flavors:
  * 	#define decus	1		(static definitions)

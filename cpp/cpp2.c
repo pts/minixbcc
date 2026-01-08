@@ -157,7 +157,7 @@ dump_line:	skipnl();			/* Ignore rest of line	*/
 	     * We subtract 1 as we want the number of the next line.
 	     */
 	    line = atoi(work) - 1;		/* Reset line number	*/
-	    for (tp = work; isdigit(*tp) || type[*tp] == SPA; tp++)
+	    for (tp = work; isdigit(*tp) || type[*(unsigned char*)tp] == SPA; tp++)
 		;				/* Skip over digits	*/
 	    if (*tp != EOS) {			/* Got a filename, so:	*/
 		if (*tp == '"' && (ep = strrchr(tp + 1, '"')) != NULL) {

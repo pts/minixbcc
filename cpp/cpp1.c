@@ -468,8 +468,7 @@ void sharp()
 	if (infile->fp != NULL) {
 	    name = (infile->progname != NULL)
 		? infile->progname : infile->filename;
-	    if (sharpfilename == NULL
-	     || sharpfilename != NULL && !streq(name, sharpfilename)) {
+	    if (sharpfilename == NULL || !streq(name, sharpfilename)) {
 		if (sharpfilename != NULL)
 		    free(sharpfilename);
 		sharpfilename = savestring(name);

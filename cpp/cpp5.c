@@ -348,7 +348,7 @@ again:	;
 		opp--;				/* Unstack :		*/
 		if (opp->op != OP_QUE) {	/* Matches ? on stack?	*/
 		    cerror("Misplaced '?' or ':', previous operator is %s",
-			opname[opp->op]);
+			opname[(int)opp->op]);
 		    return (1);
 		}
 		/*
@@ -771,8 +771,7 @@ int		skip;		/* TRUE if short-circuit evaluation	*/
 {
 	register int	v1, v2;
 
-	if (isbinary(op))
-	    v2 = *--valp;
+	v2 = isbinary(op) ? *--valp : 0;  /* Pacify GCC -Wmaybe-uninitialized by initializing v2 to 0. */
 	v1 = *--valp;
 #ifdef	DEBUG_EVAL
 	printf("%s op %s", (isbinary(op)) ? "binary" : "unary",
