@@ -26,7 +26,9 @@
 #define EOLTO 10		/* target newline */
 #define DIRCHAR '/'
 #define DIRSTRING "/"
-#define DEFAULT_INCLUDE_DIR "/usr/include"
+#ifndef DEFAULT_INCLUDE_DIR
+#  define DEFAULT_INCLUDE_DIR "/usr/include"
+#endif
 #define isabspath(fnameptr, tempcptr) \
 	((*(tempcptr) = *(fnameptr)) == DIRCHAR)
 
