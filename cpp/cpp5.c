@@ -354,6 +354,7 @@ again:	;
 		/*
 		 * Evaluate op1.
 		 */
+		/* Fallthrough. */
 	    default:				/* Others:		*/
 		opp--;				/* Unstack the operator	*/
 #ifdef	DEBUG_EVAL

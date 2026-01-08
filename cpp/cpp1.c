@@ -267,6 +267,7 @@ char		*argv[];
 		    exit(IO_ERROR);
 		}
 	    }				/* Continue by opening input	*/
+	    /* Fallthrough. */
 	case 2:				/* One file -> stdin		*/
 	    /*
 	     * Open input file, "-" means use stdin.
@@ -280,6 +281,7 @@ char		*argv[];
 		strcpy(work, argv[1]);	/* Remember input filename	*/
 		break;
 	    }				/* Else, just get stdin		*/
+	    /* Fallthrough. */
 	case 0:				/* No args?			*/
 	case 1:				/* No files, stdin -> stdout	*/
 #if HOST == SYS_UNIX

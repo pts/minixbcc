@@ -770,6 +770,7 @@ test:		if (keepcomments && c != EOF_CHAR)
 		    cwarn("Nested comments", NULLST);
 #endif
 						/* Fall into * stuff	*/
+		    /* Fallthrough. */
 		case '*':
 		    if ((c = get()) != '/')	/* If comment doesn't	*/
 			goto test;		/* end, look at next	*/

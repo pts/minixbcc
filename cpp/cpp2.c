@@ -99,6 +99,7 @@ int		counter;	/* Pending newline counter		*/
 	case L_nodebug:	tp = "nodebug";		break;
 #endif
 	default:	hash = L_nogood;
+			/* Fallthrough. */
 	case L_nogood:	tp = "";		break;
 	}
 	if (!streq(tp, token))
@@ -117,6 +118,7 @@ int		counter;	/* Pending newline counter		*/
 		if (++ifptr >= &ifstack[BLK_NEST])
 		    goto if_nest_err;
 		*ifptr = 0;			/* !WAS_COMPILING	*/
+		/* Fallthrough. */
 	    case L_line:			/* Many			*/
 	    /*
 	     * Are pragma's always processed?
