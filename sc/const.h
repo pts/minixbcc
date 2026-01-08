@@ -4,7 +4,7 @@
 
 /* switches for code generation */
 
-#define DEBUG			/* generate compiler-debugging code */
+/*#define DEBUG*/			/* generate compiler-debugging code */
 #define I8088			/* target processor is Intel 8088 thru 80386 */
 /*#define MC6809*/		/* target processor is Motorola 6809 */
 #define SELFTYPECHECK		/* check calculated type = runtime type */
