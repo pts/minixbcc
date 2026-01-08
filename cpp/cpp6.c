@@ -886,10 +886,12 @@ cget()
  */
 
 FILE_LOCAL
-void domsg(severity, format, arg)
+void domsg(argtype, severity, format, sarg, narg)
+int		argtype;		/* 'S' for string, 'I' for int. */
 char		*severity;		/* "Error", "Warning", "Fatal"	*/
 char		*format;		/* Format for the error message	*/
-char		*arg;			/* Something for the message	*/
+char		*sarg;			/* String argument of the format. */
+int		narg;			/* int argument of the format. */
 /*
  * Print filenames, macro names, and line numbers for error messages.
  */
@@ -897,11 +899,11 @@ char		*arg;			/* Something for the message	*/
 	register char		*tp;
 	register FILEINFO	*file;
 
-	fprintf(stderr, "%sline %d, %s: ", MSG_PREFIX, line, &severity[1]);
-	if (*severity == 'S')
-	    fprintf(stderr, format, arg);
+	fprintf(stderr, "%sline %d, %s: ", MSG_PREFIX, line, severity);
+	if (argtype == 'S')
+	    fprintf(stderr, format, sarg);
 	else
-	    fprintf(stderr, format, (int) arg);
+	    fprintf(stderr, format, narg);
 	putc('\n', stderr);
 	if ((file = infile) == NULL)
 	    return;				/* At end of file	*/
@@ -933,7 +935,7 @@ char		*sarg;		/* Single string argument		*/
  * Print a normal error message, string argument.
  */
 {
-	domsg("SError", format, sarg);
+	domsg('S', "Error", format, sarg, 0);
 	errors++;
 }
 
@@ -944,7 +946,7 @@ int		narg;		/* Single numeric argument		*/
  * Print a normal error message, numeric argument.
  */
 {
-	domsg("IError", format, (char *) narg);
+	domsg('I', "Error", format, 0, narg);
 	errors++;
 }
 
@@ -955,7 +957,7 @@ char		*sarg;			/* Single string argument	*/
  * A real disaster
  */
 {
-	domsg("SFatal error", format, sarg);
+	domsg('S', "Fatal error", format, sarg, 0);
 	exit(IO_ERROR);
 }
 
@@ -966,7 +968,7 @@ char		*sarg;			/* Single string argument	*/
  * A non-fatal error, string argument.
  */
 {
-	domsg("SWarning", format, sarg);
+	domsg('S', "Warning", format, sarg, 0);
 }
 
 void ciwarn(format, narg)
@@ -976,7 +978,7 @@ int		narg;			/* Single numeric argument	*/
  * A non-fatal error, numeric argument.
  */
 {
-	domsg("IWarning", format, (char *) narg);
+	domsg('I', "Warning", format, 0, narg);
 }
 
 
