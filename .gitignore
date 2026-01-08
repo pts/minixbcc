@@ -1,0 +1,8 @@
+*~
+*.o
+/cpp/cpp
+/cpp/cpp.host
+/cpp/cpp.cross
+/cpp/cpp.mini*
+/cpp/cpp.m32
+/cpp/cpp.m64
