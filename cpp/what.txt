@@ -1,0 +1,33 @@
+Decus CPP is an almost-ANSI C preprocessor by Martin Minow, in the public
+domain. It is shipped with X11R5 (contrib/util/cpp) because some systems
+don't have a working cpp. It runs on VMS (Vax C, Decus C), RSX-11M, RSTS/E,
+P/OS, RT11, A/UX and Apollo Domain/IX 9.6 and is highly portable.
+
+Release date of Decus CPP: 1988-10-13.
+
+The entire contrib directory of X11R5:
+
+* https://www.x.org/archive/X11R5/contrib-1.tar.Z
+* https://www.x.org/archive/X11R5/contrib-2.tar.Z
+* https://www.x.org/archive/X11R5/contrib-3.tar.Z
+
+```
+$ wget -O x11r5-contrib-1.tar.Z https://www.x.org/archive/X11R5/contrib-1.tar.Z
+$ tar xzvf x11r5-contrib-1.tar.Z contrib/util/cpp
+$ ls -l --sort=time --full-time contrib/util/cpp/
+total 184
+-rw-r--r-- 1 pts pts   386 1994-04-26 22:56:52.000000000 +0200 ls-ltR.Z
+-rw-r--r-- 1 pts pts   388 1994-04-26 22:56:51.000000000 +0200 ls-lR.Z
+-r--r--r-- 1 pts pts   563 1990-12-01 19:25:42.000000000 +0100 Imakefile
+-r--r--r-- 1 pts pts 27870 1988-10-13 14:10:28.000000000 +0100 cpp6.c
+-r--r--r-- 1 pts pts 23848 1988-10-13 14:10:23.000000000 +0100 cpp1.c
+-r--r--r-- 1 pts pts  8655 1988-10-13 14:10:20.000000000 +0100 cppdef.h
+-r--r--r-- 1 pts pts 16707 1988-10-06 21:14:08.000000000 +0100 cpp4.c
+-r--r--r-- 1 pts pts  4852 1988-10-06 18:49:40.000000000 +0100 README
+-r--r--r-- 1 pts pts 15707 1988-10-03 16:36:59.000000000 +0100 cpp2.c
+-r--r--r-- 1 pts pts 12108 1988-10-03 16:33:31.000000000 +0100 cpp.mem
+-r--r--r-- 1 pts pts  8099 1988-10-03 16:33:30.000000000 +0100 cpp.rno
+-r--r--r-- 1 pts pts  6794 1988-10-03 16:33:29.000000000 +0100 cpp.h
+-r--r--r-- 1 pts pts 21744 1988-10-03 16:33:27.000000000 +0100 cpp5.c
+-r--r--r-- 1 pts pts 11138 1988-10-03 16:33:22.000000000 +0100 cpp3.c
+```
