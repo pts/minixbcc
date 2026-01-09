@@ -48,6 +48,7 @@ FILE_LOCAL int hasdirectory();
 #define	L_line		('l' + ('n' << 1))
 #define	L_nogood	(EOS + (EOS << 1))	/* To catch #i		*/
 #define	L_pragma	('p' + ('a' << 1))
+#define L_error		('e' + ('r' << 1))
 #define L_undef		('u' + ('d' << 1))
 #if DEBUG
 #define	L_debug		('d' + ('b' << 1))	/* #debug		*/
@@ -93,6 +94,7 @@ int		counter;	/* Pending newline counter		*/
 	case L_include:	tp = "include";		break;
 	case L_line:	tp = "line";		break;
 	case L_pragma:	tp = "pragma";		break;
+	case L_error:	tp = "error";		break;
 	case L_undef:	tp = "undef";		break;
 #if DEBUG
 	case L_debug:	tp = "debug";		break;
@@ -124,10 +126,11 @@ int		counter;	/* Pending newline counter		*/
 	     * Are pragma's always processed?
 	     */
 	    case L_pragma:			/*  options		*/
-	    case L_include:			/*   are uninteresting	*/
-	    case L_define:			/*    if we		*/
-	    case L_undef:			/*     aren't		*/
-	    case L_assert:			/*      compiling.	*/
+	    case L_error:			/*   are		*/
+	    case L_include:			/*    uninteresting	*/
+	    case L_define:			/*     if we		*/
+	    case L_undef:			/*      aren't		*/
+	    case L_assert:			/*       compiling.	*/
 dump_line:	skipnl();			/* Ignore rest of line	*/
 		return (counter + 1);
 	    }
@@ -250,6 +253,10 @@ nest_err:	cerror("#%s must be in an #if", token);
 	    unget();
 	    break;
  
+	case L_error:
+	    cfatal("Preprocessor error", NULLST);
+	    break;
+
 #if DEBUG
 	case L_debug:
 	    if (debug == 0)
