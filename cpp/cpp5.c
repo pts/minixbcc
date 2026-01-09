@@ -16,8 +16,8 @@
  */
 
 #include	<ctype.h>
-#include	<stdio.h>
 #include	<string.h>
+#include	<stdio.h>  /* Include it after the other <*.h> for Minix 1.5.10 with BCC, to avoid redefinition of NULL. */
 #include	"cppdef.h"
 #include	"cpp.h"
 

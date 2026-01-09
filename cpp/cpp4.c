@@ -14,10 +14,10 @@
  *  6-Nov-84	MM	Split off eval stuff
  */
 
-#include	<stdio.h>
 #include	<ctype.h>
 #include	<string.h>
 #include	<stdlib.h>
+#include	<stdio.h>  /* Include it after the other <*.h> for Minix 1.5.10 with BCC, to avoid redefinition of NULL. */
 #include	"cppdef.h"
 #include	"cpp.h"
 
