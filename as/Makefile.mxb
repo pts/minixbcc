@@ -2,16 +2,19 @@
 # bccbin32.tar.Z (also by Bruce Evans). The Makefile and typeconv.c were
 # written by pts.
 #
-# Notable additions:
+# Notable changes:
 #
-# * x87 (8087, 387) FPU instructions.
-# * 486 instructions (e.g. cmpxchg, wbinvd).
-# * Bugfixes and better error reporting.
+# * Added x87 (8087, 387) FPU instructions.
+# * Added 486 instructions (e.g. cmpxchg, wbinvd).
+# * Added bugfixes and better error reporting.
+# * Removed lots of syntax compatibility with the Minix 1.5.10 asld assembler.
+# * (pts) Added C source compatibility with GCC 7.5.0, no warnings.
+# * (pts) !! Added back previously removed syntax for comments starting with `|'.
 #
 
 CFLAGS  = -O
 LDFLAGS =
 
 as: as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c address.h byteord.h const.h file.h flag.h globvar.h macro.h opcode.h proto.h scan.h source.h type.h
-	$(CC) $(CFLAGS) $(LDFLAGS) -o as as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c
+	$(CC) -DMINIX_SYNTAX $(CFLAGS) $(LDFLAGS) -o as as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c
 	chmem =192480 as
