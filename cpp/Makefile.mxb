@@ -3,9 +3,7 @@
 # (contrib/util/cpp). It contains some patches by pts for Minix
 # compatibility.
 #
-# !! Maybe add these: -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\"
-#
 
 cpp: cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c cpp.h cppdef.h
-	$(CC) -O -DOLD_PREPROCESSOR -DFILE_LOCAL=static -Dunix -o cpp cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c
+	$(CC) -O -DOLD_PREPROCESSOR -DFILE_LOCAL=static -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c
 	chmem =150000 cpp
