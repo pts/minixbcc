@@ -287,7 +287,9 @@ int		(*outfun)();		/* Output function		*/
 	    return (TRUE);
 	}
 	else {
+#if 0  /* This happens in words like isn't in non-C comments in assembly source files. */
 	    cerror("Unterminated string", NULLST);
+#endif
 	    unget();
 	    return (FALSE);
 	}
