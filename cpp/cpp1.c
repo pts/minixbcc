@@ -75,6 +75,7 @@
  * 17-Dec-84	MM	Yet another attack on #if's (f/t)level removed.
  * 07-Jan-85	ado	Init defines before doing command line options
  *			so -Uunix works.
+ * 07-Jun-85	KR	added -P option.  don't output #line
  */
 
 /*)BUILD
@@ -184,6 +185,7 @@ int		keepcomments = FALSE;	/* Write out comments flag	*/
 int		cflag = FALSE;		/* -C option (keep comments)	*/
 int		eflag = FALSE;		/* -E option (never fail)	*/
 int		nflag = 0;		/* -N option (no predefines)	*/
+int		pflag = FALSE;		/* -P option (no #line output)	*/
 
 /*
  * ifstack[] holds information about nested #if's.  It is always
@@ -466,6 +468,8 @@ void sharp()
 
 	if (keepcomments)			/* Make sure # comes on	*/
 	    putchar('\n');			/* a fresh, new line.	*/
+	if (pflag)
+	    goto sharp_exit;
 	printf("#%s %d", LINE_PREFIX, line);
 	if (infile->fp != NULL) {
 	    name = (infile->progname != NULL)
@@ -478,5 +482,7 @@ void sharp()
 	     }
 	}
 	putchar('\n');
+
+      sharp_exit:
 	wrongline = FALSE;
 }

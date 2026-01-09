@@ -52,6 +52,11 @@ description
 	"always present" symbols, __LINE__, __FILE__, and __DATE__
 	are not defined.
 	.p -16
+	-P		CPP normally writes lines of the form
+	#line <number> <file.name> to the output file so the compiler
+	can print the line number and name of the original source file
+	for diagnostic messages.  The -P option will suppress this output.
+	.p -16
 	-Stext		CPP normally assumes that the size of
 	the target computer's basic variable types is the same as the size
 	of these types of the host computer.  (This can be overridden

@@ -193,6 +193,10 @@ char		*argv[];
 		    nflag++;			/* Repeat to undefine	*/
 		    break;			/* __LINE__, etc.	*/
 
+		case 'P':			/* no #line output 	*/
+		    pflag = TRUE;
+		    break;
+
 		case 'S':
 		    sizp = size_table;
 		    if ((isdatum = (*ap != '*')))  /* If it's just -S,	*/
@@ -243,13 +247,14 @@ char		*argv[];
 
 		default:			/* What is this one?	*/
 		    cwarn("Unknown option \"%s\"", arg);
-		    fprintf(stderr, "The following options are valid:\n\
-  -C\t\t\tWrite source file comments to output\n\
-  -Dsymbol=value\tDefine a symbol with the given (optional) value\n\
-  -Idirectory\t\tAdd a directory to the #include search list\n\
-  -N\t\t\tDon't predefine target-specific names\n\
-  -Stext\t\tSpecify sizes for #if sizeof\n\
-  -Usymbol\t\tUndefine symbol\n");
+		    fprintf(stderr, "The following options are valid:\n");
+		    fprintf(stderr, "  -C\t\t\tWrite source file comments to output\n");
+		    fprintf(stderr, "  -Dsymbol=value\tDefine a symbol with the given (optional) value\n");
+		    fprintf(stderr, "  -Idirectory\t\tAdd a directory to the #include search list\n");
+		    fprintf(stderr, "  -N\t\t\tDon't predefine target-specific names\n");
+		    fprintf(stderr, "  -P\t\t\tDon't output #line lines\n");
+		    fprintf(stderr, "  -Stext\t\tSpecify sizes for #if sizeof\n");
+		    fprintf(stderr, "  -Usymbol\t\tUndefine symbol\n");
 #if DEBUG
 		    fprintf(stderr, "  -Xvalue\t\tSet internal debug flag\n");
 #endif

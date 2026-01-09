@@ -216,6 +216,7 @@ extern char	**incend;		/* -> active end of incdir	*/
 extern int	cflag;			/* -C option (keep comments)	*/
 extern int	eflag;			/* -E option (ignore errors)	*/
 extern int	nflag;			/* -N option (no pre-defines)	*/
+extern int	pflag;			/* -P option (no #line output)	*/
 extern int	rec_recover;		/* unwind recursive macros	*/
 extern char	*preset[];		/* Standard predefined symbols	*/
 extern char	*magic[];		/* Magic predefined symbols	*/
