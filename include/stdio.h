@@ -3,13 +3,10 @@
 #ifndef _STDIO_H
 #define _STDIO_H
 
-#ifdef NULL
-#undef NULL
-#endif
+#define NULL    ((void *)0)
 
 #define BUFSIZ  1024
 #define NFILES  20
-#define NULL       0
 #define EOF     (-1)
 #define CMASK   0377
 
