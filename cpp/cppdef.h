@@ -96,6 +96,14 @@
  * OK_DATE	Predefines the compilation date if set TRUE.
  *		Not permitted by the Nov. 12, 1984 Draft Standard.
  *
+ * OK_TRIGRAPH	Enable trigraph substitution, whereby ??= -> # etc.
+ *
+ * TFLAG_INIT	Initial value for the -T option.  If TRUE, -T
+ *		disables trigraphs, if FALSE, -T enables them.
+ *
+ * OLD_PREPROCESSOR Forces several parameters to a state consistant
+ *		with the Reiser cpp preprocessor.
+ *
  * S_CHAR etc.	Define the sizeof the basic TARGET machine word types.
  *		By default, sizes are set to the values for the HOST
  *		computer.  If this is inappropriate, see the code in
@@ -189,6 +197,9 @@
 #define	COMMENT_INVISIBLE	TRUE
 #define	STRING_FORMAL		TRUE
 #define IDMAX			63	/* actually, seems to be unlimited */
+#ifndef OK_TRIGRAPH
+#define	OK_TRIGRAPH		FALSE
+#endif
 #endif
 
 /*
@@ -263,6 +274,18 @@
  */
 #ifndef	OK_DATE
 #define	OK_DATE		TRUE
+#endif
+
+/*
+ * OK_TRIGRAPH permits replacement of ??<something> on input text
+ * as per the Draft Standard.  TFLAG_INIT is the initial state
+ * of the trigraph substitution compiler option.
+ */
+#ifndef	OK_TRIGRAPH
+#define	OK_TRIGRAPH	TRUE
+#endif
+#ifndef	TFLAG_INIT
+#define	TFLAG_INIT	TRUE
 #endif
 
 /*

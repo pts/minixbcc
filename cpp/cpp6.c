@@ -15,6 +15,7 @@
  * 31-Oct-84 ado	Parameterized $ in identifiers
  *  2-Nov-84 MM		Token concatenation is messier than I thought
  *  6-Dec-84 MM		\<nl> is everywhere invisible.
+ *  2-Apr-85 MM		Hacked trigraph code.
  */
 
 #include	<ctype.h>
@@ -695,6 +696,10 @@ newline:
 			    line, file->filename, file->buffer);
 		    }
 #endif
+#if OK_TRIGRAPH
+		    if (tflag)
+			trigraph(file->buffer);
+#endif
 		    goto newline;		/* process the line	*/
 		}
 		else {
@@ -827,6 +832,41 @@ test:		if (keepcomments && c != EOF_CHAR)
 	    c = ' ';				/* Tab are whitespace	*/
 	return (c);				/* Just return the char	*/
 }
+
+#if OK_TRIGRAPH
+#define TRIOFFSET	9
+static char	tritext[] = "=(/)'<!>-\0#[\\]^{|}~";
+/*			     ^          ^
+ *			     +----------+
+ *			  this becomes this
+ */
+
+void trigraph(in)
+register char		*in;
+/*
+ * Perform in-place trigraph replacement on an input text line.
+ * This was added to the Draft Standard.  In an input text
+ * line, the sequence ??<something> is transformed to a character
+ * (which might not appear on the input keyboard.)
+ * There are problems with trigraphs, and this code may not last long.
+ */
+{
+	register char	*tp;
+	extern char	*strchr();
+
+	while ((in = strchr(in, '?')) != NULLST) {
+	    if (*++in != '?')
+		continue;
+	    while (*++in == '?')
+		;
+	    if ((tp = strchr(tritext, *in)) == NULLST)
+		continue;
+	    in[-2] = tp[TRIOFFSET];
+	    in--;
+	    strcpy(in, in + 2);
+	}
+}
+#endif
 
 void unget()
 /*

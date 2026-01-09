@@ -80,6 +80,17 @@ description
 
 	Note that all values must be specified.
 	.p -16
+	-Tnumber	Enable (number = 1) or disable
+	trigraph recognition.  (If no number is given, the
+	default state is reversed.)  If enabled, the sequence
+	"??" is a character-escape to allow certain characters
+	to be entered on systems where the normal representation
+	is used for national letters.  This implementation
+	"merely" converts the trigraph to the internal representation,
+	and thus is probably incorrect.  A correct implementation
+	would seem to require recognition of Ansi escape sequences
+	in the input stream.  Someone else can write that routine.
+	.p -16
 	-Uname		Undefine the name as if
 
 	    #undef name

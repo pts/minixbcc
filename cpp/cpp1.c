@@ -75,6 +75,7 @@
  * 17-Dec-84	MM	Yet another attack on #if's (f/t)level removed.
  * 07-Jan-85	ado	Init defines before doing command line options
  *			so -Uunix works.
+ * 29-Mar-85	ado/MM	added -T option (recognize trigraphs)
  * 07-Jun-85	KR	added -P option.  don't output #line
  */
 
@@ -186,6 +187,7 @@ int		cflag = FALSE;		/* -C option (keep comments)	*/
 int		eflag = FALSE;		/* -E option (never fail)	*/
 int		nflag = 0;		/* -N option (no predefines)	*/
 int		pflag = FALSE;		/* -P option (no #line output)	*/
+int		tflag = TFLAG_INIT;	/* -T option (recognize trigraphs) */
 
 /*
  * ifstack[] holds information about nested #if's.  It is always

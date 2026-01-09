@@ -217,6 +217,7 @@ extern int	cflag;			/* -C option (keep comments)	*/
 extern int	eflag;			/* -E option (ignore errors)	*/
 extern int	nflag;			/* -N option (no pre-defines)	*/
 extern int	pflag;			/* -P option (no #line output)	*/
+extern int	tflag;			/* -T option (recognize trigraphs) */
 extern int	rec_recover;		/* unwind recursive macros	*/
 extern char	*preset[];		/* Standard predefined symbols	*/
 extern char	*magic[];		/* Magic predefined symbols	*/
@@ -265,3 +266,6 @@ extern void stparmscan();
 extern void ungetstring();
 extern int cget();
 extern void expand();
+#if OK_TRIGRAPH
+extern void trigraph();
+#endif

@@ -162,6 +162,10 @@ char		*argv[];
 #if HOST != SYS_UNIX
 		    zap_uc(ap);			/* Force define to U.C.	*/
 #endif
+#if OK_TRIGRAPH
+		    if (tflag)
+			trigraph(ap);
+#endif
 		    /*
 		     * If the option is just "-Dfoo", make it -Dfoo=1
 		     */
@@ -227,10 +231,27 @@ char		*argv[];
 			cwarn("-S, too many values, \"%s\" unused", ap);
 		    break;
 
+#if OK_TRIGRAPH
+		case 'T':
+		    if (isdigit(*ap))
+			tflag = atoi(ap);
+		    else {
+			tflag = !tflag;
+			fprintf(stderr, "Trigraph recognition %sabled\n",
+			    (tflag) ? "en" : "dis");
+		    }
+		    break;
+#endif
+
 		case 'U':			/* Undefine symbol	*/
 #if HOST != SYS_UNIX
 		    zap_uc(ap);
 #endif
+		    /*
+		     * We don't need to map trigraphs as they
+		     * can't be part of a symbol name.
+		     * (_ isn't trigraphable).
+		     */
 		    if (defendel(ap, TRUE) == NULL)
 			cwarn("\"%s\" wasn't defined", ap);
 		    break;
@@ -253,6 +274,10 @@ char		*argv[];
 		    fprintf(stderr, "  -Idirectory\t\tAdd a directory to the #include search list\n");
 		    fprintf(stderr, "  -N\t\t\tDon't predefine target-specific names\n");
 		    fprintf(stderr, "  -P\t\t\tDon't output #line lines\n");
+#if OK_TRIGRAPH
+		    fprintf(stderr, "  -Tbool\t\tEnable or disable trigraph recognition\n");
+		    fprintf(stderr, "  -T\t\t\tToggle trigraph recognition\n");
+#endif
 		    fprintf(stderr, "  -Stext\t\tSpecify sizes for #if sizeof\n");
 		    fprintf(stderr, "  -Usymbol\t\tUndefine symbol\n");
 #if DEBUG
