@@ -4,6 +4,17 @@
 #include "type.h"
 #include "opcode.h"
 
+#ifdef KV0  /* Use the keywords as in assembler version 0. It may not work. */
+  /* Keyword table extraction command: perl -0777 -wne 'use integer; use strict; my $i = 0; while ($i < length($_)) { my $s = vec($_, $i, 8); die(1) if $s == 0; die(2) if $i + $s + 3 > length($_); my $name = substr($_, $i + 1, $s); $name = join("\x27, \x27", split("", $name)); $i += $s + 3; my $v1 = sprintf("0x%02x", vec($_, $i - 2, 8)); my $v2 = sprintf("0x%02x", vec($_, $i - 1, 8)); print("    $s, \x27$name\x27, $v1, $v2,\n") }' <keywords.bin */
+#  undef KV1
+#  define W01(wv0, wv1) wv0
+#  define RETFI 99  /* It doesn't work, RETFI is not implemented in version 1. */
+#else  /* Default, use keywords in assembler version 1. */
+#  undef KV1
+#  define KV1 1
+#  define W01(wv0, wv1) wv1
+#endif
+
 /* registers */
 /* the register code (internal to assembler) is given in 1 byte */
 /* the "opcode" field is not used */
@@ -55,13 +66,17 @@ PUBLIC char regs[] =
     3, 'D', 'R', '3', DR3REG, 0,
     3, 'D', 'R', '6', DR6REG, 0,
     3, 'D', 'R', '7', DR7REG, 0,
+#ifdef KV1
     3, 'T', 'R', '3', TR3REG, 0,
     3, 'T', 'R', '4', TR4REG, 0,
     3, 'T', 'R', '5', TR5REG, 0,
+#endif
     3, 'T', 'R', '6', TR6REG, 0,
     3, 'T', 'R', '7', TR7REG, 0,
 
+#ifdef KV1
     2, 'S', 'T', ST0REG, 0,
+#endif
 #endif /* I80386 */
 
 #ifdef MC6809
@@ -77,6 +92,7 @@ PUBLIC char regs[] =
     1, 'X', XREG, 0,
     1, 'Y', YREG, 0,
 #endif
+
     0				/* end of register list */
 };
 
@@ -92,7 +108,7 @@ PUBLIC char typesizes[] =
     5, 'F', 'W', 'O', 'R', 'D', FWORDOP, 6,
     3, 'F', 'A', 'R', FAROP, 0,
     3, 'P', 'T', 'R', PTROP, 0,
-    5, 'P', 'W', 'O', 'R', 'D', PWORDOP, 6,
+    5, 'P', 'W', 'O', 'R', 'D', PWORDOP, W01(4, 6),
     5, 'Q', 'W', 'O', 'R', 'D', QWORDOP, 8,
     5, 'T', 'B', 'Y', 'T', 'E', TBYTEOP, 10,
     4, 'W', 'O', 'R', 'D', WORDOP, 2,
@@ -117,6 +133,7 @@ PUBLIC char ops[] =
     3, 'I', 'F', 'C', IFCOP, 0,
 
     /* unconditionals */
+    /* The code in versions 0 and 1 are identical, but they are in a different order. */
     6, '.', 'A', 'L', 'I', 'G', 'N', ALIGNOP, 0,
     6, '.', 'A', 'S', 'C', 'I', 'I', FCCOP, 0,
     5, '.', 'B', 'L', 'K', 'B', RMBOP, 0,
@@ -127,9 +144,11 @@ PUBLIC char ops[] =
     4, 'C', 'O', 'M', 'M', COMMOP, 0,
     5, '.', 'C', 'O', 'M', 'M', COMMOP1, 0,
     5, '.', 'D', 'A', 'T', 'A', DATAOP, 0,
+#ifdef KV1
     6, '.', 'D', 'A', 'T', 'A', '1', FCBOP, 0,
     6, '.', 'D', 'A', 'T', 'A', '2', FDBOP, 0,
     6, '.', 'D', 'A', 'T', 'A', '4', FQBOP, 0,
+#endif
     2, 'D', 'B', FCBOP, 0,
     2, 'D', 'D', FQBOP, 0,
     7, '.', 'D', 'E', 'F', 'I', 'N', 'E', EXPORTOP, 0,
@@ -150,7 +169,15 @@ PUBLIC char ops[] =
     3, 'F', 'C', 'C', FCCOP, 0,
     3, 'F', 'D', 'B', FDBOP, 0,
     3, 'G', 'E', 'T', GETOP, 0,
+#ifdef KV1
+#ifdef MINIX_SYNTAX
+    6, '.', 'G', 'L', 'O', 'B', 'L', EXPORTOP, 0,
+#else
     6, '.', 'G', 'L', 'O', 'B', 'L', GLOBLOP, 0,
+#endif
+#else
+    6, '.', 'G', 'L', 'O', 'B', 'L', EXPORTOP, 0,
+#endif
     5, 'I', 'D', 'E', 'N', 'T', IDENTOP, 0,
     6, 'I', 'M', 'P', 'O', 'R', 'T', IMPORTOP, 0,
     7, 'I', 'N', 'C', 'L', 'U', 'D', 'E', GETOP, 0,
@@ -166,8 +193,10 @@ PUBLIC char ops[] =
     4, '.', 'O', 'R', 'G', ORGOP, 0,
     6, 'P', 'U', 'B', 'L', 'I', 'C', EXPORTOP, 0,
     3, 'R', 'M', 'B', RMBOP, 0,
+#ifdef KV1
     4, '.', 'R', 'O', 'M', DATAOP, 0,
     5, '.', 'S', 'E', 'C', 'T', SECTOP, 0,
+#endif
     3, 'S', 'E', 'T', SETOP, 0,
     5, 'S', 'E', 'T', 'D', 'P', SETDPOP, 0,
     6, '.', 'S', 'H', 'O', 'R', 'T', FDBOP, 0,
@@ -175,7 +204,9 @@ PUBLIC char ops[] =
     5, '.', 'T', 'E', 'X', 'T', TEXTOP, 0,
     5, 'U', 'S', 'E', '1', '6', USE16OP, 0,
     5, 'U', 'S', 'E', '3', '2', USE32OP, 0,
+#ifdef KV1
     5, '.', 'W', 'A', 'R', 'N', WARNOP, 0,
+#endif
     5, '.', 'W', 'O', 'R', 'D', FDBOP, 0,
     6, '.', 'Z', 'E', 'R', 'O', 'W', BLKWOP, 0,
 
@@ -210,7 +241,9 @@ PUBLIC char ops[] =
     3, 'B', 'V', 'C', BCC, 0x71,
     3, 'B', 'V', 'S', BCC, 0x70,
     4, 'C', 'A', 'L', 'L', CALL, JSR_OPCODE,
+#ifdef KV1
     5, 'C', 'A', 'L', 'L', 'F', CALLI, 0x9A,
+#endif
     5, 'C', 'A', 'L', 'L', 'I', CALLI, 0x9A,
     3, 'C', 'B', 'W', INHER16, 0x98,
     3, 'C', 'L', 'C', INHER, 0xF8,
@@ -218,39 +251,49 @@ PUBLIC char ops[] =
     3, 'C', 'L', 'I', INHER, 0xFA,
     3, 'C', 'M', 'C', INHER, 0xF5,
     3, 'C', 'M', 'P', GROUP1, CMP_OPCODE_BASE,
-    4, 'C', 'M', 'P', 'S', INHER, CMPSW_OPCODE,
+    4, 'C', 'M', 'P', 'S', W01(INHER16, INHER), CMPSW_OPCODE,
     5, 'C', 'M', 'P', 'S', 'B', INHER, CMPSB_OPCODE,
     5, 'C', 'M', 'P', 'S', 'D', INHER32, CMPSW_OPCODE,
     5, 'C', 'M', 'P', 'S', 'W', INHER16, CMPSW_OPCODE,
     4, 'C', 'M', 'P', 'W', INHER16, CMPSW_OPCODE,
+#ifdef KV1
     4, 'C', 'S', 'E', 'G', INHER, 0x2E,
+#endif
     3, 'C', 'W', 'D', INHER16, 0x99,
     4, 'C', 'W', 'D', 'E', INHER32, 0x98,
     3, 'C', 'D', 'Q', INHER32, 0x99,
     3, 'D', 'A', 'A', INHER, 0x27,
     3, 'D', 'A', 'S', INHER, 0x2F,
+#ifdef KV1
     4, 'D', 'S', 'E', 'G', INHER, 0x3E,
+#endif
     3, 'D', 'E', 'C', INCDEC, 0x08,
     3, 'D', 'I', 'V', DIVMUL, 0x30,
     5, 'E', 'N', 'T', 'E', 'R', ENTER, 0xC8,
+#ifdef KV1
     4, 'E', 'S', 'E', 'G', INHER, 0x26,
     4, 'F', 'S', 'E', 'G', INHER, 0x64,
     4, 'G', 'S', 'E', 'G', INHER, 0x65,
+#endif
     3, 'H', 'L', 'T', INHER, 0xF4,
     4, 'I', 'D', 'I', 'V', DIVMUL, 0x38,
     4, 'I', 'M', 'U', 'L', IMUL, 0x28,
     2, 'I', 'N', IN, 0xEC,
+#ifdef KV1
+#else
+    3, 'I', 'N', 'B', INHER, 0xEC,
+#endif
     3, 'I', 'N', 'C', INCDEC, 0x00,
-    3, 'I', 'N', 'S', INHER, 0x6D,
+    3, 'I', 'N', 'S', W01(INHER16, INHER), 0x6D,
     4, 'I', 'N', 'S', 'B', INHER, 0x6C,
     4, 'I', 'N', 'S', 'D', INHER32, 0x6D,
     4, 'I', 'N', 'S', 'W', INHER16, 0x6D,
     3, 'I', 'N', 'T', INT, 0xCD,
     4, 'I', 'N', 'T', 'O', INHER, 0xCE,
-    3, 'I', 'N', 'W', IN, 0xED,
+    3, 'I', 'N', 'W', W01(INHER16, IN), 0xED,
     4, 'I', 'R', 'E', 'T', INHER16, 0xCF,
     5, 'I', 'R', 'E', 'T', 'D', INHER32, 0xCF,
-    1, 'J', CALL, JMP_SHORT_OPCODE,
+    1, 'J', W01(JCC, CALL), JMP_SHORT_OPCODE,
     2, 'J', 'A', JCC, 0x77,
     3, 'J', 'A', 'E', JCC, 0x73,
     2, 'J', 'B', JCC, 0x72,
@@ -265,8 +308,10 @@ PUBLIC char ops[] =
     3, 'J', 'G', 'E', JCC, 0x7D,
     2, 'J', 'L', JCC, 0x7C,
     3, 'J', 'L', 'E', JCC, 0x7E,
-    3, 'J', 'M', 'P', CALL, JMP_SHORT_OPCODE,
+    3, 'J', 'M', 'P', CALL, W01(JMP_OPCODE, JMP_SHORT_OPCODE),
+#ifdef KV1
     4, 'J', 'M', 'P', 'F', CALLI, 0xEA,
+#endif
     4, 'J', 'M', 'P', 'I', CALLI, 0xEA,
     3, 'J', 'N', 'A', JCC, 0x76,
     4, 'J', 'N', 'A', 'E', JCC, 0x72,
@@ -295,7 +340,7 @@ PUBLIC char ops[] =
     3, 'L', 'E', 'S', GvMp, 0xC4,
     4, 'L', 'O', 'C', 'K', INHER, 0xF0,
     4, 'L', 'O', 'D', 'B', INHER, 0xAC,
-    4, 'L', 'O', 'D', 'S', INHER, 0xAD,
+    4, 'L', 'O', 'D', 'S', W01(INHER16, INHER), 0xAD,
     5, 'L', 'O', 'D', 'S', 'B', INHER, 0xAC,
     5, 'L', 'O', 'D', 'S', 'D', INHER32, 0xAD,
     5, 'L', 'O', 'D', 'S', 'W', INHER16, 0xAD,
@@ -306,7 +351,7 @@ PUBLIC char ops[] =
     6, 'L', 'O', 'O', 'P', 'N', 'Z', JCC, 0xE0,
     5, 'L', 'O', 'O', 'P', 'Z', JCC, 0xE1,
     3, 'M', 'O', 'V', MOV, 0x88,
-    4, 'M', 'O', 'V', 'S', INHER, MOVSW_OPCODE,
+    4, 'M', 'O', 'V', 'S', W01(INHER16, INHER), MOVSW_OPCODE,
     5, 'M', 'O', 'V', 'S', 'B', INHER, MOVSB_OPCODE,
     5, 'M', 'O', 'V', 'S', 'D', INHER32, MOVSW_OPCODE,
     5, 'M', 'O', 'V', 'S', 'W', INHER16, MOVSW_OPCODE,
@@ -317,11 +362,15 @@ PUBLIC char ops[] =
     3, 'N', 'O', 'T', NEGNOT, 0x10,
     2, 'O', 'R', GROUP1, 0x08,
     3, 'O', 'U', 'T', OUT, 0xEE,
-    4, 'O', 'U', 'T', 'S', INHER, 0x6F,
+#ifdef KV1
+#else
+    4, 'O', 'U', 'T', 'B', INHER, 0xEE,
+#endif
+    4, 'O', 'U', 'T', 'S', W01(INHER16, INHER), 0x6F,
     5, 'O', 'U', 'T', 'S', 'B', INHER, 0x6E,
     5, 'O', 'U', 'T', 'S', 'D', INHER32, 0x6F,
     5, 'O', 'U', 'T', 'S', 'W', INHER16, 0x6F,
-    4, 'O', 'U', 'T', 'W', OUT, 0xEF,
+    4, 'O', 'U', 'T', 'W', W01(INHER16, OUT), 0xEF,
     3, 'P', 'O', 'P', PUSHPOP, POP_OPCODE,
     4, 'P', 'O', 'P', 'A', INHER16, 0x61,
     5, 'P', 'O', 'P', 'A', 'D', INHER32, 0x61,
@@ -342,14 +391,14 @@ PUBLIC char ops[] =
     5, 'R', 'E', 'P', 'N', 'Z', INHER, 0xF2,
     4, 'R', 'E', 'P', 'Z', INHER, 0xF3,
     3, 'R', 'E', 'T', RET, 0xC3,
-    4, 'R', 'E', 'T', 'F', RET, 0xCB,
-    4, 'R', 'E', 'T', 'I', RET, 0xCB,
+    4, 'R', 'E', 'T', 'F', W01(RETFI, RET), 0xCB,
+    4, 'R', 'E', 'T', 'I', W01(RETFI, RET), 0xCB,
     4, 'S', 'A', 'H', 'F', INHER, 0x9E,
     3, 'S', 'A', 'L', GROUP2, 0x20,
     3, 'S', 'A', 'R', GROUP2, 0x38,
     3, 'S', 'B', 'B', GROUP1, 0x18,
     4, 'S', 'C', 'A', 'B', INHER, 0xAE,
-    4, 'S', 'C', 'A', 'S', INHER, 0xAF,
+    4, 'S', 'C', 'A', 'S', W01(INHER16, INHER), 0xAF,
     5, 'S', 'C', 'A', 'S', 'B', INHER, 0xAE,
     5, 'S', 'C', 'A', 'S', 'D', INHER32, 0xAF,
     5, 'S', 'C', 'A', 'S', 'W', INHER16, 0xAF,
@@ -357,12 +406,14 @@ PUBLIC char ops[] =
     3, 'S', 'E', 'G', SEG, 0x06,
     3, 'S', 'H', 'L', GROUP2, 0x20,
     3, 'S', 'H', 'R', GROUP2, 0x28,
+#ifdef KV1
     4, 'S', 'S', 'E', 'G', INHER, 0x36,
+#endif
     3, 'S', 'T', 'C', INHER, 0xF9,
     3, 'S', 'T', 'D', INHER, 0xFD,
     3, 'S', 'T', 'I', INHER, 0xFB,
     4, 'S', 'T', 'O', 'B', INHER, 0xAA,
-    4, 'S', 'T', 'O', 'S', INHER, 0xAB,
+    4, 'S', 'T', 'O', 'S', W01(INHER16, INHER), 0xAB,
     5, 'S', 'T', 'O', 'S', 'B', INHER, 0xAA,
     5, 'S', 'T', 'O', 'S', 'D', INHER32, 0xAB,
     5, 'S', 'T', 'O', 'S', 'W', INHER16, 0xAB,
@@ -376,6 +427,7 @@ PUBLIC char ops[] =
     3, 'X', 'O', 'R', GROUP1, 0x30,
 
     /* floating point */
+#ifdef KV1
     5, 'F', '2', 'X', 'M', '1', F_INHER, 0x70,
     4, 'F', 'A', 'B', 'S', F_INHER, 0x61,
     4, 'F', 'A', 'D', 'D', F_M4_M8_STST, 0x00,
@@ -461,6 +513,7 @@ PUBLIC char ops[] =
     7, 'F', 'X', 'T', 'R', 'A', 'C', 'T', F_INHER, 0x74,
     5, 'F', 'Y', 'L', '2', 'X', F_INHER, 0x71,
     7, 'F', 'Y', 'L', '2', 'X', 'P', '1', F_INHER, 0x79,
+#endif
 #endif /* I80386 */
 
 #ifdef MC6809
@@ -577,6 +630,7 @@ PUBLIC char ops[] =
     4, 'T', 'S', 'T', 'A', INHER, 0x4D,
     4, 'T', 'S', 'T', 'B', INHER, 0x5D,
 #endif /* MC6809 */
+
     0				/* end of ops */
 };
 
@@ -585,15 +639,19 @@ PUBLIC char page1ops[] =
 #ifdef I80386
     3, 'B', 'S', 'F', GvEv, 0xBC,
     3, 'B', 'S', 'R', GvEv, 0xBD,
+#ifdef KV1
     5, 'B', 'S', 'W', 'A', 'P', BSWAP, 0xC8,
+#endif
     2, 'B', 'T', GROUP8, 0x20,
     3, 'B', 'T', 'C', GROUP8, 0x38,
     3, 'B', 'T', 'R', GROUP8, 0x30,
     3, 'B', 'T', 'S', GROUP8, 0x28,
     4, 'C', 'L', 'T', 'S', INHER, 0x06,
+#ifdef KV1
     7, 'C', 'M', 'P', 'X', 'C', 'H', 'G', ExGx, 0xA6,
     4, 'I', 'N', 'V', 'D', INHER, 0x08,
     6, 'I', 'N', 'V', 'L', 'P', 'G', GROUP7, 0x38,
+#endif
     3, 'L', 'A', 'R', GvEv, 0x02,
     3, 'L', 'F', 'S', GvMp, 0xB4,
     4, 'L', 'G', 'D', 'T', GROUP7, 0x10,
@@ -645,8 +703,10 @@ PUBLIC char page1ops[] =
     3, 'S', 'T', 'R', GROUP6, 0x08,
     4, 'V', 'E', 'R', 'R', GROUP6, 0x20,
     4, 'V', 'E', 'R', 'W', GROUP6, 0x28,
+#ifdef KV1
     6, 'W', 'B', 'I', 'N', 'V', 'D', INHER, 0x09,
     4, 'X', 'A', 'D', 'D', ExGx, 0xC0,
+#endif
 #endif /* I80386 */
 
 #ifdef MC6809
@@ -675,6 +735,7 @@ PUBLIC char page1ops[] =
     3, 'S', 'T', 'Y', ALTER, 0x8F,
     4, 'S', 'W', 'I', '2', INHER, 0x3F,
 #endif /* MC6809 */
+
     0				/* end of page 1 ops */
 };
 
@@ -685,6 +746,7 @@ PUBLIC char page2ops[] =
     4, 'C', 'M', 'P', 'U', ALL, 0x83,
     4, 'S', 'W', 'I', '3', INHER, 0x3F,
 #endif
+
     0				/* end of page 2 ops */
 };
 
@@ -700,14 +762,18 @@ PUBLIC char bytesizeops[] =
     4, 'D', 'I', 'V', 'B', DIVMUL, 0x30,
     5, 'I', 'D', 'I', 'V', 'B', DIVMUL, 0x38,
     5, 'I', 'M', 'U', 'L', 'B', IMUL, 0x28,
+#ifdef KV1
     3, 'I', 'N', 'B', IN, 0xEC,
+#endif
     4, 'I', 'N', 'C', 'B', INCDEC, 0x00,
     4, 'M', 'O', 'V', 'B', MOV, 0x88,
     4, 'M', 'U', 'L', 'B', DIVMUL, 0x20,
     4, 'N', 'E', 'G', 'B', NEGNOT, 0x18,
     4, 'N', 'O', 'T', 'B', NEGNOT, 0x10,
     3, 'O', 'R', 'B', GROUP1, 0x08,
+#ifdef KV1
     4, 'O', 'U', 'T', 'B', OUT, 0xEE,
+#endif
     4, 'R', 'C', 'L', 'B', GROUP2, 0x10,
     4, 'R', 'C', 'R', 'B', GROUP2, 0x18,
     4, 'R', 'O', 'L', 'B', GROUP2, 0x00,
