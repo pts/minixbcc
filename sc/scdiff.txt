@@ -1,0 +1,35 @@
+Differences between version 0 (v0) and version 3 (v3) of the compiler backend sc.
+
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/qsort.s qsort.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/strtol.s strtol.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/strtoul.s strtoul.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/curses.s curses.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/nlist.s nlist.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/popen.s popen.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/regexp.s regexp.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/regsub.s regsub.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/getegid.s getegid.c
+./sc -0 -D_MINIX -D_POSIX_SOURCE -o 0/getgid.s getgid.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/ctime.s ctime.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/qsort.s qsort.c  # The v3 compiler generates longer code: inc eax ++ inc eax --> add eax,byte +0x2  etc.
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/scanf.s scanf.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/strtol.s strtol.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/strtoul.s strtoul.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/amoeba.s amoeba.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/crypt.s crypt.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/curses.s curses.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/popen.s popen.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/putenv.s putenv.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/regexp.s regexp.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/regsub.s regsub.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/termcap.s termcap.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/cuserid.s cuserid.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/exec.s exec.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/getegid.s getegid.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/geteuid.s geteuid.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/getgid.s getgid.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/getlogin.s getlogin.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/getuid.s getuid.c
+./sc -3 -D_MINIX -D_POSIX_SOURCE -o 3/umask.s umask.c
+
+__END__
