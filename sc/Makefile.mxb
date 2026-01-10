@@ -34,7 +34,7 @@ sc: bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.
 	#chmem =150000 sc  # Too large for i86, maximum is =65535.
 
 scb: bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c align.h byteord.h condcode.h const.h gencode.h input.h label.h os.h output.h parse.h proto.h reg.h sc.h scan.h sizes.h table.h type.h types.h
-	bcc -DDEFAULT_INCLUDE_DIR=\"/usr/bccinclude\" -o scb bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c
+	bcc -I/usr/bccinclude -DDEFAULT_INCLUDE_DIR=\"/usr/bccinclude\" -o scb bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c
 	chmem =65535 scb
 
 bcc3-cc1: bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c align.h byteord.h condcode.h const.h gencode.h input.h label.h os.h output.h parse.h proto.h reg.h sc.h scan.h sizes.h table.h type.h types.h
