@@ -14,12 +14,17 @@
   void no_2double_to_intvalue P((void));
   void no_intvalue_to_double P((void));
   void no_3double_op P((void));
+  void no_fp_cast P((void));
+  void no_fp_move P((void));
+  void no_fp_op P((void));
 #  define fp_double_to_float_assign(destvar, d) no_1double_to_float()
 #  define fp_atof_assign(destvar, a) no_atof()
+#  define fp_double_assign(destvar, d) no_fp_move()
 #  define fp_cond(expr) (0)
 #else
 #  define fp_double_to_float_assign(destvar, d) ((destvar) = (float) (d)))
 #  define fp_atof_assign(destvar, a) ((destvar) = atof((a)))
+#  define fp_double_assign(destvar, d) ((destvar) = (d))
 #  define fp_cond(expr) (expr)
 #endif
 

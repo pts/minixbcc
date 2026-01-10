@@ -388,12 +388,17 @@ cpp_ident:
 	    rparen();
 	return leafnode(constsym((value_t) isdefined));
     case FLOATCONST:
+#ifdef NOFP
+	no_fp_move();
+	return 0;
+#else
 	symptr = constsym((value_t) 0);
 	symptr->type = constant.type;
 	symptr->offset.offd = qmalloc(sizeof *symptr->offset.offd);
-	*symptr->offset.offd = constant.value.d;
+	fp_double_assign(*symptr->offset.offd, constant.value.d);
 	nextsym();
 	return leafnode(symptr);
+#endif
     case LPAREN:
 	nextsym();
 	nodeptr = expression();

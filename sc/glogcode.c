@@ -133,7 +133,11 @@ ccode_t *pcondtrue;
     }
     if (source->type->scalar & RSCALAR)
     {
+#ifdef NOFP
+	no_fp_op();
+#else
 	floatop(EQOP, source, target);
+#endif
 	return;
     }
     if (source->storage == CONSTANT)
@@ -460,7 +464,11 @@ ccode_t *pcondtrue;
     }
     if (target->type->scalar & RSCALAR)
     {
+#ifdef NOFP
+	no_fp_op();
+#else
 	float1op(EQOP, target);
+#endif
 	return;
     }
 #ifdef I8088

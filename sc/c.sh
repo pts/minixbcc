@@ -6,9 +6,9 @@ test "$0" = "${0%/*}" || cd "${0%/*}"
 
 gcc -m32 -s -O2 -Wall -W -Wno-maybe-uninitialized -Wno-parentheses -Wno-char-subscripts -Wno-missing-field-initializers -Wno-implicit-fallthrough -Wno-sign-compare -Wno-empty-body -fno-strict-aliasing \
     -DDEFAULT_INCLUDE_DIR='"../../../include"' \
-    -o bcc3-cc1g bcc-cc1.c nofp.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c
+    -o bcc3-cc1g bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c
 rm -f ./*.s
-for f in bcc-cc1.c nofp.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c; do
+for f in bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c; do
   ./bcc3-cc1g -3 -o "${f%.*}".s "$f"
 done
 if grep -E 'call.([fF]|dto|_atof|_strto(f|ld|ld))' ./*.s; then

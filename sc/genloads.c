@@ -978,7 +978,13 @@ PUBLIC void pointat(target)
 struct symstruct *target;
 {
     if (target->type->scalar & RSCALAR)
+    {
+#ifdef NOFP
+	no_fp_move();
+#else
 	(void) f_indirect(target);
+#endif
+    }
     address(target);
     load(target, OPREG);
     target->type = target->type->nexttype;
@@ -1007,12 +1013,16 @@ struct symstruct *source;
     }
     else if ((sscalar = source->type->scalar) & RSCALAR)
     {
+#ifdef NOFP
+	no_fp_move();
+#else
 	if (!f_indirect(source))
 	{
 	    saveopreg();
 	    fpush(source);
 	    restoreopreg();
 	}
+#endif
     }
 #ifdef I8088
     else if (source->indcount == 1 &&

@@ -31,7 +31,11 @@ struct symstruct *target;
     }
     if (sscalar & RSCALAR)
     {
+#ifdef NOFP
+	no_fp_op();
+#else
 	floatop(ADDOP, source, target);
+#endif
 	return;
     }
     if (source->storage == CONSTANT)
@@ -125,6 +129,9 @@ struct symstruct *source;
     }
     if (targ.type->scalar & RSCALAR)
     {
+#ifdef NOFP
+	no_fp_op();
+#else
 	saveopreg();
 	pointat(target);
 	switch (op)
@@ -149,6 +156,7 @@ struct symstruct *source;
 	    justpushed(source);
 	    source->type = targ.type;
 	}
+#endif
 	return;
     }
     loadany(source);
@@ -192,7 +200,13 @@ struct symstruct *target;
     if ((scalar = target->type->scalar) & DLONG)
 	long1op(NEGOP, target);
     else if (scalar & RSCALAR)
+    {
+#ifdef NOFP
+	no_fp_op();
+#else
 	float1op(NEGOP, target);
+#endif
+    }
     else
     {
 	if (scalar & SHORT)
@@ -475,7 +489,11 @@ struct symstruct *target;
     }
     if (sscalar & RSCALAR)
     {
+#ifdef NOFP
+	no_fp_op();
+#else
 	floatop(SUBOP, source, target);
+#endif
 	return;
     }
     if (source->storage == CONSTANT)

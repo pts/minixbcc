@@ -41,7 +41,11 @@ struct symstruct *target;
     }
     if (tscalar & RSCALAR)
     {
+#ifdef NOFP
+	no_fp_op();
+#else
 	floatop(op, source, target);
+#endif
 	return;
     }
     sscalar = source->type->scalar;
