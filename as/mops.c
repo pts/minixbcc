@@ -1119,7 +1119,7 @@ PUBLIC void mcall()
 	getsym();
     }
     indirect = FALSE;
-    if (asld_compatible && idefsize <= 0x2)
+    if (asld_compatible && idefsize <= 0x2)  /* as v0 also has `&& idefsize <= 0x2' here, making this apply for -0 only. */
     {
 	calljmp_kludge = 0x2;
 	if (sym == INDIRECT)
