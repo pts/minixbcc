@@ -346,6 +346,9 @@ store_pt targreg;
     {
 	if (source->storage == targreg && source->indcount == 0)
 	    return;
+#ifdef NOFP
+	no_fp_move();
+#else
 	if (source->storage == CONSTANT)
 	{
 	    /* XXX - more for non-386 */
@@ -363,6 +366,7 @@ store_pt targreg;
 	if (source->level == OFFKLUDGELEVEL)
 	    source->level = EXPRLEVEL;
 	source->offset.offi = 0;
+#endif
     }
     else if (source->type->scalar & FLOAT && source->storage == CONSTANT)
     {

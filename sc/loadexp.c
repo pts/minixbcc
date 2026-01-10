@@ -85,11 +85,17 @@ struct typestruct *type;
 	    }
 	    else
 	    {
+#ifdef NOFP
+		no_fp_move();
+#else
 		deflong(((uoffset_t *) symptr->offset.offd)[0]);
 		deflong(((uoffset_t *) symptr->offset.offd)[1]);
+#endif
 	    }
+#ifndef NOFP
 	    etptr = etmark;	/* XXX - stuff from end of function */
 	    exprptr = exprmark;
+#endif
 	    return;
 	}
 	if (type->typesize == 1)

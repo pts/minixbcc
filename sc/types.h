@@ -145,7 +145,9 @@ struct symstruct
     struct typestruct *type;
     union
     {
+#ifndef NOFP
 	double *offd;		/* value for double constants */
+#endif
 	offset_t offi;		/* offset for register or global storage */
 	label_t offlabel;	/* label number for strings */
 	char *offp;		/* to string for macro definitions */

@@ -185,7 +185,9 @@ EXTERN struct
     {
 	char *s;
 	value_t v;
+#ifndef NOFP
 	double d;
+#endif
     }
       value;
     struct typestruct *type;

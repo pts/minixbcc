@@ -159,11 +159,13 @@ struct nodestruct *node P((op_pt t, struct nodestruct *p1,
 			   struct nodestruct *p2));
 
 /* floatop.c */
+#ifndef NOFP
 bool_pt f_indirect P((struct symstruct *target));
 void float1op P((op_pt op, struct symstruct *source));
 void floatop P((op_pt op, struct symstruct *source, struct symstruct *target));
 void fpush P((struct symstruct *source));
 void justpushed P((struct symstruct *target));
+#endif
 
 /* function.c */
 void call P((char *name));
