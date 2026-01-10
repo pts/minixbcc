@@ -1920,6 +1920,12 @@ PUBLIC void mlea()
 
 PUBLIC void mmov()
 {
+    if (sym == EOLSYM)  /* For compatibility with as v0: no-argument `movb' means `movsb', no-argument `mov' means `movsw' or `movsd'. */
+    {
+	++mcount;
+	opcode = (mnsize) ? MOVSB_OPCODE : MOVSW_OPCODE;
+	return;
+    }
     getbinary();
     if (segword >= SEGMOV)
     {
@@ -2002,8 +2008,8 @@ PUBLIC void mout()
     ++mcount;
     if (opcode & WORDBIT)	/* outw; outd not supported */
 	mnsize = 0x2;
-    if (sym == EOLSYM && mnsize != 0x0)
-	    source.size = mnsize;
+    if (sym == EOLSYM)
+	    source.size = (mnsize == 0) ? 1 : mnsize;  /* `(mnsize == 0) ? 1' is for compatibility with as v0: `out' means `outb'. */
     else
     {
 	if (!getdxreg(&target))
