@@ -847,6 +847,9 @@ ts_s_macparam_string_alloced_tot -= strchr(*paramlist, EOL) - *paramlist + 1;
 
 PUBLIC void predefine()
 {
+#if DIRCHAR == '/'
+    definestring("unix 1");  /* For compatibility with earlier (1990-06-09) Dev86 (BCC) C compiler backend /local/bin/sc */
+#endif
     definestring("__BCC__ 1");
     definestring("__LINE__ 0123456789");	/* MAX__LINE__ digits */
     findlorg("__LINE__")->storage = DEF_LINE;
