@@ -366,10 +366,14 @@ store_pt targreg;
     }
     else if (source->type->scalar & FLOAT && source->storage == CONSTANT)
     {
+#ifdef NOFP
+	no_1double_to_float();
+#else
 	float val;
 
 	val = *source->offset.offd;
 	loadconst(((offset_t *) &val)[0], targreg);
+#endif
     }
     else if (source->indcount == 0 && source->storage != CONSTANT)
 	loadadr(source, targreg);

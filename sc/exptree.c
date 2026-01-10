@@ -237,8 +237,10 @@ struct nodestruct *p2;
 #if MAXREGS != 1
     weight_t rightweight;
 #endif
+#ifndef NOFP
     double dsourceval;
     double dtargval;
+#endif
     bool_t lflag;
     scalar_t lscalar;
     struct nodestruct *pswap;
@@ -366,15 +368,22 @@ struct nodestruct *p2;
 		goto node1;
 	    if (lscalar & RSCALAR && !(rscalar & RSCALAR))
 	    {
+#ifdef NOFP
+		no_2double_to_intvalue();
+#else
 		double val;
 
 		val = *target->offset.offd;
 		if (val > maxlongto)
 		    val -= (double) (unsigned long) 0xFFFFFFFF + 1;  /* XXX */
 		target->offset.offv = (value_t) val;
+#endif
 	    }
 	    if (!(lscalar & RSCALAR) && rscalar & RSCALAR)
 	    {
+#ifdef NOFP
+		no_intvalue_to_double();
+#else
 		value_t val;
 
 		val = target->offset.offv;
@@ -383,6 +392,7 @@ struct nodestruct *p2;
 		    *target->offset.offd = (uvalue_t) val;
 		else
 		    *target->offset.offd = val;
+#endif
 	    }
 	}
 	if (target->storage == CONSTANT)
@@ -402,7 +412,7 @@ struct nodestruct *p2;
 		    target->offset.offv -= (maxuintto + 1);
 	    }
 	    else if (rscalar & FLOAT)
-		*target->offset.offd = (float) *target->offset.offd;
+		fp_double_to_float_assign(*target->offset.offd, *target->offset.offd);
 	}
 	else if ((targszdelta =
 		  ((p1->nodetype->constructor & (ARRAY | POINTER)) ?
@@ -471,7 +481,13 @@ struct nodestruct *p2;
     if (target->storage == CONSTANT)
     {
 	if (lscalar & RSCALAR)
+	{
+#ifdef NOFP
+	    no_3double_op();
+#else
 	    dtargval = *target->offset.offd;
+#endif
+	}
 	else
 	    targval = target->offset.offv;
 	switch ((op_t) t)
@@ -479,7 +495,7 @@ struct nodestruct *p2;
 	case COMMAOP:
 	    return p2;
 	case CONDOP:
-	    if (lscalar & RSCALAR && dtargval != FALSE
+	    if (fp_cond(lscalar & RSCALAR && dtargval != FALSE)
 		|| !(lscalar & RSCALAR) && targval != FALSE)
 	    {
 		p2->left.nodeptr->nodetype = p2->nodetype;
@@ -488,13 +504,13 @@ struct nodestruct *p2;
 	    p2->right->nodetype = p2->nodetype;
 	    return p2->right;
 	case LOGANDOP:
-	    if (lscalar & RSCALAR && dtargval != FALSE
+	    if (fp_cond(lscalar & RSCALAR && dtargval != FALSE)
 		|| !(lscalar & RSCALAR) && targval != FALSE)
 		break;
 	    p1->nodetype = target->type = itype;
 	    return p1;
 	case LOGOROP:
-	    if (lscalar & RSCALAR && dtargval == FALSE
+	    if (fp_cond(lscalar & RSCALAR && dtargval == FALSE)
 		|| !(lscalar & RSCALAR) && targval == FALSE)
 		break;
 	    target->offset.offv = TRUE;
@@ -532,7 +548,11 @@ struct nodestruct *p2;
     if (p2 != NULL)
     {
 	if (rscalar & RSCALAR)
+	{
+#ifndef NOFP
 	    dsourceval = *source->offset.offd;
+#endif
+	}
 	else
 	{
 	    sourceval = source->offset.offv;
@@ -542,6 +562,10 @@ struct nodestruct *p2;
     }
     if (lscalar & RSCALAR || p2 != NULL && rscalar & RSCALAR)
     {
+#ifdef NOFP
+    no_3double_op();
+    return 0;
+#else
     if (!(lscalar & RSCALAR))
     {
 	if (uflag)
@@ -611,6 +635,7 @@ struct nodestruct *p2;
     *target->offset.offd = dtargval;
     p1->nodetype = target->type = dtype;
     return p1;
+#endif
     }
     switch ((op_t) t)
     {

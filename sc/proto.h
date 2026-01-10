@@ -8,6 +8,21 @@
 #define P(x)	()
 #endif
 
+#ifdef NOFP
+  void no_1double_to_float P((void));
+  void no_atof P((void));
+  void no_2double_to_intvalue P((void));
+  void no_intvalue_to_double P((void));
+  void no_3double_op P((void));
+#  define fp_double_to_float_assign(destvar, d) no_1double_to_float()
+#  define fp_atof_assign(destvar, a) no_atof()
+#  define fp_cond(expr) (0)
+#else
+#  define fp_double_to_float_assign(destvar, d) ((destvar) = (float) (d)))
+#  define fp_atof_assign(destvar, a) ((destvar) = atof((a)))
+#  define fp_cond(expr) (expr)
+#endif
+
 /* assign.c */
 void assign P((struct symstruct *source, struct symstruct *target));
 void cast P((struct typestruct *type, struct symstruct *target));

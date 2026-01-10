@@ -26,10 +26,14 @@ struct symstruct *target;
 	    /* XXX - more for non-386 */
 	    if (target->type->scalar & FLOAT)
 	    {
+#ifdef NOFP
+		no_1double_to_float();
+#else
 		float val;
 
 		val = *target->offset.offd;
 		push(constsym(((value_t *) &val)[0]));
+#endif
 	    }
 	    else
 	    {

@@ -339,13 +339,13 @@ PRIVATE void intconst()
 	constant.type = dtype;
 	digit = *digptr;
 	*digptr = 0;
-	constant.value.d = atof(constant.value.s);
+	fp_atof_assign(constant.value.d, constant.value.s);
 	*digptr = digit;
 	if (digit == 'F' || digit == 'f')
 	{
 	    ++digptr;
 	    constant.type = fltype;
-	    constant.value.d = (float) constant.value.d;
+	    fp_double_to_float_assign(constant.value.d, constant.value.d);
 	}
 	sym = FLOATCONST;
 	if (*digptr != 0)

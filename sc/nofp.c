@@ -1,26 +1,10 @@
-/* by pts, to be compiled with /local/bin/sc.pts */
-
-#define atof no_atof
 #include "const.h"
 #include "types.h"
-#include "proto.h"
-#undef atof
 
-void atof()   { fatalerror("no atof"); }
-void Fdi()    { fatalerror("no dtoi"); }
-void Fmp()    { fatalerror("no fcmp"); }
-void Fmpd()   { fatalerror("no fcmpd"); }
-void Fulld()  { fatalerror("no fpulld"); }
-void Fuld()   { fatalerror("no fmuld"); }
-void Fegd()   { fatalerror("no fnegd"); }
-void Fushui() { fatalerror("no fpushui"); }
-void Fdd()    { fatalerror("no fadd"); }
-void Fddd()   { fatalerror("no faddd"); }
-void Fub()    { fatalerror("no fsub"); }
-void Fubd()   { fatalerror("no fsubd"); }
-void Fstd()   { fatalerror("no ftstd"); }
-void Fushc()  { fatalerror("no fpushc"); }
-void Fushd()  { fatalerror("no fpushd"); }
-void Fushi()  { fatalerror("no fpushi"); }
-void Fivd()   { fatalerror("no fdivd"); }
-void Fullf()  { fatalerror("no fpullf"); }
+#ifdef NOFP  /* The error messages below indicate lack of floating point support in the C compiler. */
+  void no_atof()                { fatalerror("no floating-point (literal)"); }
+  void no_1double_to_float()    { fatalerror("no floating-point (double-to-float)"); }
+  void no_2double_to_intvalue() { fatalerror("no floating-point (double-to-intvalue)"); }
+  void no_intvalue_to_double()  { fatalerror("no floating-point (intvalue-to-double)"); }
+  void no_3double_op()          { fatalerror("no floating-point (constant-folding)"); }
+#endif

@@ -4,6 +4,18 @@
 
 /* switches for code generation */
 
+#ifndef NOFP
+#  ifndef FP
+#    define NOFP 1  /* Disable floating point support by default, because the libc support functions (such as fadd, Fsub, fadd, fsub) are not implemented, and also to reduce cross-compiler host dependencies. */
+#  endif
+#endif
+
+#ifdef FP
+#  ifdef NOFP
+#    error Both FP and NOFP are defined.
+#  endif
+#endif
+
 /*#define DEBUG*/			/* generate compiler-debugging code */
 #ifndef MC6809
 #  define I8088			/* target processor is Intel 8088 thru 80386 */

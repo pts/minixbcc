@@ -74,10 +74,14 @@ struct typestruct *type;
 	{
 	    if (type->scalar & FLOAT)
 	    {
+#ifdef NOFP
+		no_1double_to_float();
+#else
 		float val;
 
 		val = *symptr->offset.offd;
 		deflong(((uoffset_t *) &val)[0]);
+#endif
 	    }
 	    else
 	    {
