@@ -1,0 +1,254 @@
+; comments by pts@fazekas.hu at Sat Jan 10 01:06:33 CET 2026
+;
+; This document describes the Dev86 (As86, BCC) object file format using the example of the i86 memcmp.o.
+;
+
+..@0x0000:
+
+bccobj_header:
+
+.magic_number: db 0xa3, 0x86  ; Constant. OMAGIC == 0x86a3 (or == 0x86a0 for i86, currently not used). Actually it should be 0xa0, 0x86. fileheader.omagic in ld/readobj.c.
+.number_of_modules_in_file: dw 1  ; Constant. fileheader.count in ld/readobj.c. ld/readobj.c supports values larger than 1.
+.checksum: db 0x2a  ; (0xa3 + 0x86 + 1 + 0) & 0xff. Constant. filechecksum in ld/readobj.c.
+.image_ofs: dd image-$$  ; 0xa9. htextoffset in ld/readobj.c.
+.image_byte_size: dd 0x58  ; 0x58 == 0x5c - 4. This excludes header and filler bytes. htextsize in ld/readobj.c.
+.string_area_size: dw string_area_end-string_area  ; 0x65. stringssize in ld/readobj.c.
+.class: db 0  ; Constant. hclass in ld/readobj.c.
+.revision: db 0  ; Constant. revision in ld/readobj.c.
+.seg_max_sizes: db 0x55, 0x55, 0x55, 0x55  ; Constant. segmaxsize in ld/readobj.c The 4-bit value 0b01 is repeated 8 times, meaning 2**16. max_size == (e == 0b00) ? (1 << 8) : (e == 0b01) ? (1 << 16) : (e == 0b10) ? (1 << 24) : (e == 0b11) ? (1 << 32).
+.seg_size_descriptors: db 0, 0, 0, 2  ; segsizedesc in ld/readobj.c. !! Why? Indicates 2-byte size of segment .text.
+.seg_sizes: dw 0x58  ; segsize in ld/readobj.c. Varint array encoding. !! How? Number of bytes in segment .text.
+.symbol_count: dw 8  ; nsymbol in ld/readobj.c.
+
+symbol_offsets_and_types:
+
+..@0x001d:
+
+SEG:
+.TEXT equ 0  ; TEXTLOC in as/const.h.
+.STR  equ 1  ; STRLOC  in as/const.h.
+.DP   equ 2  ; DPLOC   in as/const.h.
+.DATA equ 3  ; DATALOC and BSSLOC in as/const.h.
+
+%defines SEG_TEXT 0
+
+% flags bitmask
+%define A_MASK 0x0010  ; absolute
+%define C_MASK 0x0020  ; common (internal only)
+%define E_MASK 0x0080  ; exported
+%define I_MASK 0x0040  ; imported
+%define N_MASK 0x0100  ; entry point
+%define R_MASK 0x0020  ; relative (in text only)
+%define SA_MASK 0x2000  ; offset is storage allocation
+%define SEGM_MASK 0x000F  ; segment (if not absolute)
+
+%macro sym0 3  ; sym0 str_offset, flags, 0
+  dw (%1), (%2)
+%endm
+%macro sym1 3  ; sym1 str_offset, flags, value
+  dw (%1), (%2) | 0x4000
+  db (%3)
+%endm
+%macro sym2 3  ; sym2 str_offset, flags, value
+  dw (%1), (%2) | 0x8000, (%3)
+%endm
+%macro sym4 3  ; sym3 str_offset, flags, value
+  dw (%1), (%2) | 0xc000
+  dd (%3)
+%endm
+
+symbol_0: sym1    7, SEG.TEXT,        0x42  ; 0700 0040 42. 'almost_done'.
+symbol_1: sym1 0x13, SEG.TEXT,        0x4d  ; 1300 0040 4d. 'at_mismatch'.
+symbol_2: sym1 0x1f, SEG.TEXT,        0x4b  ; 1f00 0040 4b. 'one_past_mismatch'.
+symbol_3: sym1 0x31, SEG.TEXT,        0x1b  ; 3100 0040 1b. 'byte_compare'.
+symbol_4: sym1 0x3e, SEG.TEXT,        0x55  ; 3e00 0040 55. 'exit'.
+symbol_5: sym1 0x43, SEG.TEXT,        0x22  ; 4300 0040 22. 'word_compare'.
+symbol_6: sym1 0x50, SEG.TEXT,        0x2c  ; 5000 0040 2c. 'word_aligned'.
+symbol_7: sym0 0x5d, SEG.TEXT|E_MASK, 0     ; 5d00 8000.    '_memcmp'.
+
+string_area_start:
+
+..@0x0044: db 'memcmp', 0  ; Basename of the filename. Unused.
+..@0x004b: db 'almost_done', 0  ; Symbol name at string offset 0x7.
+..@0x0057: db 'at_mismatch', 0
+..@0x0063: db 'one_past_mismatch', 0
+..@0x0075: db 'byte_compare', 0
+..@0x0082: db 'exit', 0
+..@0x0087: db 'word_compare', 0
+..@0x0094: db 'word_aligned', 0
+..@0x00a1: db '_memcmp', 0  ; Symbol name at string offset 0x5d.
+
+string_area_end:
+
+image:
+
+..@0x00a9:
+
+MODIFY_MASK equ 0x3f
+CM_MASK equ 0xc0
+S_MASK equ 4
+OF_MASK equ 3
+CM_SPECIAL equ 0
+CM_ABSOLUTE equ 0x40
+CM_OFFSET_RELOC equ 0x80
+CM_SYMBOL_RELOC equ 0xc0
+CM_EOT equ 0
+CM_BYTE_SIZE equ 1
+CM_WORD_SIZE equ 2
+CM_LONG_SIZE equ 3
+CM_1_SKIP equ 0x11
+CM_2_SKIP equ 0x12
+CM_4_SKIP equ 0x13
+CM_0_SEG equ 0x20
+ABS_TEXT_MAX equ 0x40
+
+; The framing bytes are processed by the linkmod(...) function in ld/writebin.c.
+;
+; curseg = 0
+; relocsize = 2
+; while 1:
+;   b = ord(objf.read(1))  # It's an error to have an EOF here.
+;   modify = b & MODIFY_MASK
+;   b &= CM_MASK  # Now b becomes one of CM_SPECIAL == 0, CM_ABSOLUTE == 0x40, CM_OFFSET_RELOC == 0x80, CM_SYMBOL_RELOC == 0xc0.
+;   if b == CM_SPECIAL:  # 0.
+;     if modify == CM_EOT:  # 0.
+;       break  # End of input.
+;     elif modify == CM_BYTE_SIZE:  # 1.
+;       relocsize = 1
+;     elif modify == CM_WORD_SIZE:  # 2.
+;       relocsize = 2
+;     elif modify == CM_LONG_SIZE:  # 3.
+;       relocsize = 4
+;     elif modify == CM_1_SKIP:  # 0x11.
+;       count = ord(objf.read(1))  # It's an error to have an EOF here.
+;       binf.write('\0' * count)
+;     elif modify == CM_2_SKIP:  # 0x12.
+;       count = ord(objf.read(1))  # It's an error to have an EOF here.
+;       count |= ord(objf.read(1)) << 8  # It's an error to have an EOF here.
+;       binf.write('\0' * count)
+;     elif modify == CM_4_SKIP:  # 0x13.
+;       count = ord(objf.read(1))  # It's an error to have an EOF here.
+;       count |= ord(objf.read(1)) << 8  # It's an error to have an EOF here.
+;       count |= ord(objf.read(1)) << 16  # It's an error to have an EOF here.
+;       count |= ord(objf.read(1)) << 24  # It's an error to have an EOF here.
+;       binf.write('\0' * count)
+;     elif CM_0_SEG <= modify < CM_0_SEG + 16:  # 0x20...0x30.
+;       curseg = modify
+;     else
+;       raise ValueError('Bad special: 0x%x' % modify)
+;   elif b == CM_ABSOLUTE:  # 0x40.
+;     binf.write(objf.read(modify or ABS_TEXT_MAX))
+;   elif b == CM_OFFSET_RELOC:  # 0x80.
+;     data = objf.read(relocsize)
+;     if len(data) != relocsize:
+;       raise EOFError
+;     data = fix_offset_reloc(data)  # It doesn't change the byte size of data.
+;     binf.write(data)  # relocsize bytes.
+;     # !! Write this pseudocode.
+;     #offset = readsize(relocsize);
+;     #if modify & R_MASK:
+;     #  offset -= spos + relocsize
+;     #offtocn(buf, segbase[modify & SEGM_MASK] + offset, relocsize);
+;   elif b == CM_SYMBOL_RELOC:  # 0xc0.
+;     symbolnumsize = 1 + ((modify & S_MASK) >> 2)  # 1 or 2.
+;     symbolnumstr = objf.read(symbolnumsize)
+;     if len(symbolnumstr) != symbolnumsize:
+;       raie EOFError
+;     offsetsize = (0, 1, 2, 4)[modify & OF_MASK]
+;     offsetstr = objf.read(offsetsize)
+;     if len(offsetstr) != symbolsize:
+;       raie EOFError
+;     data = fix_symbol_reloc(symbolnum, offset)
+;     binf.write(data)  # relocsize bytes.
+;     # !! Write this pseudocode.
+;     #symptr = symparray[symbolnum = readconvsize((unsigned) (modify & S_MASK ? 2 : 1))];
+;     #offset = readconvsize((unsigned) modify & OF_MASK);
+;     #if modify & R_MASK:
+;     #  offset -= spos + relocsize)
+;     #offset += symptr->value;        
+;     #offtocn(buf, offset, relocsize);
+
+00000000- 20                db CM_SPECIAL | (CM_0_SEG + SEG.TEXT)  ; curseg := SEG.TEXT. This is unnecessary, because curseg is already SEG.TEXT.
+
+00000000- 40                db CM_ABSOLUTE | (0x40 & MODIFY_MASK)  ; Copy over 0x40 bytes of data below.
+
+..@0x00ab:
+
+_memcmp:
+
+00000000  89E3              mov bx, sp
+00000002  56                push si
+00000003  57                push di
+00000004  31C0              xor ax, ax
+00000006  8B4F06            mov cx, [bx+0x6]
+00000009  E34A              jcxz 0x55
+0000000B  8B7702            mov si, [bx+0x2]
+0000000E  8B7F04            mov di, [bx+0x4]
+00000011  39FE              cmp si, di
+00000013  7440              jz 0x55
+00000015  FC                cld
+00000016  83F90A            cmp cx, byte +0xa
+00000019  7707              ja 0x22
+
+byte_compare:
+
+0000001B  F3A6              repe cmpsb
+0000001D  752C              jnz 0x4b
+0000001F  5F                pop di
+00000020  5E                pop si
+00000021  C3                ret
+
+word_compare:
+
+00000022  F7C60100          test si, 0x1
+00000026  7404              jz 0x2c
+00000028  A6                cmpsb
+00000029  7520              jnz 0x4b
+0000002B  49                dec cx
+
+word_aligned:
+
+0000002C  89CA              mov dx, cx
+0000002E  D1E9              shr cx, 1
+00000030  7410              jz 0x42
+00000032  F3A7              repe cmpsw
+00000034  740C              jz 0x42
+00000036  83EE02            sub si, byte +0x2
+00000039  83EF02            sub di, byte +0x2
+0000003C  A6                cmpsb
+0000003D  750C              jnz 0x4b
+0000003F  E9                db 0xe9  ; Opcode byte of 3-byte `jmp strict near ...'.
+
+00000040- 58                db CM_ABSOLUTE | (0x18 & MODIFY_MASK)  ; Copy over 0x40 bytes of data below.
+
+00000040  0B00              dw 0xb  ; Data of  3-byte `jmp strict near 0x4d'.
+
+almost_done:
+
+00000042  F7C20100          test dx, 0x1
+00000046  740D              jz 0x56
+00000048  E90200            jmp 0x4e
+
+one_past_mismatch:
+
+0000004B  4E                dec si
+0000004C  4F                dec di
+
+at_mismatch:
+
+0000004D  30E4              xor ah, ah
+0000004F  8A04              mov al, [si]
+00000051  2A05              sub al, [di]
+00000053  18E4              sbb ah, ah
+
+exit:
+
+00000055  5F                pop di
+00000056  5E                pop si
+00000057  C3                ret
+
+00000058- 00                db CM_SPECIAL | CM_EOT  ; Indicates end of image instructions.
+
+..@0x0105:
+
+__END__
