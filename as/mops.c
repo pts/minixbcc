@@ -1580,6 +1580,12 @@ PUBLIC void mf_w_m2_ax()
 
 PUBLIC void mgroup1()
 {
+    if (opcode == CMP_OPCODE_BASE && sym == EOLSYM)  /* For compatibility with as v0: no-argument `cmpb' means `cmpsb', no-argument `cmp' means `cmpsw' or `cmpsd'. */
+    {
+	++mcount;
+	opcode = (mnsize) ? CMPSB_OPCODE : CMPSW_OPCODE;
+	return;
+    }
     getbinary();
     notsegorspecreg(&source);
     if (mcount != 0x0)
@@ -1788,8 +1794,8 @@ PUBLIC void min()
     ++mcount;
     if (opcode & WORDBIT)	/* inw; ind not supported */
 	mnsize = 0x2;
-    if (sym == EOLSYM && mnsize != 0x0)
-	    target.size = mnsize;
+    if (sym == EOLSYM)
+	    source.size = (mnsize == 0) ? 1 : mnsize;  /* `(mnsize == 0) ? 1' is for compatibility with as v0: `in' means `inb'. */
     else
     {
 	if (getaccumreg(&target))
