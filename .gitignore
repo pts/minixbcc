@@ -6,3 +6,16 @@
 /cpp/cpp.mini*
 /cpp/cpp.m32
 /cpp/cpp.m64
+/sc/sc
+/sc/sc.host
+/sc/sc.cross
+/sc/sc.mini*
+/sc/sc.m32
+/sc/sc.m64
+/sc/sc.pts
+/sc/sc.exe
+/sc/bcc3-cc1
+/sc/bcc3-cc1[a-z]
+/sc/bcc-cc1
+/sc/bcc-cc1[a-z]
+/sc/*.s
