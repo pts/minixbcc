@@ -62,7 +62,11 @@ int base;
 #if PARANOIA
 	limit += ((limit + 1) * base < LONG_MIN + base);
 #else
+#if __BCC__ && __AS386_16__ + __AS386_32__
+	limit += 0;  /* Work around bug in BCC backend sc v0, which incorrectly computes (-1 / 2) == -1. */
+#else
 	limit += (-1 / 2 == -1);
+#endif
 #endif
   }
   else
