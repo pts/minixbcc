@@ -951,8 +951,8 @@ register struct ea_s *eap;
 	else
 	    getsym();
     }
-    else if (!leading_immed && idefsize <= 0x2)
-	eap->indcount = 0x1;	/* compatibility kludge */
+    else if (asld_compatible && !leading_immed)  /* as v0 has this condition instead, disabling the kludge for -3: (!leading_immed && idefsize <= 0x2) */
+	eap->indcount = 0x1;  /* compatibility kludge: make e.g. `add ax, 5' do `add ax, #5' (with this kludge) instead of `add ax, [5]' (without this kludge) */
     if (!leading_displ)
 	eap->displ = lastexp;
 }
