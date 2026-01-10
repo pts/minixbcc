@@ -7,12 +7,18 @@
 #ifdef KV0  /* Use the keywords as in assembler version 0. It may not work. */
   /* Keyword table extraction command: perl -0777 -wne 'use integer; use strict; my $i = 0; while ($i < length($_)) { my $s = vec($_, $i, 8); die(1) if $s == 0; die(2) if $i + $s + 3 > length($_); my $name = substr($_, $i + 1, $s); $name = join("\x27, \x27", split("", $name)); $i += $s + 3; my $v1 = sprintf("0x%02x", vec($_, $i - 2, 8)); my $v2 = sprintf("0x%02x", vec($_, $i - 1, 8)); print("    $s, \x27$name\x27, $v1, $v2,\n") }' <keywords.bin */
 #  undef KV1
-#  define W01(wv0, wv1) wv0
+#  define W01(wv0, wv1) (wv0)
+#  define W01M(wv0, wv1, wv1m) (wv0)
 #  define RETFI 99  /* It doesn't work, RETFI is not implemented in version 1. */
 #else  /* Default, use keywords in assembler version 1. */
 #  undef KV1
 #  define KV1 1
-#  define W01(wv0, wv1) wv1
+#  define W01(wv0, wv1) (wv1)
+#  ifdef MINIX_SYNTAX
+#    define W01M(wv0, wv1, wv1m) (wv1m)
+#  else
+#    define W01M(wv0, wv1, wv1m) (wv1)
+#  endif
 #endif
 
 /* registers */
@@ -169,15 +175,7 @@ PUBLIC char ops[] =
     3, 'F', 'C', 'C', FCCOP, 0,
     3, 'F', 'D', 'B', FDBOP, 0,
     3, 'G', 'E', 'T', GETOP, 0,
-#ifdef KV1
-#ifdef MINIX_SYNTAX
-    6, '.', 'G', 'L', 'O', 'B', 'L', EXPORTOP, 0,
-#else
-    6, '.', 'G', 'L', 'O', 'B', 'L', GLOBLOP, 0,
-#endif
-#else
-    6, '.', 'G', 'L', 'O', 'B', 'L', EXPORTOP, 0,
-#endif
+    6, '.', 'G', 'L', 'O', 'B', 'L', W01M(EXPORTOP, GLOBLOP, EXPORTOP), 0,
     5, 'I', 'D', 'E', 'N', 'T', IDENTOP, 0,
     6, 'I', 'M', 'P', 'O', 'R', 'T', IMPORTOP, 0,
     7, 'I', 'N', 'C', 'L', 'U', 'D', 'E', GETOP, 0,
