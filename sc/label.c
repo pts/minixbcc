@@ -41,7 +41,7 @@ PRIVATE char lcondnames[][2] =	/* names of long condition codes */
 };
 PRIVATE char scondnames[][2] =	/* names of short condition codes */
 {
-    { 'e', ' ', }, { 'n', 'e', }, { 'm', 'p', }, { 'n', 0, },
+    { 'e', ' ', }, { 'n', 'e', }, { ' ', ' ', }, { 'n', 0, },
     { 'l', ' ', }, { 'g', 'e', }, { 'l', 'e', }, { 'g', ' ', },
     { 'b', ' ', }, { 'a', 'e', }, { 'b', 'e', }, { 'a', ' ', }, 
 };
