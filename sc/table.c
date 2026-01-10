@@ -56,7 +56,7 @@ struct typedatastruct
     struct typestruct **tdtypeptr;
 };
 
-PRIVATE struct symstruct exprsyms[MAXEXPR];
+PRIVATE struct symstruct expr2syms[MAXEXPR];
 PRIVATE struct symstruct *hashtab[HASHTABSIZE];
 				/* depends on zero init */
 #ifdef HOLDSTRINGS
@@ -417,7 +417,7 @@ struct symstruct *symptr;
     register struct symstruct *newsymptr;
 
     newsymptr = exprptr++;
-    if (exprptr >= &exprsyms[MAXEXPR])
+    if (exprptr >= &expr2syms[MAXEXPR])
 	limiterror("expression too complex (501 symbols)");
     *newsymptr = *symptr;
     newsymptr->level = EXPRLEVEL;
@@ -651,7 +651,7 @@ PUBLIC void syminit()
     struct typedatastruct *tdptr;
     struct typestruct *type;
 
-    exprptr = exprsyms;
+    exprptr = expr2syms;
     locptr = locsyms;
     for (tdptr = scaltypes; tdptr < scaltypes + NSCALTYPES; ++tdptr)
     {

@@ -64,7 +64,7 @@ PRIVATE offset_t lc;		/* bss init to 0 */
 PRIVATE struct labdatstruct vislab[MAXVISLAB];	/* bss, all labnum's init 0 */
 PRIVATE smalin_t nextvislab;	/* bss init to NULL */
 PRIVATE struct symstruct *namedfirst;	/* bss init to NULL */
-PRIVATE struct symstruct *namedlast;	/* bss init to NULL */
+PRIVATE struct symstruct *named2last;	/* bss init to NULL */
 
 FORWARD void addlabel P((ccode_pt cond, label_t label, char *patch));
 FORWARD struct labdatstruct *findlabel P((label_t label));
@@ -124,7 +124,7 @@ PUBLIC void clearfunclabels()
 	symptr = (struct symstruct *) symptr->type;
 	tmp->type = NULL;
     }
-    namedlast = namedfirst = NULL;
+    named2last = namedfirst = NULL;
 }
 
 /* clear out labels no longer in buffer */
@@ -349,8 +349,8 @@ PUBLIC struct symstruct *namedlabel()
 	if (namedfirst == NULL)
 	    namedfirst = symptr;
 	else
-	    namedlast->type = (struct typestruct *) symptr;
-	namedlast = symptr;
+	    named2last->type = (struct typestruct *) symptr;
+	named2last = symptr;
 	symptr->type = NULL;
     }
     return symptr;
