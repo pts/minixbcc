@@ -6,6 +6,8 @@
  * usually be set to some level different from OFFKLUDGELEVEL.
  */
 
+#include <stdlib.h>
+#include <string.h>
 #include "const.h"
 #include "types.h"
 #include "align.h"

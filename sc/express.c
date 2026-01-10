@@ -2,6 +2,7 @@
 
 /* Copyright (C) 1992 Bruce Evans */
 
+#include <string.h>
 #include "const.h"
 #include "types.h"
 #include "gencode.h"

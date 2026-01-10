@@ -2,6 +2,10 @@
 
 /* Copyright (C) 1992 Bruce Evans */
 
+#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
+#include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "const.h"
 #include "types.h"
 #include "input.h"
@@ -213,7 +217,7 @@ PUBLIC void flushout()
 	    clearlabels(outbufptr, outbufptr + nbytes);
 	if (write(output, outbufptr, nbytes) != nbytes)
 	{
-	    write(2, "output file error\n", 18);
+	    (void)!write(2, "output file error\n", 18);
 	    closein();
 	    close(output);
 	    exit(1);
