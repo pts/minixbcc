@@ -1,0 +1,68 @@
+C compiler backend BCC (Bruces's C Compiler), with last code change on
+1993-07-10. The archive bcc.tar.gz also contains the source code of the
+assembler (as/) and the linker (ld/), and the C compiler frontend
+(bcc/bcc.c).
+
+Downloads:
+
+* https://ftp.gwdg.de/pub/linux/misc//linux.org.uk/people/linux/8086/Compilers/bcc.tar.gz
+* https://ftp.lyx.org/ftp/pub/minix/distfiles/backup/bcc.tar.gz
+* https://archive.netbsd.org/pub/pkgsrc-archive/distfiles/2017Q1/bcc.tar.gz  25-Mar-1995 22:00 214834
+
+sha256=3e14cc6dc840d043957e9ec9b5ca400b565e33f1a81f193b9dd18ecae20a8894 size=214834 f= bcc.tar.gz
+
+-rw-r--r-- 1 pts pts 18096 1993-07-17 14:49:49.000000000 +0200 bcc.c
+-rw-r--r-- 1 pts pts  6560 1993-07-12 06:38:12.000000000 +0200 bcc.doc
+-rw-r--r-- 1 pts pts 25168 1993-07-10 11:34:17.000000000 +0200 declare.c
+-rw-r--r-- 1 pts pts  9186 1993-06-22 00:51:29.000000000 +0200 assign.c
+-rw-r--r-- 1 pts pts 18771 1992-12-04 22:45:03.000000000 +0100 preproc.c
+-rw-r--r-- 1 pts pts 16976 1992-11-14 16:51:21.000000000 +0100 gencode.c
+
+$ ls -l --sort=time --full-time 
+total 736
+-rw-r--r-- 1 pts pts  17982 1995-03-26 11:39:11.000000000 +0200 COPYING
+-rw-r--r-- 1 pts pts   6560 1993-07-12 06:38:12.000000000 +0200 bcc.doc
+-rw-r--r-- 1 pts pts  25168 1993-07-10 11:34:17.000000000 +0200 declare.c
+-rw-r--r-- 1 pts pts   9186 1993-06-22 00:51:29.000000000 +0200 assign.c
+-rw-r--r-- 1 pts pts  18771 1992-12-04 22:45:03.000000000 +0100 preproc.c
+-rw-r--r-- 1 pts pts  16976 1992-11-14 16:51:21.000000000 +0100 gencode.c
+-rw-r--r-- 1 pts pts  17295 1992-11-14 16:50:07.000000000 +0100 state.c
+-rw-r--r-- 1 pts pts   5168 1992-11-14 16:50:02.000000000 +0100 softop.c
+-rw-r--r-- 1 pts pts   4662 1992-11-14 16:49:55.000000000 +0100 preserve.c
+-rw-r--r-- 1 pts pts   3706 1992-11-14 16:49:35.000000000 +0100 longop.c
+-rw-r--r-- 1 pts pts   4288 1992-11-14 16:49:28.000000000 +0100 loadexp.c
+-rw-r--r-- 1 pts pts   8923 1992-11-14 16:49:22.000000000 +0100 label.c
+-rw-r--r-- 1 pts pts  10837 1992-11-14 16:49:13.000000000 +0100 hardop.c
+-rw-r--r-- 1 pts pts  13207 1992-11-14 16:48:57.000000000 +0100 glogcode.c
+-rw-r--r-- 1 pts pts  26443 1992-11-14 16:48:50.000000000 +0100 genloads.c
+-rw-r--r-- 1 pts pts    402 1992-11-14 16:22:24.000000000 +0100 bcc-cc1.c
+-rw-r--r-- 1 pts pts  15875 1992-11-14 16:19:08.000000000 +0100 scan.c
+-rw-r--r-- 1 pts pts   1479 1992-11-14 16:13:58.000000000 +0100 const.h
+-rw-r--r-- 1 pts pts  17208 1992-11-14 16:12:38.000000000 +0100 table.c
+-rw-r--r-- 1 pts pts   4443 1992-11-14 16:12:38.000000000 +0100 type.c
+-rw-r--r-- 1 pts pts  12350 1992-11-14 16:12:37.000000000 +0100 output.c
+-rw-r--r-- 1 pts pts  26478 1992-11-14 16:12:36.000000000 +0100 exptree.c
+-rw-r--r-- 1 pts pts   4301 1992-11-14 16:12:36.000000000 +0100 floatop.c
+-rw-r--r-- 1 pts pts   8678 1992-11-14 16:12:36.000000000 +0100 function.c
+-rw-r--r-- 1 pts pts  15518 1992-11-14 16:12:36.000000000 +0100 input.c
+-rw-r--r-- 1 pts pts  31538 1992-11-14 16:12:35.000000000 +0100 codefrag.c
+-rw-r--r-- 1 pts pts   3865 1992-11-14 16:12:35.000000000 +0100 debug.c
+-rw-r--r-- 1 pts pts  10084 1992-11-14 16:12:35.000000000 +0100 express.c
+-rw-r--r-- 1 pts pts   5490 1992-11-14 16:12:35.000000000 +0100 types.h
+-rw-r--r-- 1 pts pts    468 1992-11-14 16:12:34.000000000 +0100 parse.h
+-rw-r--r-- 1 pts pts  13213 1992-11-14 16:12:34.000000000 +0100 proto.h
+-rw-r--r-- 1 pts pts   4219 1992-11-14 16:12:34.000000000 +0100 reg.h
+-rw-r--r-- 1 pts pts   1011 1992-11-14 16:12:34.000000000 +0100 sc.h
+-rw-r--r-- 1 pts pts   4052 1992-11-14 16:12:34.000000000 +0100 scan.h
+-rw-r--r-- 1 pts pts   1947 1992-11-14 16:12:34.000000000 +0100 sizes.h
+-rw-r--r-- 1 pts pts   2013 1992-11-14 16:12:34.000000000 +0100 table.h
+-rw-r--r-- 1 pts pts   2582 1992-11-14 16:12:34.000000000 +0100 type.h
+-rw-r--r-- 1 pts pts    428 1992-11-14 16:12:33.000000000 +0100 align.h
+-rw-r--r-- 1 pts pts    346 1992-11-14 16:12:33.000000000 +0100 byteord.h
+-rw-r--r-- 1 pts pts    240 1992-11-14 16:12:33.000000000 +0100 condcode.h
+-rw-r--r-- 1 pts pts   3974 1992-11-14 16:12:33.000000000 +0100 gencode.h
+-rw-r--r-- 1 pts pts   1262 1992-11-14 16:12:33.000000000 +0100 input.h
+-rw-r--r-- 1 pts pts    561 1992-11-14 16:12:33.000000000 +0100 label.h
+-rw-r--r-- 1 pts pts   1835 1992-11-14 16:12:33.000000000 +0100 os.h
+-rw-r--r-- 1 pts pts    526 1992-11-14 16:12:33.000000000 +0100 output.h
+-rw-r--r-- 1 pts pts   5864 1992-11-09 16:58:42.000000000 +0100 bcc.bugs
