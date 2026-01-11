@@ -532,10 +532,12 @@ struct nodestruct *exp;
 	return;
     }
     regmark = reguse;
+    saveoffset = savelist = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
+    structarg = NULL;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     if ((op_t) op == FUNCOP)
     {
 	saveargsp = lastargsp;
-	lastargsp = savelist = 0;
+	lastargsp = 0;  /* No need for `savelist = 0;', it has been initialized above. */
 	if (exp->nodetype->constructor & STRUCTU)
 	{
 	    modstk(sp - (offset_t) exp->nodetype->typesize);

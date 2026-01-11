@@ -250,7 +250,10 @@ PUBLIC void define()
 	nparnames = getparnames() + 1;
     }
     else
+    {
 	nparnames = 0;
+	locmark = NULL;  /* Pacify GCC warning -Wmaybe-uninitialized. */
+    }
     blanks();
     macstring = charptr;
     quote = 0;

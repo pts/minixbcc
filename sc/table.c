@@ -152,6 +152,7 @@ struct typestruct *type;
 
     hashptr = gethashptr(name);
     symptr = *hashptr;
+    oldsymptr = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     while (symptr != NULL)
     {
 	oldsymptr = symptr;
@@ -172,7 +173,7 @@ ts_size_global += sizeof (struct symstruct) + strlen(name);
     }
     else
     {
-	oldsymptr->next = symptr;
+	oldsymptr->next = symptr;  /* oldsymptr is never NULL here. */
 	symptr->prev = &oldsymptr->next;
     }
     return symptr;

@@ -480,6 +480,7 @@ struct nodestruct *p2;
     if (target->indcount != 0)
 	goto node1;
     lscalar = target->type->scalar;
+    targval = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     if (target->storage == CONSTANT)
     {
 	if (lscalar & RSCALAR)
@@ -545,6 +546,8 @@ struct nodestruct *p2;
 	  (!((rscalar = source->type->scalar) & (ISCALAR | RSCALAR))
 	   && (op_t) t != PTRSUBOP))))
 	goto node1;
+    /* At this point, targval (or dtargval) is initialized, because target->storage == CONSTANT, and it was initialized  within `if (target->storage == CONSTANT)' above. */
+    sourceval = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     lflag = lscalar & LONG;
     uflag = lscalar & UNSIGNED;
     if (p2 != NULL)

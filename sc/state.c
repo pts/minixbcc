@@ -374,6 +374,7 @@ PRIVATE void dofor()
     label_t fortestlab;
     struct nodestruct *testexp;
     struct nodestruct *loopexp;
+    bool_t isforevert;
 
     lparen();
     if (sym != SEMICOLON)
@@ -390,14 +391,14 @@ PRIVATE void dofor()
     else
 	loopexp = expression();	/* remember loop expression */
     rparen();
-    if (!isforever(testexp))
+    if (!(isforevert = isforever(testexp)))
 	jump(fortestlab = getlabel());	/* test at bottom */
     deflabel(forstatlab = getlabel());	/* back here if test succeeds */
     statement();
     deflabel(forloop.contlab);
     if (loopexp != NULL)
 	evalexpression(loopexp);
-    if (isforever(testexp))
+    if (isforevert)
 	jump(forstatlab);
     else
     {
@@ -482,6 +483,7 @@ ts_s_case_tot += sizeof *sw;
     lparen();
     sw->charselector = loadexpression(DREG, NULLTYPE)->scalar & CHAR;
     rparen();
+    spmark = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     if (switchnow == NULL)
 	spmark = lowsp = sp;
     addloop(&switchloop);
