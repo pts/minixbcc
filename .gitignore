@@ -19,3 +19,11 @@
 /sc/bcc-cc1
 /sc/bcc-cc1[a-z]
 /sc/*.s
+/ld/ld
+/ld/ld.host
+/ld/ld.cross
+/ld/ld.mini*
+/ld/ld.m32
+/ld/ld.m64
+/ld/ld.pts
+/ld/ld.exe
