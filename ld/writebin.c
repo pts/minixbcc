@@ -193,6 +193,31 @@ bool_pt arguzp;
     char *commandname;
 #endif
     char *cptr;
+#ifdef MINIX
+#if 0  /* Defined in <a.out.h>. */
+struct nlist {  /* symbol table entry */
+  char            n_name[8];  /* symbol name */
+  long            n_value;    /* value */
+  unsigned char   n_sclass;   /* storage class */
+  unsigned char   n_numaux;   /* number of auxiliary entries;  not used */
+  unsigned short  n_type;     /* language base and derived type; not used */
+};
+/* low bits of storage class (section) */
+#define N_SECT  07  /* section mask */
+#define N_UNDF  00  /* undefined */
+#define N_ABS   01  /* absolute */
+#define N_TEXT  02  /* text */
+#define N_DATA  03  /* data */
+#define N_BSS   04  /* bss */
+#define N_COMM  05  /* (common) */
+
+/* high bits of storage class */
+#define N_CLASS 0370  /* storage class mask */
+#define C_NULL
+#define C_EXT   0020  /* external symbol */
+#define C_STAT  0030  /* static */
+#endif
+#endif  /* of #ifdef MINIX */
     struct nlist extsym;
     flags_t flags;
     struct modstruct *modptr;
@@ -888,6 +913,10 @@ char *commandname;
 
 #ifdef MINIX
 
+#ifndef A_UZP
+#  define A_UZP 1
+#endif
+
 PRIVATE void writeheader()
 {
     struct exec header;
@@ -922,9 +951,13 @@ PRIVATE void writeheader()
 	if (uzp)
 	    offtocn((char *) &header.a_entry, page_size(),
 		    sizeof header.a_entry);
-	offtocn((char *) &header.a_total, (offset_t)
-    	    (endoffset < 0x00010000L ? 0x00010000L : endoffset + 0x0008000L),
-		sizeof header.a_total);
+	offtocn((char *) &header.a_total, (offset_t)(
+#ifdef MINIXBUGCOMPAT
+	    endoffset < 0x00010000L ? 0x00010000L : endoffset + 0x0008000L
+#else  /* The ACK C compiler in Minix 1.5.10 i86 targeting Minix 1.5.10 i86 always sets a_total to 0x10000, so we do the same for !bits32. */
+	    !bits32 || endoffset <= (0x10000L - 0x8000L) ? 0x10000L : endoffset + 0x8000L
+#endif
+	    ), sizeof header.a_total);
     }
     writeout((char *) &header, FILEHEADERLENGTH);
 }
