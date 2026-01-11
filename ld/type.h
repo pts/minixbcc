@@ -153,6 +153,7 @@ void linksyms P((bool_pt argreloc_output));
 
 /* library - fcntl.h */
 #undef NULL
+#include <sys/types.h>  /* Minix 1.5.10 needs this before <fcntl.h>. */
 #include <fcntl.h>
 #if 0
 int creat P((const char *_path, int _mode));
