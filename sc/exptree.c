@@ -427,7 +427,7 @@ struct nodestruct *p2;
 	    if (long_big_endian)
 #endif
 #if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
-# if BIG_ENDIAN
+# if SC_BIG_ENDIAN
 		target->offset.offi += targszdelta;
 # else
 	    {
@@ -440,7 +440,7 @@ struct nodestruct *p2;
 	    else
 #endif
 #if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
-# if BIG_ENDIAN
+# if SC_BIG_ENDIAN
 	    {
 		if (rscalar & CHAR)
 		    target->offset.offi += ctypesize;

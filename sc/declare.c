@@ -642,7 +642,7 @@ PRIVATE void declfunc()
 		arg1size = itypesize;
 	    argsp = softsp -= arg1size;
 	}
-#if BIG_ENDIAN
+#if SC_BIG_ENDIAN
 	if (argsize < itypesize)
 	    argsp += itypesize - argsize;
 	symptr->offset.offi = argsp;

@@ -244,7 +244,7 @@ struct symstruct *target;
 	    if (long_big_endian)
 #endif
 #if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
-# if BIG_ENDIAN
+# if SC_BIG_ENDIAN
 		target->offset.offi += oldsize - ctypesize;
 # else
 	    {
@@ -257,7 +257,7 @@ struct symstruct *target;
 	    else
 #endif
 #if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
-# if BIG_ENDIAN
+# if SC_BIG_ENDIAN
 	    target->offset.offi += ctypesize;
 # else
 	    {}

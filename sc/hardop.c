@@ -394,11 +394,11 @@ struct symstruct *target;
 	    indcount = source->indcount;
 # endif
 	    outopsep();
-# if BIG_ENDIAN == 0
+# if SC_BIG_ENDIAN == 0
 	    ++source->offset.offi;
 # endif
 	    outadr(source);
-# if BIG_ENDIAN == 0
+# if SC_BIG_ENDIAN == 0
 	    --source->offset.offi;
 # endif
 # if MAXINDIRECT > 1
@@ -410,7 +410,7 @@ struct symstruct *target;
 	}
 	outregname(BREG);
 	outopsep();
-# if BIG_ENDIAN
+# if SC_BIG_ENDIAN
 	++source->offset.offi;
 # endif
 	outadr(source);
