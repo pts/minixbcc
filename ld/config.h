@@ -13,7 +13,7 @@
 
 /* these may need to be defined to suit the source processor */
 
-#undef  S_ALIGNMENT 4		/* source memory alignment, power of 2 */
+#define S_ALIGNMENT 8		/* source memory alignment, power of 2 */
 				/* don't use for 8 bit processors */
 				/* don't use even for 80386 - overhead for */
 				/* alignment cancels improved access */

@@ -42,6 +42,7 @@ char *name;
     struct symstruct *oldsymptr;
     struct symstruct *symptr;
 
+    oldsymptr = NULL;  /* Pacify GCC -Wmaybe-uninitialized warning below. */
     hashptr = gethashptr(name);
     symptr = *hashptr;
     while (symptr != NULL)
@@ -59,7 +60,7 @@ char *name;
 	strcpy(symptr->name, name);	/* should't happen */
     if (*hashptr == NULL)
 	*hashptr = symptr;
-    else
+    else if (oldsymptr)
 	oldsymptr->next = symptr;
     return symptr;
 }

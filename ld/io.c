@@ -123,13 +123,13 @@ PUBLIC void executable()
 
 PUBLIC void flusherr()
 {
-    write(STDOUT_FILENO, errbuf, errbufptr - errbuf);
+    (void)!write(STDOUT_FILENO, errbuf, errbufptr - errbuf);
     errbufptr = errbuf;
 }
 
 PRIVATE void flushout()
 {
-    unsigned nbytes;
+    int nbytes;
 
     nbytes = outbufptr - outbuf;
     if (write(outfd, outbuf, nbytes) != nbytes)

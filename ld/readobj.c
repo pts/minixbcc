@@ -37,6 +37,7 @@ FORWARD void reedmodheader P((void));
 FORWARD bool_pt redsym P((struct symstruct *symptr, offset_t value));
 FORWARD unsigned checksum P((char *string, unsigned length));
 FORWARD unsigned segbits P((unsigned seg, char *sizedesc));
+PRIVATE unsigned readfilecommon P((char *fileheader));
 
 /* initialise object file handler */
 
@@ -139,6 +140,17 @@ char **parchentry;
 
 /* read and check file header of the object file just opened */
 
+PRIVATE unsigned readfilecommon(fileheader)
+char *fileheader;
+{
+    char filechecksum;		/* part of fileheader but would unalign */
+
+    readin(&filechecksum, sizeof filechecksum);
+    if (filechecksum != (char) checksum(fileheader, 4))
+	input1error(" is not an object file");
+    return c2u2(fileheader + 2  /* .count */);
+}
+
 PRIVATE unsigned readfileheader()
 {
     struct
@@ -146,13 +158,9 @@ PRIVATE unsigned readfileheader()
 	char magic[2];
 	char count[2];		/* really an int */
     } fileheader;
-    char filechecksum;		/* part of fileheader but would unalign */
 
     readin((char *) &fileheader, sizeof fileheader);
-    readin(&filechecksum, sizeof filechecksum);
-    if (filechecksum != checksum((char *) &fileheader, sizeof fileheader))
-	input1error(" is not an object file");
-    return c2u2(fileheader.count);
+    return readfilecommon((char *) &fileheader);
 }
 
 PRIVATE unsigned readfileheader2()
@@ -162,14 +170,10 @@ PRIVATE unsigned readfileheader2()
 	short omagic;
 	char count[2];		/* really an int */
     } fileheader;
-    char filechecksum;		/* part of fileheader but would unalign */
 
     fileheader.omagic = OMAGIC;
     readin((char *) &fileheader.count, 2);
-    readin(&filechecksum, sizeof filechecksum);
-    if (filechecksum != checksum((char *) &fileheader, sizeof fileheader))
-	input1error(" is not an object file");
-    return c2u2(fileheader.count);
+    return readfilecommon((char *) &fileheader);
 }
 
 /* read the next module */

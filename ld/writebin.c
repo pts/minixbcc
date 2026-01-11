@@ -77,7 +77,7 @@ static long bdataoffset;
 PRIVATE bool_t bits32;		/* nonzero for 32-bit executable */
 PRIVATE offset_t combase[NSEG];	/* bases of common parts of segments */
 PRIVATE offset_t comsz[NSEG];	/* sizes of common parts of segments */
-PRIVATE char curseg;		/* current segment, 0 to $F */
+PRIVATE unsigned curseg;	/* current segment, 0 to $F */
 PRIVATE offset_t edataoffset;	/* end of data */
 PRIVATE offset_t endoffset;	/* end of bss */
 PRIVATE offset_t etextoffset;	/* end of text */
@@ -142,6 +142,8 @@ bool_pt argreloc_output;
 	    modptr->loadflag = TRUE;
 	return;
     }
+#else
+    (void)argreloc_output;
 #endif
     if ((symptr = findsym("_main")) != NULL)
 	entrysym(symptr);
@@ -161,6 +163,7 @@ bool_pt argreloc_output;
 	    struct redlist *prlptr;
 	    struct redlist *rlptr;
 
+	    prlptr = NULL;  /* Pacify GCC -Wmaybe-uninitialized warning below. */
 	    for (rlptr = redfirst; rlptr != NULL;
 		 rlptr = (prlptr = rlptr)->rlnext)
 		if (rlptr->rlmodptr->loadflag &&
@@ -224,7 +227,6 @@ struct nlist {  /* symbol table entry */
     char seg;
     unsigned sizecount;
     offset_t tempoffset;
-    struct symstruct *symptr;
 
     sepid = argsepid;
     bits32 = argbits32;
