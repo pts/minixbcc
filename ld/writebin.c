@@ -483,12 +483,20 @@ struct nlist {  /* symbol table entry */
 #endif
 			u4cn((char *) &extsym.n_value, (u4_t) symptr->value,
 			     sizeof extsym.n_value);
+#if 0
+			/* 0x4063 == 040143 == ((3 & SEGM_MASK) | C_MASK | I_MASK | (1 << SZ_SHIFT). */
+			if (strcmp(symptr->name, "_environ") == 0) printf("sym %s flags=0x%x=0%o\n", symptr->name, symptr->flags, symptr->flags);
+#endif
 			if ((flags = symptr->flags) & A_MASK)
-			    extsym.n_was_sclass = N_ABS;
+			    extsym.n_was_sclass = N_ABS;  /* 01 for Minix. */
+#ifdef MINIXBUGCOMPAT
+			else if (flags & (E_MASK | I_MASK) && !(flags & C_MASK))  /* The old ld linker in bccbin32.tar.Z had this bug: it incorrectly marked _environ (with C_MASK) as C_STAT rather than C_EXT. */
+#else
 			else if (flags & (E_MASK | I_MASK))
-			    extsym.n_was_sclass = C_EXT;
+#endif
+			    extsym.n_was_sclass = C_EXT;  /* 020 == 0x10 for Minix. */
 			else
-			    extsym.n_was_sclass = C_STAT;
+			    extsym.n_was_sclass = C_STAT;  /* 030 == 0x18 for Minix. */
 			if (!(flags & I_MASK) ||
 #ifdef BSD_A_OUT
 			     !reloc_output &&
@@ -497,14 +505,14 @@ struct nlist {  /* symbol table entry */
 			    switch (flags & (A_MASK | SEGM_MASK))
 			    {
 			    case 0:
-				extsym.n_was_sclass |= N_TEXT;
+				extsym.n_was_sclass |= N_TEXT;  /* 02 for Minix. */
 			    case A_MASK:
 				break;
 			    default:
 				if (flags & (C_MASK | SA_MASK))
-				    extsym.n_was_sclass |= N_BSS;
+				    extsym.n_was_sclass |= N_BSS;  /* 04 for Minix. */
 				else
-				    extsym.n_was_sclass |= N_DATA;
+				    extsym.n_was_sclass |= N_DATA;  /* 03 for Minix. */
 				break;
 			    }
 			writeout((char *) &extsym, sizeof extsym);
