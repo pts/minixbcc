@@ -1,5 +1,6 @@
 /* gensym.c - generate symbol table for assembler */
 
+#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
 #include <stdlib.h>  /* For NULL. */
 #include <unistd.h>
 #include <string.h>

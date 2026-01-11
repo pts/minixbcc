@@ -1,5 +1,6 @@
 /* genlist.c - generate listing and error reports for assembler */
 
+#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
 #include <unistd.h>
 #include <string.h>
 #include "const.h"

@@ -5,7 +5,7 @@
   in any order (but no repeated file options)
 */
 
-#include <sys/types.h>
+#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>

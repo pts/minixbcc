@@ -1,13 +1,13 @@
-#define MAXLINE 256		/* when this is made bigger, fix pfcc not
-				 * to store the string length in a byte-
-				 * sized variable */
-
 /* readsrc.c - read source files for assembler */
 
-#include <sys/types.h>
+#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#define MAXLINE 256		/* when this is made bigger, fix pfcc not
+				 * to store the string length in a byte-
+				 * sized variable */
 #include "const.h"
 #include "type.h"
 #include "flag.h"
