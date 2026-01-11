@@ -9,6 +9,13 @@
 
 PRIVATE int numbase;		/* base for number */
 
+/* S01(...) macro used in the values of symofchar. */
+#ifdef MINIX_SYNTAX
+#  define S01(sv0, sv1) (sv0)
+#else
+#  define S01(sv0, sv1) (sv1)
+#endif
+
 PRIVATE char symofchar[256] =	/* table to convert chars to their symbols */
 {
     WHITESPACE, WHITESPACE, WHITESPACE, WHITESPACE,
@@ -20,7 +27,7 @@ PRIVATE char symofchar[256] =	/* table to convert chars to their symbols */
     WHITESPACE, WHITESPACE, WHITESPACE, WHITESPACE,
     WHITESPACE, WHITESPACE, WHITESPACE, WHITESPACE,
 
-    WHITESPACE, EOLSYM, STRINGCONST, IMMEDIATE,	/*  !"# */
+    WHITESPACE, S01(NOTOP, EOLSYM), STRINGCONST, IMMEDIATE,	/*  !"# */
     HEXCONST, BINCONST, ANDOP, CHARCONST,	/* $%&' */
     LPAREN, RPAREN, STAR, ADDOP,		/* ()*+ */
     COMMA, SUBOP, IDENT, SLASH,			/* ,-./ */
@@ -37,7 +44,7 @@ PRIVATE char symofchar[256] =	/* table to convert chars to their symbols */
     IDENT, IDENT, IDENT, IDENT,			/* PQRS */
     IDENT, IDENT, IDENT, IDENT,			/* TUVW */
     IDENT, IDENT, IDENT, LBRACKET,		/* XYZ[ */
-    OTHERSYM, RBRACKET, OTHERSYM, IDENT,	/* \]^_ */
+    S01(OROP, OTHERSYM), RBRACKET, OTHERSYM, IDENT,	/* \]^_ */
 
     OTHERSYM, IDENT, IDENT, IDENT,		/* `abc */
     IDENT, IDENT, IDENT, IDENT,			/* defg */
@@ -46,7 +53,7 @@ PRIVATE char symofchar[256] =	/* table to convert chars to their symbols */
     IDENT, IDENT, IDENT, IDENT,			/* pqrs */
     IDENT, IDENT, IDENT, IDENT,			/* tuvw */
     IDENT, IDENT, IDENT, OTHERSYM,		/* xyz{ */
-    OROP, OTHERSYM, NOTOP, OTHERSYM,		/* |}~  */
+    S01(EOLSYM, OROP), OTHERSYM, S01(OTHERSYM, NOTOP), OTHERSYM,		/* |}~  */  /* The S01(EOLSYM, ...) here makes `|' start a one-line comment in MINIX_SYNTAX. */
 
     WHITESPACE, WHITESPACE, WHITESPACE, WHITESPACE,
     WHITESPACE, WHITESPACE, WHITESPACE, WHITESPACE,
