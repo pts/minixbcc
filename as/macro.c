@@ -1,5 +1,7 @@
 /* macro.c - expand macros for assembler */
 
+#include <stdlib.h>  /* For NULL. */
+#include <string.h>
 #include "const.h"
 #include "type.h"
 #include "globvar.h"

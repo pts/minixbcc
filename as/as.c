@@ -7,6 +7,9 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <string.h>
 #include "const.h"
 #include "type.h"
 #include "byteord.h"
@@ -50,7 +53,7 @@ char **argv;
     initbin();
     initobj();
     initsource();		/* only nec to init for unsupported mem file */
-    typeconv_init(BIG_ENDIAN, LONG_BIG_ENDIAN);
+    typeconv_init(AS_BIG_ENDIAN, LONG_BIG_ENDIAN);
     warn.global = TRUE;		/* constant */
     process_args(argc, argv);
     initscan();
@@ -64,9 +67,9 @@ char **argv;
 PUBLIC void as_abort(message)
 char *message;
 {
-    write(STDOUT, "as: ", 4);
-    write(STDOUT, message, strlen(message));
-    write(STDOUT, "\n", 1);
+    (void)!write(STDOUT, "as: ", 4);
+    (void)!write(STDOUT, message, strlen(message));
+    (void)!write(STDOUT, "\n", 1);
     exit(1);
 }
 

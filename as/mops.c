@@ -546,7 +546,7 @@ register struct ea_s *eap;
 	    mcount += asize;
 	}
 	else if (lastexp.offset != 0x0 ||
-		 eap->base == BPREG && eap->index == NOREG ||
+		 (eap->base == BPREG && eap->index == NOREG) ||
 		 eap->base == EBPREG)
 	{
 	    postb |= MEM1_MOD;
@@ -916,8 +916,8 @@ register struct ea_s *eap;
 		if (!(lastexp.data & UNDBIT) && lastexp.offset != 0x1)
 		{
 		    if (eap->base <= MAX16BITINDREG ||
-			lastexp.offset != 0x2 && lastexp.offset != 0x4 &&
-			lastexp.offset != 0x8)
+			(lastexp.offset != 0x2 && lastexp.offset != 0x4 &&
+			 lastexp.offset != 0x8))
 			error(ILL_SCALE);
 		    else
 		    {
@@ -1588,9 +1588,9 @@ PUBLIC void mgroup1()
 	{
 	    if (target.indcount == 0x0 && (target.base == ALREG ||
 					   target.base == AXREG ||
-					   target.base == EAXREG &&
+					   (target.base == EAXREG &&
 			  (source.displ.data & (FORBIT | RELBIT | UNDBIT) ||
-			   !is8bitsignedoffset(source.displ.offset))))
+			   !is8bitsignedoffset(source.displ.offset)))))
 	    {
 		opcode |= 0x04 | segword;
 		buildimm(&source, FALSE);

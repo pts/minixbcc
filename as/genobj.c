@@ -1,5 +1,7 @@
 /* genobj.c - object code generation routines for assembler */
 
+#include <unistd.h>
+#include <string.h>
 #include "const.h"
 #include "type.h"
 #include "address.h"
@@ -368,8 +370,8 @@ PUBLIC void objheader()
 	    do
 	    {
 		if ((symptr->type & EXPBIT || symptr->data & IMPBIT) ||
-		    !globals_only_in_obj && symptr->name[0] != '.' &&
-		    !(symptr->type & (MNREGBIT | MACBIT | VARBIT)))
+		    (!globals_only_in_obj && symptr->name[0] != '.' &&
+		     !(symptr->type & (MNREGBIT | MACBIT | VARBIT))))
 		{
 		    if (copyptr >= (struct sym_s **) heapend)
 		    {

@@ -1,5 +1,6 @@
 /* assemble.c - main loop for assembler */
 
+#include <stdlib.h>  /* For NULL. */
 #include "const.h"
 #include "type.h"
 #include "address.h"

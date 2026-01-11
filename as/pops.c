@@ -1,5 +1,6 @@
 /* pops.c - handle pseudo-ops for assembler */
 
+#include <stdlib.h>  /* For NULL. */
 #include "const.h"
 #include "type.h"
 #include "address.h"
@@ -42,7 +43,7 @@ register struct flags_s *flagptr;
 	}
 	newcount = (int) lastexp.offset;
 #ifdef I80386			/* really sizeof (offset_t) != sizeof (int) */
-	if (newcount != lastexp.offset)
+	if (newcount < 0 || (unsigned)newcount != lastexp.offset)
 	    datatoobig();
 #endif
 	newcount += flagptr->semaphore;
@@ -71,7 +72,7 @@ PUBLIC bool_pt checksegrel(symptr)
 register struct sym_s *symptr;
 {
     if ((symptr->type & LABIT ||
-	 symptr->data & IMPBIT && !(symptr->data & UNDBIT)) &&
+	 (symptr->data & IMPBIT && !(symptr->data & UNDBIT))) &&
 	((symptr->data ^ lcdata) & (RELBIT | SEGM)))
     {
 	error(SEGREL);

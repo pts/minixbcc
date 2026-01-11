@@ -1,5 +1,8 @@
 /* gensym.c - generate symbol table for assembler */
 
+#include <stdlib.h>  /* For NULL. */
+#include <unistd.h>
+#include <string.h>
 #include "const.h"
 #include "type.h"
 #include "flag.h"
@@ -90,7 +93,7 @@ sort_symbols:
 	    symptr = *copyptr++;
 	    writew((unsigned) symptr->value_reg_or_op.value);
 	    writec(symptr->type);
-	    write(innum, symptr->name, symptr->length - 1);
+	    (void)!write(innum, symptr->name, symptr->length - 1);
 	    writec(symptr->name[symptr->length - 1] | 0x80);
 	}
 	sort(symlptr, copyptr, FALSE);

@@ -260,6 +260,7 @@ PUBLIC void factor()
     case SLASH:
 	/* context-sensitive, SLASH means a hex number here */
 	context_hexconst();
+	/* Fallthrough. */
     case INTCONST:
 	lastexp.data = 0;	/* absolute & not forward or undefined */
 	lastexp.offset = number;

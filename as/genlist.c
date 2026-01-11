@@ -1,5 +1,7 @@
 /* genlist.c - generate listing and error reports for assembler */
 
+#include <unistd.h>
+#include <string.h>
 #include "const.h"
 #include "type.h"
 #include "address.h"
@@ -171,8 +173,8 @@ PUBLIC void listline()
 {
     if (!listpre)
     {
-	if (errcount || list.current && (!macflag || mcount != 0) ||
-	    macflag && maclist.current)
+	if (errcount || (list.current && (!macflag || mcount != 0)) ||
+	    (macflag && maclist.current))
 	    list1(lstfil);
 	if (errcount)
 	{
@@ -191,7 +193,7 @@ fd_t fd;
 {
     innum = fd;
     listcode();
-    write(innum, linebuf, lineptr - linebuf);
+    (void)!write(innum, linebuf, lineptr - linebuf);
     writenl();
     if (errcount != 0)
 	listerrors();
@@ -394,7 +396,7 @@ unsigned nspaces;
 PUBLIC void writec(c)
 char c;
 {
-    write(innum, &c, 1);
+    (void)!write(innum, &c, 1);
 }
 
 /* write newline */
@@ -416,7 +418,7 @@ offset_t offset;
 #else
     u2c2(buf, offset);
 #endif
-    write(innum, buf, sizeof buf);
+    (void)!write(innum, buf, sizeof buf);
 }
 
 /* write string */
@@ -424,7 +426,7 @@ offset_t offset;
 PUBLIC void writes(s)
 char *s;
 {
-    write(innum, s, strlen(s));
+    (void)!write(innum, s, strlen(s));
 }
 
 /* write string followed by newline */
@@ -444,5 +446,5 @@ unsigned word;
     char buf[2];
 
     u2c2(buf, (u16_t) word);
-    write(innum, buf, sizeof buf);
+    (void)!write(innum, buf, sizeof buf);
 }

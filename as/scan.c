@@ -100,7 +100,7 @@ PUBLIC void getsym()
     reglineptr = lineptr;
 advance:
     symname = reglineptr;
-    switch (sym = symofchar[*reglineptr++])
+    switch (sym = symofchar[*(unsigned char*)reglineptr++])
     {
     case WHITESPACE:
 	goto advance;
@@ -137,7 +137,7 @@ advance:
 	return;
     case IDENT:
 	/* walk to end of identifier - magic INTCONST is max of INT, IDENT */
-	while (symofchar[*reglineptr] <= INTCONST)
+	while (symofchar[*(unsigned char*)reglineptr] <= INTCONST)
 	    ++reglineptr;
 	lineptr = reglineptr;
 	gsymptr = lookup();

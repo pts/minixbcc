@@ -6,6 +6,8 @@
 
 #include <sys/types.h>
 #include <fcntl.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include "const.h"
 #include "type.h"
 #include "flag.h"
@@ -208,7 +210,8 @@ PUBLIC void readline()
       char *oldbufptr;
       struct schain_s *parameters;
       char paramnum;
-      unsigned char remaining;	/* space remaining in line + 2 */
+      /* !! How did it work as `unsigned char'?? */
+      unsigned remaining;	/* space remaining in line + 2 */
 				/* value 0 not used except for temp predec */
 				/* value 1 means error already gen */
 				/* values 1 and 2 mean no space */
@@ -297,7 +300,7 @@ again:
     {
 	lineptr = input.first;
 	input.blocksize = read(infil, input.buf, INBUFSIZE);
-	if (input.blocksize < 0)
+	if ((int)input.blocksize < 0)
 		abort();
 	if (input.blocksize == 0)
 	{

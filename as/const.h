@@ -42,10 +42,6 @@
 #define PRIVATE		static
 #define PUBLIC
 
-#ifndef NULL
-#define NULL	((char *)0)
-#endif
-
 /* O/S constants */
 
 #define CREAT_PERMS	0666
