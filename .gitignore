@@ -35,3 +35,11 @@
 /ar/ar.m64
 /ar/ar.pts
 /ar/ar.exe
+/as/as
+/as/as.host
+/as/as.cross
+/as/as.mini*
+/as/as.m32
+/as/as.m64
+/as/as.pts
+/as/as.exe
