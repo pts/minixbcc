@@ -13,7 +13,7 @@ extern int errno;
 
 #define NAME_MAX 14
 
-PRIVATE bool_t flag[128];
+PRIVATE bool_t flag[128];  /* !! Use a smaller array on an ANSI system. */
 PRIVATE char libdir[] = "/usr/local/lib/";
 #ifdef MC6809
 PRIVATE char libsubdir[] = "m09/";
@@ -60,9 +60,9 @@ char **argv;
 	    case 's':		/* strip symbols */
 	    case 'z':		/* unmapped zero page */
 		if (arg[2] == 0)
-		    flag[arg[1]] = TRUE;
+		    flag[(unsigned char)arg[1]] = TRUE;
 		else if (arg[2] == '-' && arg[3] == 0)
-		    flag[arg[1]] = FALSE;
+		    flag[(unsigned char)arg[1]] = FALSE;
 		else
 		    usage();
 		if (arg[1] == '0')	/* flag 0 is negative logic flag 3 */

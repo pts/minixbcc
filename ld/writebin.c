@@ -224,7 +224,7 @@ struct nlist {  /* symbol table entry */
     struct nlist extsym;
     flags_t flags;
     struct modstruct *modptr;
-    char seg;
+    unsigned seg;
     unsigned sizecount;
     offset_t tempoffset;
 
@@ -802,7 +802,7 @@ PRIVATE void padmod(modptr)
 struct modstruct *modptr;
 {
     offset_t count;
-    char seg;
+    unsigned seg;
     offset_t size;
     unsigned sizecount;
     char *sizeptr;
