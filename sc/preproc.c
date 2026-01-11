@@ -45,7 +45,7 @@ struct macroposition
 };
 
 PRIVATE char dummyparam[] = { EOL, 0 };
-PRIVATE fastin_t iflevel;	/* depends on zero init */
+PRIVATE unsigned iflevel;	/* depends on zero init */
 PRIVATE struct ifstruct ifstate;
 				/* elseflag depends on zero init */
 PRIVATE struct ifstruct ifstack[MAX_IF];

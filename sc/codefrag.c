@@ -1312,7 +1312,7 @@ store_pt reg;
     fastin_pt count;
     fastin_t single1skip;
     fastin_t lastcount;
-    fastin_t mulsp;
+    int mulsp;
     int stackentry;		/* signed */
 
     if (factor == 0)

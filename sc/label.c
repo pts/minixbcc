@@ -78,7 +78,7 @@ char *patch;
 {
     register struct labdatstruct *labptr;
 
-    labptr = &vislab[nextvislab];
+    labptr = &vislab[(int) nextvislab];
     labptr->labcond = cond;
     labptr->labnum = label;
     labptr->lablc = lc;
@@ -184,7 +184,7 @@ label_t label;
 
 	labmin = &vislab[0];
 	labmax = &vislab[MAXVISLAB];
-	labptr = labmid = &vislab[nextvislab];
+	labptr = labmid = &vislab[(int) nextvislab];
 	if (!watchlc)
 	    do
 	    {
@@ -199,14 +199,14 @@ label_t label;
 #ifdef I8088 /* patch "bcc(c) to j(c)(c)( ) */
 			*labpatch = 'j';
 			*(labpatch + 1) =
-			    *(cnameptr = scondnames[labptr->labcond]);
+			    *(cnameptr = scondnames[(int) labptr->labcond]);
 #endif
 #ifdef MC6809
 # ifdef NEW_MC6809 /* patch JMP\t> or LBCC\t to BCC \t */
 			*labpatch = 'B';
 			*(labpatch + 4) = '\t';	/* redundant unless JMP */
 			*(labpatch + 1) =
-			    *(cnameptr = condnames[labptr->labcond]);
+			    *(cnameptr = condnames[(int) labptr->labcond]);
 # else
 			if (labptr->labcond == RA)
 			    strncpy(labpatch, "BRA\t\t", 5);
@@ -308,7 +308,7 @@ label_t label;
     {
 	outlbranch();
 #ifdef I8088
-	outbyte(*(cnameptr = lcondnames[(ccode_t) cond]));
+	outbyte(*(cnameptr = lcondnames[cond]));
 	outbyte(*(cnameptr + 1));
 	if ((ccode_t) cond == LS || (ccode_t) cond == HS)
 	    outbyte('s');	/* "blos" or "bhis" */
@@ -406,7 +406,7 @@ label_t label;
     if ((ccode_t) cond != RN)
     {
 	outsbranch();
-	outbyte(*(cnameptr = scondnames[(ccode_t) cond]));
+	outbyte(*(cnameptr = scondnames[cond]));
 	outbyte(*(cnameptr + 1));
 	outtab();
 	outlabel(label);

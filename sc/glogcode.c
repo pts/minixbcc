@@ -90,7 +90,7 @@ ccode_t *pcondtrue;
     }
 #endif
 #endif
-    sbranch(oppcc[*pcondtrue], falselab = getlabel());
+    sbranch(oppcc[(int) *pcondtrue], falselab = getlabel());
     loadlogical(target, falselab);
 }
 
@@ -115,7 +115,7 @@ ccode_t *pcondtrue;
         (tscalar & DLONG && target->indcount != 0))
     {
 	swapsym(target, source);
-	*pcondtrue = reverscc[*pcondtrue];
+	*pcondtrue = reverscc[(int) *pcondtrue];
 	tempscalar = sscalar;
 	sscalar = tscalar;
 	tscalar = tempscalar;
@@ -125,7 +125,7 @@ ccode_t *pcondtrue;
 	(sscalar | tscalar) & UNSIGNED ||
 	(source->type->constructor | target->type->constructor) &
 	(ARRAY | POINTER))
-	*pcondtrue = unsigncc[*pcondtrue];
+	*pcondtrue = unsigncc[(int) *pcondtrue];
     if (source->type->scalar & DLONG)
     {
 	longop(EQOP, source, target);
@@ -145,7 +145,7 @@ ccode_t *pcondtrue;
 	if (sscalar & CHAR)
 	{
 	    if (tscalar & CHAR)
-		*pcondtrue = unsigncc[*pcondtrue];
+		*pcondtrue = unsigncc[(int) *pcondtrue];
 	    else
 	    {
 		source->type = iscalartotype(sscalar);
@@ -275,7 +275,7 @@ bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
     changesp(spmark, FALSE);
     reguse = regmark;
     if ((bool_t) nojump)
-	lbranch(oppcc[condtrue], falselab);
+	lbranch(oppcc[(int) condtrue], falselab);
     else
 	lbranch(condtrue, truelab);
 }
@@ -456,7 +456,7 @@ ccode_t *pcondtrue;
     store_t targreg;
 #endif
 
-    *pcondtrue = testcc[*pcondtrue];
+    *pcondtrue = testcc[(int) *pcondtrue];
     if (target->type->scalar & DLONG)
     {
 	long1op(EQOP, target);
@@ -554,7 +554,7 @@ bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
 	condtrue = NE;
 	test(source, &condtrue);
 	if ((bool_t) nojump)
-	    lbranch(oppcc[condtrue], falselab);
+	    lbranch(oppcc[(int) condtrue], falselab);
 	else
 	    lbranch(condtrue, truelab);
     }

@@ -466,9 +466,9 @@ char *argv[];
 	    case 't':		/* print source code in asm output */
 	    case 'w':		/* watch location counter */
 		if (arg[2] == 0)
-		    flag[arg[1]] = TRUE;
+		    flag[(unsigned char) arg[1]] = TRUE;
 		else if (arg[2] == '-' && arg[3] == 0)
-		    flag[arg[1]] = FALSE;
+		    flag[(unsigned char) arg[1]] = FALSE;
 		else
 		    usage();
 		if (arg[1] == '0')	/* flag 0 is negative logic flag 3 */

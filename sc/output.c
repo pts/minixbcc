@@ -377,12 +377,13 @@ uoffset_t num;
 PUBLIC void outhexdigs(num)
 register uoffset_t num;
 {
+    /* !! Optimize this for size, non-recursive. */
     if (num >= 0x10)
     {
-	outhexdigs(num / 0x10);
-	num %= 0x10;
+	outhexdigs(num >> 4);
+	num &= 0xf;
     }
-    outbyte(hexdigits[(fastin_t) num]);
+    outbyte(hexdigits[(unsigned) num]);
 }
 
 /* print string terminated by EOL */

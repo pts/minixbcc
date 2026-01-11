@@ -57,6 +57,7 @@ typedef int fd_t;		/* file descriptor */
 typedef int fastin_pt;		/* promoted fastin_t */
 				/* always an int - use to show that the */
 				/* value may be accessed as a fastin_t */
+/* !! size optimization: Does changing this to an int when compiling with `bcc -0' help? */
 typedef char fastin_t;		/* fast int - a small integer value */
 				/* on some machines, chars can be accessed */
 				/* more efficiently than ints for arithmetic */
