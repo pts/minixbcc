@@ -76,8 +76,8 @@ PRIVATE struct symstruct constemplate =
     NULL,			/* next */
     NULL,			/* prev */
     NULL,			/* type, init later to itype */
-    /* offset is a union, set every time constemplate is used */
-    /* name is a union, namea member is constant "\0" */
+    { 0 }, /* offset is a union, set every time constemplate is used */
+    { 0 }, /* name is a union, namea member is constant "\0" */
 };
 
 PRIVATE struct keywordstruct keywords[NKEYWORDS] =
