@@ -714,8 +714,8 @@ PRIVATE void idecllist()
 	}
 	else if (gvarsymptr != NULL && (gvarsymptr->level == level ||
 					gvartype->constructor == FUNCTION ||
-					gvarsc == EXTERNDECL &&
-					gvarsymptr->level == GLBLEVEL))
+					(gvarsc == EXTERNDECL &&
+					 gvarsymptr->level == GLBLEVEL)))
 	{
 	    if (gvarsymptr->level != GLBLEVEL || gvarsymptr->flags == KEYWORD)
 		multidecl(gvarname);
@@ -724,8 +724,8 @@ PRIVATE void idecllist()
 		if (gvartype->constructor != ARRAY ||
 		    gvarsymptr->type->constructor != ARRAY ||
 		    gvartype->nexttype != gvarsymptr->type->nexttype ||
-		    gvartype->typesize != 0 &&
-		    gvarsymptr->type->typesize != 0)
+		    (gvartype->typesize != 0 &&
+		     gvarsymptr->type->typesize != 0))
 		    multidecl(gvarname);
 		else if (gvartype->typesize != 0)
 		    gvarsymptr->type = gvartype;

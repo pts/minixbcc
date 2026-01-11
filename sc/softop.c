@@ -128,15 +128,16 @@ struct symstruct *target;
 
     regpushed = (regmark = reguse) & OPREG;
     workreg = OPREG;
-    if (sscalar & CHAR && target->storage & WORKDATREGS &&
-	source->storage == OPREG && source->indcount != 0 ||
-	(sscalar & CHAR || source->storage & WORKDATREGS) &&
-	target->storage == OPREG && target->indcount != 0 ||
-	source->storage == OPREG &&
-	target->storage == GLOBAL && target->indcount == 0
+    if ((sscalar & CHAR && target->storage & WORKDATREGS &&
+	 source->storage == OPREG && source->indcount != 0) ||
+	((sscalar & CHAR || source->storage & WORKDATREGS) &&
+	 target->storage == OPREG && target->indcount != 0) ||
+	(source->storage == OPREG &&
+	 target->storage == GLOBAL && target->indcount == 0
 #ifdef MC6809
-	&& posindependent
+	 && posindependent
 #endif
+	)
 	)
     {
 	if ((regmark | OPREG) == allindregs)

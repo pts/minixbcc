@@ -587,8 +587,8 @@ ts_s_macparam_tot += sizeof *paramlist * nparleft;
 		    }
 		    else if (ch == '(')
 			++lpcount;
-		    else if (ch == ')' && --lpcount == 0 ||
-			     ch == ',' && lpcount == 1)
+		    else if ((ch == ')' && --lpcount == 0) ||
+			     (ch == ',' && lpcount == 1))
 			break;
 		    if (ch == EOL)
 			ch = ' ';
@@ -779,8 +779,8 @@ sym_pt ifcase;
 	    iftrue = constexpression() != 0;
 	    incppexpr = FALSE;
 	}
-	if (!iftrue && (sym_t) ifcase != IFNDEFCNTL ||
-	    iftrue && (sym_t) ifcase == IFNDEFCNTL)
+	if ((!iftrue && (sym_t) ifcase != IFNDEFCNTL) ||
+	    (iftrue && (sym_t) ifcase == IFNDEFCNTL))
 	{
 	    ifstate.elseflag = TRUE;
 	    ifstate.ifflag = FALSE;

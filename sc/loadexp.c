@@ -56,9 +56,9 @@ struct typestruct *type;
 	makeleaf(node(ASSIGNOP, lhs, exp));
     }
     else if (exp->tag != LEAF ||
-	     (symptr = exp->left.symptr)->storage != CONSTANT &&
-	     (symptr->storage != GLOBAL || symptr->indcount != 0 ||
-	      type->scalar & DLONG) ||
+	     ((symptr = exp->left.symptr)->storage != CONSTANT &&
+	      (symptr->storage != GLOBAL || symptr->indcount != 0 ||
+	       type->scalar & DLONG)) ||
 	     (type->constructor | (symptr->type->constructor & ~FUNCTION)) &
 	     ~(ARRAY | POINTER))
 	error("initializer too complicated");

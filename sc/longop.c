@@ -39,7 +39,7 @@ struct symstruct *target;
 	shiftflag = TRUE;
     else
 	scalar |= source->type->scalar;
-    if (source->indcount == 0 && !shiftflag ||
+    if ((source->indcount == 0 && !shiftflag) ||
 	source->storage & (DREG | OPREG | OPWORKREG))
     {
 	pres2(source, target);

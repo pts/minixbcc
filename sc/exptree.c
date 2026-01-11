@@ -62,15 +62,16 @@ register struct nodestruct *nodeptr;
 	if (!(rscalar & DOUBLE))
 	    nodeptr->right = castnode(dtype, right);
     }
-    else if (!(bothscalar & DLONG) && (nodeptr->tag == ANDOP &&
-	     (redscalar(nodeptr->left.nodeptr) | redscalar(right)) & CHAR ||
-	     (nodeptr->tag == EOROP || nodeptr->tag == OROP) &&
-	     redscalar(nodeptr->left.nodeptr) & redscalar(right) & CHAR ||
-	     nodeptr->tag == MODOP && right->tag == LEAF &&
-	     right->left.symptr->storage == CONSTANT &&
-	     (divisor = right->left.symptr->offset.offv,
-	      (uvalue_t) divisor <= MAXUCHTO + 1) &&
-	     bitcount((uvalue_t) divisor) <= 1))
+    else if (!(bothscalar & DLONG) &&
+	     ((nodeptr->tag == ANDOP &&
+	       (redscalar(nodeptr->left.nodeptr) | redscalar(right)) & CHAR) ||
+	      ((nodeptr->tag == EOROP || nodeptr->tag == OROP) &&
+	       redscalar(nodeptr->left.nodeptr) & redscalar(right) & CHAR) ||
+	      (nodeptr->tag == MODOP && right->tag == LEAF &&
+	       right->left.symptr->storage == CONSTANT &&
+	       (divisor = right->left.symptr->offset.offv,
+	        (uvalue_t) divisor <= MAXUCHTO + 1) &&
+	       bitcount((uvalue_t) divisor) <= 1)))
     {
 	/* result fits in char and extends correctly */
 	if (bothscalar & UNSIGNED)
@@ -497,7 +498,7 @@ struct nodestruct *p2;
 	    return p2;
 	case CONDOP:
 	    if (fp_cond(lscalar & RSCALAR && dtargval != FALSE)
-		|| !(lscalar & RSCALAR) && targval != FALSE)
+		|| (!(lscalar & RSCALAR) && targval != FALSE))
 	    {
 		p2->left.nodeptr->nodetype = p2->nodetype;
 		return p2->left.nodeptr;
@@ -506,13 +507,13 @@ struct nodestruct *p2;
 	    return p2->right;
 	case LOGANDOP:
 	    if (fp_cond(lscalar & RSCALAR && dtargval != FALSE)
-		|| !(lscalar & RSCALAR) && targval != FALSE)
+		|| (!(lscalar & RSCALAR) && targval != FALSE))
 		break;
 	    p1->nodetype = target->type = itype;
 	    return p1;
 	case LOGOROP:
 	    if (fp_cond(lscalar & RSCALAR && dtargval == FALSE)
-		|| !(lscalar & RSCALAR) && targval == FALSE)
+		|| (!(lscalar & RSCALAR) && targval == FALSE))
 		break;
 	    target->offset.offv = TRUE;
 	    p1->nodetype = target->type = itype;
@@ -538,11 +539,11 @@ struct nodestruct *p2;
 	}
     }
     if (target->storage != CONSTANT ||
-	!(lscalar & (ISCALAR | RSCALAR)) && (op_t) t != PTRSUBOP ||
-	p2 != NULL &&
-	(p2->tag != LEAF || (source = p2->left.symptr)->storage != CONSTANT ||
-	 !((rscalar = source->type->scalar) & (ISCALAR | RSCALAR))
-	 && (op_t) t != PTRSUBOP))
+	(!(lscalar & (ISCALAR | RSCALAR)) && (op_t) t != PTRSUBOP) ||
+	(p2 != NULL &&
+	 (p2->tag != LEAF || (source = p2->left.symptr)->storage != CONSTANT ||
+	  (!((rscalar = source->type->scalar) & (ISCALAR | RSCALAR))
+	   && (op_t) t != PTRSUBOP))))
 	goto node1;
     lflag = lscalar & LONG;
     uflag = lscalar & UNSIGNED;
@@ -561,7 +562,7 @@ struct nodestruct *p2;
 	    uflag |= rscalar & UNSIGNED;
 	}
     }
-    if (lscalar & RSCALAR || p2 != NULL && rscalar & RSCALAR)
+    if (lscalar & RSCALAR || (p2 != NULL && rscalar & RSCALAR))
     {
 #ifdef NOFP
     no_3double_op();
@@ -979,8 +980,9 @@ struct nodestruct *nodeptr;
 		targtype = ctype;
 	    if (bothscalar & UNSIGNED)
 		targtype = tounsigned(targtype);
-	    if (!(bothscalar & INT) || left->tag == LEAF && lscalar & INT ||
-		right->tag == LEAF && rscalar & INT)
+	    if (!(bothscalar & INT) ||
+	        (left->tag == LEAF && lscalar & INT) ||
+		(right->tag == LEAF && rscalar & INT))
 	    {
 		/* this is correct even when the if fails (the casts have to */
 		/* be considered at a lower level) but gives worse code */
@@ -992,12 +994,14 @@ struct nodestruct *nodeptr;
 	    return targtype;	/* XXX - reduced from promote(targtype) */
 	}
 	if (targtype->constructor & POINTER &&
-	    (isconst0(right) || right->nodetype->constructor & POINTER &&
-	     right->nodetype->nexttype->constructor & VOID))
+	    (isconst0(right) ||
+	     (right->nodetype->constructor & POINTER &&
+	      right->nodetype->nexttype->constructor & VOID)))
 	    return targtype;
 	if (right->nodetype->constructor & POINTER &&
-	    (isconst0(left) || targtype->constructor & POINTER &&
-	     targtype->nexttype->constructor & VOID))
+	    (isconst0(left) ||
+	     (targtype->constructor & POINTER &&
+	      targtype->nexttype->constructor & VOID)))
 	    return right->nodetype;
 	error("mismatched types");
 	fixnode(left);		/* XXX - better to fix the CONDOP */

@@ -442,14 +442,14 @@ struct symstruct *source;
     {
 	if (source->type->scalar & RSCALAR)
 	    load(source, doubleregs & ~DREG);
-	else if (source->storage == CONSTANT && !(source->type->scalar & DLONG)
+	else if ((source->storage == CONSTANT && !(source->type->scalar & DLONG))
 		 || source->type->scalar & CHAR)
 	    load(source, DREG);
 	else if (source->storage & ~reguse & allregs)
 	    load(source, source->storage);
 	else if (((reguse & allindregs) == allindregs ||
-		  !(source->type->constructor & (ARRAY | POINTER)) &&
-		  source->indcount != 0) &&
+		  (!(source->type->constructor & (ARRAY | POINTER)) &&
+		   source->indcount != 0)) &&
 		 !(source->type->scalar & DLONG))
 	    load(source, DREG);
 	else
@@ -1030,10 +1030,10 @@ struct symstruct *source;
 #endif
     }
 #ifdef I8088
-    else if (source->indcount == 1 &&
-	     (sscalar & (SHORT | INT | LONG | FLOAT) ||
-	      source->type->constructor & POINTER) ||
-	     source->storage == CONSTANT && i386_32)
+    else if ((source->indcount == 1 &&
+	      (sscalar & (SHORT | INT | LONG | FLOAT) ||
+	       source->type->constructor & POINTER)) ||
+	     (source->storage == CONSTANT && i386_32))
     {
 	size = source->type->typesize;
 	if (size == 1)

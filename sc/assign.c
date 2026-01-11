@@ -27,7 +27,7 @@ struct symstruct *target;
 
     if (target->type->constructor & (ARRAY | FUNCTION) ||
 	target->flags == TEMP || target->flags == (LABELLED | STRING) ||
-	target->indcount == 0 && target->flags != REGVAR)
+	(target->indcount == 0 && target->flags != REGVAR))
     {
 	bugerror("botched lvalue");
 	return;
@@ -37,13 +37,13 @@ struct symstruct *target;
 	|| source->level != target->level
 	|| source->offset.offi != target->offset.offi	/* kludge union cmp */
 	|| source->type != target->type
-	|| (source->storage & (LOCAL | GLOBAL)
+	|| ((source->storage & (LOCAL | GLOBAL)
 	    || source->level == OFFKLUDGELEVEL)
-	   && ((source->flags ^ target->flags) & LABELLED
-	       || source->flags & LABELLED
-		  && source->name.label != target->name.label
-	       || !(source->flags & LABELLED)
-		  && strcmp(source->name.namep, target->name.namep) != 0))
+	    && ((source->flags ^ target->flags) & LABELLED
+	        || (source->flags & LABELLED
+		    && source->name.label != target->name.label)
+	        || (!(source->flags & LABELLED)
+		    && strcmp(source->name.namep, target->name.namep) != 0))))
     {
 	tscalar = target->type->scalar;
 	if (tscalar & CHAR && source->storage == CONSTANT)
@@ -55,12 +55,12 @@ struct symstruct *target;
 	if (!(tscalar & CHAR) || source->flags != TEMP ||
 	    source->offset.offi != sp || source->type->typesize > itypesize)
 	    cast(target->type, source);
-	if (tscalar & RSCALAR)
+	if (tscalar & RSCALAR)  /* !! size optimization: Remove all RSCALAR, FLOAT and DOUBLE code, including this one. tscalar shouldn't be RSCALAR here. */
 	{
 #ifdef NOFP
 	    if (tscalar & DOUBLE) no_fp_move();
 #endif
-	    if (source->storage == CONSTANT && (!reguse & doubleregs))
+	    if (source->storage == CONSTANT && ((!reguse) & doubleregs))  /* !! Fix parentheses bug. */
 		load(source, doubleregs & ~DREG);
 	    if (source->storage != CONSTANT && source->indcount == 0)
 	    {
@@ -218,7 +218,7 @@ struct symstruct *target;
     store_pt targreg;
 
     if (type->constructor & (ARRAY | FUNCTION)
-	|| type->constructor & STRUCTU && target->type != type)
+	|| (type->constructor & STRUCTU && target->type != type))
     {
 	bugerror("botched implicit cast");
 	return;
@@ -270,7 +270,7 @@ struct symstruct *target;
 	    target->storage = BREG;
 	}
     }
-    else if (newscalar & (SHORT | INT | LONG) && !(newscalar & DLONG)
+    else if ((newscalar & (SHORT | INT | LONG) && !(newscalar & DLONG))
 	     || type->constructor & POINTER)
     {
 	if (oldscalar & RSCALAR)

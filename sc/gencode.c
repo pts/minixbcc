@@ -3,7 +3,7 @@
 /* Copyright (C) 1992 Bruce Evans */
 
 #define islvalop(op) \
-	((op) >= ASSIGNOP && (op) <= SUBABOP || (op) == PTRADDABOP)
+	(((op) >= ASSIGNOP && (op) <= SUBABOP) || (op) == PTRADDABOP)
 
 #include "const.h"
 #include "types.h"
@@ -292,7 +292,7 @@ struct nodestruct *exp;
 	    }
 	    if (source->storage & allindregs && source->indcount == 0 &&
 		(source->type->scalar & (DLONG | RSCALAR) ||
-		 left->tag == FUNCOP && source->flags != REGVAR))
+		 (left->tag == FUNCOP && source->flags != REGVAR)))
 		push(source);	/* XXX - perhaps not float */
 	    else
 		preserve(source);
@@ -352,11 +352,11 @@ struct nodestruct *exp;
     debug(exp);
 #endif
     if (commutop
-	&& (target->storage == CONSTANT
-	    && !(target->type->scalar & (DLONG | RSCALAR))
+	&& ((target->storage == CONSTANT
+	     && !(target->type->scalar & (DLONG | RSCALAR)))
 	    || source->storage & ALLDATREGS
-	    || source->type->scalar & (DLONG | RSCALAR)
-	       && source->indcount == 0 && target->indcount != 0))
+	    || (source->type->scalar & (DLONG | RSCALAR)
+	        && source->indcount == 0 && target->indcount != 0)))
     {
 	exp->left.nodeptr = right;
 	exp->right = left;

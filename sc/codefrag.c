@@ -616,8 +616,9 @@ offset_t offset;
 store_pt reg;
 {
 #ifdef I8088
-    if (i386_32 && (uoffset_t) offset + 1 <= 2	/* do -1 to 1 by dec/inc */
-	|| !i386_32 && (uoffset_t) offset + 2 <= 4)	/* do -2 to 2  */
+    /* !! Optimize this condition for code size. */
+    if ((i386_32 && (uoffset_t) offset + 1 <= 2)	/* do -1 to 1 by dec/inc */
+	|| (!i386_32 && (uoffset_t) offset + 2 <= 4))	/* do -2 to 2  */
     {
 	if (reg == ALREG)
 	    reg = AXREG;	/* shorter and faster */

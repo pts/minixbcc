@@ -14,10 +14,10 @@ PUBLIC void changesp(newsp, absflag)
 offset_t newsp;
 bool_pt absflag;
 {
-    if (newsp != sp || (bool_t) absflag && switchnow != NULL)
+    if (newsp != sp || ((bool_t) absflag && switchnow != NULL))
     {
 #ifdef FRAMEPOINTER
-	if (newsp != framep || !(bool_t) absflag && switchnow != NULL)
+	if (newsp != framep || (!(bool_t) absflag && switchnow != NULL))
 	{
 	    outleasp();
 	    if (!(bool_t) absflag && switchnow != NULL)
@@ -106,7 +106,7 @@ struct symstruct *target;
     if (target->storage & allregs)
     {
 	if (target->storage & (allregs - allindregs) /* XXX */ ||
-	    target->indcount == 0 && target->type->scalar & (DLONG | RSCALAR))
+	    (target->indcount == 0 && target->type->scalar & (DLONG | RSCALAR)))
 	    push(target);	/* XXX - perhaps not float */
 	else if (((target->storage | reguse) & allindregs) == allindregs)
 	{

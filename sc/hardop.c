@@ -300,8 +300,8 @@ struct symstruct *target;
 	sscalar = source->type->scalar;
     }
     if (target->indcount != 0 &&
-	(tscalar & CHAR && !(sscalar & CHAR) &&
-       op != ANDOP || source->indcount == 0 && source->storage != CONSTANT))
+	((tscalar & CHAR && !(sscalar & CHAR) && op != ANDOP) ||
+	 (source->indcount == 0 && source->storage != CONSTANT)))
     {
 	swapsym(target, source);
 	sscalar = tscalar;

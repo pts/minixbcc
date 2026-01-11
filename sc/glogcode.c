@@ -107,12 +107,12 @@ ccode_t *pcondtrue;
     reduceconst(target);
     sscalar = source->type->scalar;
     tscalar = target->type->scalar;
-    if (source->storage != CONSTANT &&
-	(target->storage == CONSTANT ||
-	 sscalar & CHAR && !(tscalar & CHAR) ||
-	 (sscalar & CHAR || !(tscalar & CHAR)) &&
-	 source->indcount == 0 && target->indcount != 0) ||
-	tscalar & DLONG && target->indcount != 0)
+    if ((source->storage != CONSTANT &&
+         (target->storage == CONSTANT ||
+          (sscalar & CHAR && !(tscalar & CHAR)) ||
+          ((sscalar & CHAR || !(tscalar & CHAR)) &&
+           source->indcount == 0 && target->indcount != 0))) ||
+        (tscalar & DLONG && target->indcount != 0))
     {
 	swapsym(target, source);
 	*pcondtrue = reverscc[*pcondtrue];
@@ -120,8 +120,8 @@ ccode_t *pcondtrue;
 	sscalar = tscalar;
 	tscalar = tempscalar;
     }
-    if (sscalar & CHAR && tscalar & CHAR &&
-	(source->type != sctype || target->type != sctype) ||
+    if ((sscalar & CHAR && tscalar & CHAR &&
+	 (source->type != sctype || target->type != sctype)) ||
 	(sscalar | tscalar) & UNSIGNED ||
 	(source->type->constructor | target->type->constructor) &
 	(ARRAY | POINTER))
@@ -473,7 +473,7 @@ ccode_t *pcondtrue;
     }
 #ifdef I8088
     if (target->indcount != 0 ||
-	target->storage == LOCAL && target->offset.offi != sp)
+	(target->storage == LOCAL && target->offset.offi != sp))
 	load(target, DREG);
     if (target->storage == GLOBAL)
 	load(target, getindexreg());

@@ -129,8 +129,8 @@ PRIVATE bool_pt isforever(exp)
 register struct nodestruct *exp;
 {
     return exp == NULL ||
-	exp->tag == LEAF && exp->left.symptr->storage == CONSTANT &&
-	exp->left.symptr->offset.offv != 0;
+	(exp->tag == LEAF && exp->left.symptr->storage == CONSTANT &&
+	 exp->left.symptr->offset.offv != 0);
 }
 
 PRIVATE void sort(caselist, count)	/* shell sort */
