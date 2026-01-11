@@ -254,6 +254,7 @@ struct nodestruct *exp;
 		++target->indcount;
 	    }
 	}
+	/* Fallthrough. */
     default:
 	commutop = FALSE;
 	break;

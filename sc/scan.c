@@ -226,6 +226,7 @@ PUBLIC void cppscan()
 	    if (SYMOFCHAR(ch) != SPECIALCHAR)
 		break;		/* specialchar advanced the input */
 	    /* must be '\\' */
+	    /* Fallthrough. */
 	default:
 	    OUTBYTE(ch);
 	    GCH1();
@@ -499,6 +500,7 @@ PUBLIC void nextsym()
 		break;
 	    gch1();
 	    /* fall through to BADCHAR case */
+	    /* Fallthrough. */
 	case BADCHAR:
 	    error("illegal character");
 	    break;

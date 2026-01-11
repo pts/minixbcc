@@ -705,6 +705,7 @@ struct symstruct *adr;
 	    break;
 	}
 #endif
+	/* Fallthrough. */
     case INDREG0:
     case INDREG1:
     case INDREG2:

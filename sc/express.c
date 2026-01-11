@@ -285,6 +285,7 @@ bool_pt seenlp;
 	    continue;
 	case STRUCPTROP:
 	    nodeptr = node(INDIRECTOP, nodeptr, NULLNODE);
+	    /* Fallthrough. */
 	case STRUCELTOP:
 	    nextsym();
 	    gs2name[0] = nodeptr->nodetype->structkey[0];
@@ -353,6 +354,7 @@ cpp_ident:
 	error("bad expression");
 	constant.value.v = 0;
 	constant.type = itype;
+	/* Fallthrough. */
     case CHARCONST:
     case INTCONST:		/* this includes enumeration-constants */
 	symptr = constsym(constant.value.v);

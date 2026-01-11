@@ -290,6 +290,7 @@ struct nodestruct *p2;
 	    p2 = node(NEGOP, p2, NULLNODE);
 	    break;
 	}
+	/* Fallthrough. */
     case SUBOP:
 #if 0
 	/* This works but sometimes pessimizes the code by converting small
@@ -852,6 +853,7 @@ struct nodestruct *nodeptr;
 	return promote(targtype);
     case CASTOP:
 	needspv(right);
+	/* Fallthrough. */
     case COMMAOP:
     case CONDOP:
 	return right->nodetype;
@@ -895,6 +897,7 @@ struct nodestruct *nodeptr;
 	needint(left);
 	needint(right);
 	/* fall through to redundant check and code to cast to same types */
+	/* Fallthrough. */
     case ADDOP:
     case DIVOP:
     case MULOP:
@@ -910,6 +913,7 @@ struct nodestruct *nodeptr;
 	    badlvalue(nodeptr);
 	    return errtype;
 	}
+	/* Fallthrough. */
     case PTRADDOP:		/* right type conversion to same size as ptr */
 	needint(right);
 	if (right->nodetype->scalar & LONG)
@@ -1044,6 +1048,7 @@ struct nodestruct *nodeptr;
 	    return errtype;
 	}
 	/* fall through to redundant check and code to cast to same types */
+	/* Fallthrough. */
     case ADDABOP:
     case SUBABOP:
     case DIVABOP:

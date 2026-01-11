@@ -313,6 +313,7 @@ PUBLIC void reslocals()
 		pushlist(LONGARGREGS);
 		break;
 	    }
+	    /* Fallthrough. */
 	case 2:
 # ifdef I8088
 	    pushlist(ARGREG);

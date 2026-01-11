@@ -785,6 +785,7 @@ more:
 	    goto more;
 	}
 	/* else fall into default */
+	/* Fallthrough. */
     default:
 	exprstatement();
 	semicolon();
