@@ -41,13 +41,15 @@
  */
 
 /* Include files */
-#include <sys/types.h>
+#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
 #include <sys/stat.h>
 #include <signal.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <ar.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include "minixar.h"
 
 struct i_ar_hdr {		/* local version, maybe different padding */
   char ar_name[14];
@@ -131,12 +133,14 @@ struct mov_list {
 } *moves = NULL;
 
 /* Forward declarations and external references */
-extern char *malloc();
-extern char *mktemp(), *rindex();
-extern int strncmp();
-extern print_date();
-extern user_abort(), usage();
-extern char *basename();
+static void print_date();
+static void user_abort();
+static void usage();
+static char *basename();
+static void ar_members();
+static void ar_common();
+static void append_members();
+static char *mymktemp();
 
 int main(argc, argv)
 int argc;
@@ -200,9 +204,9 @@ char **argv;
 	if (!(Major & REPLACE)) usage();
 
   if (local)
-	tmp1 = mktemp("./ar.1.XXXXXX");
+	tmp1 = mymktemp("./ar.1.XXXXXX");
   else
-	tmp1 = mktemp("/tmp/ar.1.XXXXXX");
+	tmp1 = mymktemp("/tmp/ar.1.XXXXXX");
 
   /* Now if Minor says AFTER or BEFORE - then get posname */
   if (Minor & (AFTER | BEFORE) && argc >= 4) {
@@ -244,26 +248,26 @@ char **argv;
   exit(rc);
 }
 
-usage()
+static void usage()
 {
   fprintf(stderr, "Usage: %s [qrxdpmt][abivulc] [posname] afile name ... \n", progname);
   exit(1);
 }
 
-user_abort()
+static void user_abort()
 {
   unlink(tmp1);
   exit(1);
 }
 
-insert_abort()
+static void insert_abort()
 {
   unlink(tmp1);
   unlink(tmp2);
   exit(1);
 }
 
-mwrite(fd, address, bytes)
+static void mwrite(fd, address, bytes)
 int fd;
 register char *address;
 register int bytes;
@@ -276,7 +280,7 @@ register int bytes;
 
 /* Convert int to pdp-11 order char array */
 
-int_to_p2(cp, n)
+static void int_to_p2(cp, n)
 char *cp;
 int n;
 {
@@ -286,7 +290,7 @@ int n;
 
 /* Convert long to pdp-11 order char array */
 
-long_to_p4(cp, n)
+static void long_to_p4(cp, n)
 char *cp;
 long n;
 {
@@ -298,7 +302,7 @@ long n;
 
 /* Convert char array regarded as a pdp-11 order int to an int */
 
-int p2_to_int(cp)
+static int p2_to_int(cp)
 unsigned char *cp;
 {
   return(cp[0] + 0x100 * cp[1]);
@@ -306,14 +310,14 @@ unsigned char *cp;
 
 /* Convert char array regarded as a pdp-11 order long to a long */
 
-long p4_to_long(cp)
+static long p4_to_long(cp)
 unsigned char *cp;
 {
   return((long) cp[2] + 0x100L * cp[3] +
 	0x10000L * cp[0] + 0x1000000L * cp[1]);
 }
 
-addmove(pos)
+static void addmove(pos)
 long pos;
 {
   struct mov_list *newmove;
@@ -330,7 +334,7 @@ int fd;
 {
   int ret;
   static struct i_ar_hdr member;
-  struct ar_hdr xmember;
+  struct minixar_hdr xmember;
 
   if ((ret = read(fd, (char *) &xmember, (unsigned) SIZEOF_AR_HDR)) <= 0)
 	return((struct i_ar_hdr *) NULL);
@@ -341,7 +345,7 @@ int fd;
 
   /* The archive long format is pdp11 not intel therefore we must
    * reformat them for our internal use */
-
+  /* !! No need to copy, reuse. Check sizeof. Reuse code with copy_member(...). */
   strncpy(member.ar_name, xmember.ar_name, sizeof member.ar_name);
   member.ar_date = p4_to_long(xmember.ar_date);
   member.ar_uid = xmember.ar_uid;
@@ -354,6 +358,7 @@ int fd;
 int open_archive(filename, opt, to_create)
 char *filename;
 int opt;
+int to_create;
 {
   static unsigned short magic;
   int fd, omode;
@@ -370,7 +375,7 @@ int opt;
 	}
 	if (!create && to_create == 1)
 		fprintf(stderr, "%s:%s created\n", progname, filename);
-	magic = ARMAG;
+	magic = MINIXARMAG;
 	mwrite(fd, &magic, MAGICSIZE);
 	return(fd);
   } else {
@@ -386,8 +391,8 @@ int opt;
 
 	/* Now check the magic number for ar V7 file */
 	lseek(fd, 0l, SEEK_SET);
-	read(fd, (char *) &magic, MAGICSIZE);
-	if (magic != ARMAG) {
+	/* !! Make it independent of endianness. */
+	if (read(fd, (char *) &magic, MAGICSIZE) != MAGICSIZE || magic != MINIXARMAG) {
 		fprintf(stderr, "Error: not %s V7 format - %s\n", progname, filename);
 		quit(mypid, SIGINT);
 	}
@@ -419,7 +424,7 @@ register int fd, tempfd;
   return(fd);
 }
 
-print_mode(mode)
+static void print_mode(mode)
 short mode;
 {
   char g_ex, o_ex, all_ex;
@@ -446,27 +451,26 @@ short mode;
   fprintf(stdout, "%c%c%c", all_rd, all_wr, all_ex);
 }
 
-print_header(member)
+static void print_header(member)
 struct i_ar_hdr *member;
 {
   if (verbose) {
 	print_mode(member->ar_mode);
 	fprintf(stdout, "%3.3d", member->ar_uid);
 	fprintf(stdout, "/%-3.3d ", member->ar_gid);
-	fprintf(stdout, "%5.5D", member->ar_size);	/* oops is long - mrw */
+	fprintf(stdout, "%5.5ld", member->ar_size);	/* oops is long - mrw */
 	print_date(member->ar_date);
   }
   fprintf(stdout, "%-14.14s\n", member->ar_name);
 }
 
-print(fd, member)
+static void print(fd, member)
 int fd;
 struct i_ar_hdr *member;
 {
   int outfd;
   long size;
   register int cnt, ret;
-  int do_align;
 
   if (Major & EXTRACT) {
 	if ((outfd = creat(member->ar_name, 0666)) < 0) {
@@ -486,7 +490,7 @@ struct i_ar_hdr *member;
   for (size = member->ar_size; size > 0; size -= ret) {
 	cnt = (size < BUFFERSIZE ? size : BUFFERSIZE);
 	ret = read(fd, buffer, cnt);
-	if (ret > 0) write(outfd, buffer, ret);
+	if (ret > 0) (void)!write(outfd, buffer, ret);
   }
   if (odd(member->ar_size)) lseek(fd, 1l, 1);	/* realign ourselves */
 
@@ -497,13 +501,13 @@ struct i_ar_hdr *member;
 }
 
 /* Copy a given member from fd1 to fd2 */
-copy_member(infd, outfd, member)
+static void copy_member(infd, outfd, member)
 int infd, outfd;
 struct i_ar_hdr *member;
 {
   int n, cnt;
   long m, size;
-  struct ar_hdr xmember;
+  struct minixar_hdr xmember;
 
   /* Save copies for our use */
   m = size = member->ar_size;
@@ -532,7 +536,7 @@ struct i_ar_hdr *member;
 }
 
 /* Insert at current offset - name file */
-insert(fd, name, mess, oldmember)
+static int insert(fd, name, mess, oldmember)
 int fd;
 char *name, *mess;
 struct i_ar_hdr *oldmember;
@@ -547,7 +551,7 @@ struct i_ar_hdr *oldmember;
   } else if ((in_fd = open(name, O_RDONLY)) < 0) {
 	fprintf(stderr, "Error: %s cannot open file %s\n", progname, name);
 	quit(mypid, SIGINT);
-  }
+  } else {
   strncpy(member.ar_name, basename(name), 14);
   member.ar_uid = status.st_uid;
   member.ar_gid = status.st_gid;
@@ -565,21 +569,22 @@ struct i_ar_hdr *oldmember;
   copy_member(in_fd, fd, &member);
   if (verbose) fprintf(stdout, "%s - %-14.14s\n", mess, name);
   close(in_fd);
+  }
   return(1);
 }
 
-int ar_move(oldfd, arfd, mov)
+static int ar_move(oldfd, arfd, mov)
 int oldfd, arfd;
 struct mov_list *mov;
 {
   long pos;
-  int cnt, want, a, newfd;
+  int cnt, want, newfd;
   struct i_ar_hdr *member;
 
   if (local)
-	tmp2 = mktemp("./ar.2.XXXXXX");
+	tmp2 = mymktemp("./ar.2.XXXXXX");
   else
-	tmp2 = mktemp("/tmp/ar.2.XXXXXX");
+	tmp2 = mymktemp("/tmp/ar.2.XXXXXX");
 
   close(oldfd);			/* close old temp file */
   signal(SIGINT, insert_abort);	/* set new signal handler */
@@ -631,9 +636,9 @@ char **argv;
   struct i_ar_hdr *member;
 
   if (local)
-	tmp2 = mktemp("./ar.2.XXXXXX");
+	tmp2 = mymktemp("./ar.2.XXXXXX");
   else
-	tmp2 = mktemp("/tmp/ar.2.XXXXXX");
+	tmp2 = mymktemp("/tmp/ar.2.XXXXXX");
 
   close(oldfd);			/* close old temp file */
   signal(SIGINT, insert_abort);	/* set new signal handler */
@@ -673,7 +678,7 @@ char **argv;
   return(newfd);
 }
 
-ar_common(ac, argc, argv)
+static void ar_common(ac, argc, argv)
 int ac, argc;
 char **argv;
 {
@@ -711,13 +716,12 @@ char **argv;
   }
 }
 
-ar_members(ac, argc, argv)
+static void ar_members(ac, argc, argv)
 int ac, argc;
 char **argv;
 {
-  int a, fd, tempfd, rc;
+  int a, fd, tempfd;
   struct i_ar_hdr *member;
-  long *lpos;
 
   fd = open_archive(afile, WRITE, 0);
   tempfd = open_archive(tmp1, WRITE, 2);
@@ -778,12 +782,11 @@ char **argv;
   close(fd);
 }
 
-append_members(ac, argc, argv)
+static void append_members(ac, argc, argv)
 int ac, argc;
 char **argv;
 {
   int a, fd;
-  struct i_ar_hdr *member;
 
   /* Quickly append members don't worry about dups in ar */
   fd = open_archive(afile, WRITE, 0);
@@ -799,7 +802,7 @@ char **argv;
 }
 
 
-char *basename(path)
+static char *basename(path)
 char *path;
 {
   register char *ptr = path;
@@ -828,13 +831,8 @@ int mo[] = {
       31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31
 };
 
-char *moname[] = {
-	  " Jan ", " Feb ", " Mar ", " Apr ", " May ", " Jun ",
-	  " Jul ", " Aug ", " Sep ", " Oct ", " Nov ", " Dec "
-};
-
 /* Print the date.  This only works from 1970 to 2099. */
-print_date(t)
+static void print_date(t)
 long t;
 {
   int i, year, day, month, hour, minute;
@@ -867,9 +865,29 @@ long t;
   }
 
   /* At this point, 'year', 'month', 'day', 'hour', 'minute'  ok */
-  fprintf(stdout, "%s%2.2d ", moname[month], ++day);
+  fprintf(stdout, " %s %2.2d ", "Jan\0Feb\0Mar\0Apr\0May\0Jun\0Jul\0Aug\0Sep\0Oct\0Nov\0Dec" + (month << 2), ++day);
   if (time((long *) NULL) - original >= YEAR / 2L)
-	fprintf(stdout, "%4.4D ", (long) year);
+	fprintf(stdout, "%4.4d ", year);
   else
-	fprintf(stdout, "%02.2d:%02.2d ", hour, minute);
+	fprintf(stdout, "%2.2d:%2.2d ", hour, minute);
+}
+
+/* From Minix 1.5.10. Has a race condition. */
+char *mymktemp(template)
+char *template;
+{
+  int pid;
+  char *p;
+
+  pid = getpid();		/* get process id as semi-unique number */
+  p = template;
+  while (*p++);			/* find end of string */
+  p--;				/* backup to last character */
+
+  /* Replace XXXXXX at end of template with pid. */
+  while (*--p == 'X') {
+	*p = '0' + (pid % 10);
+	pid = pid / 10;
+  }
+  return(template);
 }
