@@ -66,3 +66,11 @@ total 736
 -rw-r--r-- 1 pts pts   1835 1992-11-14 16:12:33.000000000 +0100 os.h
 -rw-r--r-- 1 pts pts    526 1992-11-14 16:12:33.000000000 +0100 output.h
 -rw-r--r-- 1 pts pts   5864 1992-11-09 16:58:42.000000000 +0100 bcc.bugs
+
+libc usage (no *<stdio.h>*):
+
+* dynamic memory allocation (malloc, realloc, free) (~1200 bytes of code)
+* unbuffered, POSIX file I/O (open, creat, read, write, close, isatty)
+* exit (exit)
+* string operations (memcpy, memset, strcat, strcmp, strcpy, strlen, strrchr)
+* arithmetic operations on 32-bit signed and unsigned integers (27 BCC helper functions)
