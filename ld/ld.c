@@ -38,7 +38,7 @@ char **argv;
     ioinit(argv[0]);
     objinit();
     syminit();
-    typeconv_init(BIG_ENDIAN, LONG_BIG_ENDIAN);
+    typeconv_init(LD_BIG_ENDIAN, LONG_BIG_ENDIAN);
     flag['3'] = sizeof(char *) >= 4;
     outfilename = NULL;
     for (argn = 1; argn < argc; ++argn)
