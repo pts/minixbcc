@@ -1,6 +1,7 @@
 /* readobj.c - read object file for linker */
 
 #include "ar.h"			/* maybe local copy of <ar.h> for cross-link */
+#include "minixar.h"
 #include "const.h"
 #include "byteord.h"
 #include "obj.h"
@@ -28,7 +29,9 @@ PRIVATE struct redlist *redlast;	/* last on list of redefined symbols */
 PRIVATE struct modstruct *modlast;	/* data for last module */
 
 FORWARD long readarheader P((char **parchentry));
+FORWARD long readminixarheader P((char **parchentry));
 FORWARD unsigned readfileheader P((void));
+FORWARD unsigned readfileheader2 P((void));
 FORWARD void readmodule P((char *filename, char *archentry));
 FORWARD void reedmodheader P((void));
 FORWARD bool_pt redsym P((struct symstruct *symptr, offset_t value));
@@ -59,9 +62,21 @@ char *filename;
     switch ((unsigned) readsize(2))
     {
     case OMAGIC:
-	seekin(0L);
-	for (modcount = readfileheader(); modcount-- != 0;)
+	for (modcount = readfileheader2(); modcount-- != 0;)
 	    readmodule(filename, (char *) NULL);
+	break;
+    case MINIXARMAG:
+	filepos = 2;
+	while ((filelength = readminixarheader(&archentry)) > 0)
+	{
+	    filepos += sizeof(struct minixar_hdr);
+	    for (modcount = readfileheader(); modcount-- != 0;)
+	    {
+		readmodule(stralloc(filename), archentry);
+		modlast->textoffset += filepos;
+	    }
+	    seekin(filepos += roundup(filelength, 2, long));
+	}
 	break;
     default:
 	seekin(0L);
@@ -104,6 +119,24 @@ char **parchentry;
     return strtoul(arheader.ar_size, (char **) NULL, 0);
 }
 
+PRIVATE long readminixarheader(parchentry)
+char **parchentry;
+{
+    struct minixar_hdr marheader;
+    char *endptr;
+    char *nameptr;
+
+    if (readineofok((char *) &marheader, sizeof marheader))
+	return 0;
+    strncpy (*parchentry = nameptr = ourmalloc(sizeof marheader.ar_name + 1),
+	     marheader.ar_name, sizeof marheader.ar_name);
+    endptr = nameptr + sizeof marheader.ar_name;
+    do
+	*endptr = 0;
+    while (endptr > nameptr && *--endptr == ' ');
+    return (long)c2u2(marheader.ar_size) << 16 | c2u2(marheader.ar_size + 2);  /* PDP-11 byte order. */
+}
+
 /* read and check file header of the object file just opened */
 
 PRIVATE unsigned readfileheader()
@@ -112,11 +145,27 @@ PRIVATE unsigned readfileheader()
     {
 	char magic[2];
 	char count[2];		/* really an int */
-    }
-     fileheader;
+    } fileheader;
     char filechecksum;		/* part of fileheader but would unalign */
 
     readin((char *) &fileheader, sizeof fileheader);
+    readin(&filechecksum, sizeof filechecksum);
+    if (filechecksum != checksum((char *) &fileheader, sizeof fileheader))
+	input1error(" is not an object file");
+    return c2u2(fileheader.count);
+}
+
+PRIVATE unsigned readfileheader2()
+{
+    struct
+    {
+	short omagic;
+	char count[2];		/* really an int */
+    } fileheader;
+    char filechecksum;		/* part of fileheader but would unalign */
+
+    fileheader.omagic = OMAGIC;
+    readin((char *) &fileheader.count, 2);
     readin(&filechecksum, sizeof filechecksum);
     if (filechecksum != checksum((char *) &fileheader, sizeof fileheader))
 	input1error(" is not an object file");
