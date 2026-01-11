@@ -751,7 +751,7 @@ more:
     case IDENT:
     case TYPEDEFNAME:
 	blanks();		/* cannot afford nextsym() */
-	while (ch == EOL && !eof)
+	while (ch == EOL && !bcceof)
 	{
 	    /* this now fails only on #controls and macros giving ':' */
 	    skipeol();

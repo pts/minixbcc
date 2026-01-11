@@ -76,7 +76,7 @@ PRIVATE void asmcontrol()
     {
 	skipline();
 	skipeol();
-	if (eof)
+	if (bcceof)
 	{
 	    eofin("#asm");
 	    break;
@@ -404,8 +404,8 @@ ts_s_fakeline_tot += 3 + len + 2 + 2;
 	endfakeline[0] = EOL;	/* guards any trailing backslash */
 	endfakeline[1] = EOL;	/* line ends here or before */
     }
-    old_eof = eof;
-    eof = TRUE;			/* valid after first EOL */
+    old_eof = bcceof;
+    bcceof = TRUE;			/* valid after first EOL */
     ch = *(lineptr = fakeline);
     if (defineflag)
     {
@@ -429,7 +429,7 @@ ts_s_fakeline_tot += 3 + len + 2 + 2;
     }
     else
 	undef();
-    eof = old_eof;
+    bcceof = old_eof;
 #ifdef TS
 ts_s_fakeline_tot -= len + 2 + 2;
 #endif
@@ -455,7 +455,7 @@ PUBLIC void docontrol()
 	while (TRUE)
 	{
 	    skipeol();
-	    if (eof)
+	    if (bcceof)
 		return;
 	    blanks();
 	    if (ch == '#')
@@ -533,7 +533,7 @@ ts_s_macparam += sizeof *paramlist * nparleft;
 ts_s_macparam_tot += sizeof *paramlist * nparleft;
 #endif
 	blanks();
-	while (ch == EOL && !eof)
+	while (ch == EOL && !bcceof)
 	{
 	    skipeol();
 	    blanks();
@@ -605,7 +605,7 @@ ts_s_macparam_tot += sizeof *paramlist * nparleft;
 			skipeol();	/* macro case disposed of already */
 			if (SYMOFCHAR(ch) == SPECIALCHAR)
 			    specialchar();
-			if (eof)
+			if (bcceof)
 			    break;
 		    }
 		    else
@@ -643,12 +643,12 @@ ts_s_macparam_string_tot -= charptr - oldparam;
 	    }
 	}
 	blanks();
-	while (ch == EOL && !eof)
+	while (ch == EOL && !bcceof)
 	{
 	    skipeol();
 	    blanks();
 	}
-	if (eof)
+	if (bcceof)
 	    eofin("macro parameter expansion");
 	if (nparleft)
 	{
@@ -671,7 +671,7 @@ ts_s_macparam_string_tot -= charptr - oldparam;
 		if (ch == EOL)
 		{
 		    skipeol();
-		    if (eof)
+		    if (bcceof)
 			break;
 		    continue;
 		}
@@ -887,14 +887,14 @@ PUBLIC void skipcomment()
 	    if (ch == EOL)
 	    {
 		skipeol();
-		if (eof)
+		if (bcceof)
 		    break;
 	    }
 	    else if (ch != '*')
 		gch1();
 	}
 	gch1();
-	if (eof)
+	if (bcceof)
 	{
 	    eofin("comment");
 	    return;
