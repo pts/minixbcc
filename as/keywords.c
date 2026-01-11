@@ -306,7 +306,7 @@ PUBLIC char ops[] =
     3, 'J', 'G', 'E', JCC, 0x7D,
     2, 'J', 'L', JCC, 0x7C,
     3, 'J', 'L', 'E', JCC, 0x7E,
-    3, 'J', 'M', 'P', CALL, W01(JMP_OPCODE, JMP_SHORT_OPCODE),
+    3, 'J', 'M', 'P', CALL, W01M(JMP_OPCODE, JMP_SHORT_OPCODE, JMP_OPCODE),
 #ifdef KV1
     4, 'J', 'M', 'P', 'F', CALLI, 0xEA,
 #endif
