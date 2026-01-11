@@ -1164,9 +1164,7 @@ bool_pt pushflag;
 #endif
 	}
 	else
-	    do
-		;
-	    while (*regptr++ >= MINREGCHAR);
+	    do {} while (*regptr++ >= MINREGCHAR);
 	if (regbit == lastregbit)
 	    break;
 #ifdef MC6809 /* temp use pull strings to keep old order */

@@ -260,7 +260,7 @@ struct symstruct *target;
 # if BIG_ENDIAN
 	    target->offset.offi += ctypesize;
 # else
-	    ;
+	    {}
 # endif
 #endif
 	}

@@ -446,7 +446,7 @@ struct nodestruct *p2;
 		    target->offset.offi += ctypesize;
 	    }
 # else
-	    ;
+	    {}
 # endif
 #endif
 	}
