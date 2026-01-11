@@ -4,7 +4,7 @@
 set -ex
 test "$0" = "${0%/*}" || cd "${0%/*}"
 
-gcc -m32 -s -O2 -Wall -W -Wno-maybe-uninitialized -Wno-sign-compare -fno-strict-aliasing \
+gcc -m32 -s -O2 -Wall -W -Wno-maybe-uninitialized -fno-strict-aliasing \
     -DDEFAULT_INCLUDE_DIR='"../include"' \
     -o bcc3-cc1g bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c
 rm -f ./*.s

@@ -215,7 +215,7 @@ PUBLIC void flushout()
     {
 	if (!orig_cppmode)
 	    clearlabels(outbufptr, outbufptr + nbytes);
-	if (write(output, outbufptr, nbytes) != nbytes)
+	if ((unsigned) write(output, outbufptr, nbytes) != nbytes)
 	{
 	    (void)!write(2, "output file error\n", 18);
 	    closein();
@@ -538,7 +538,7 @@ PUBLIC void outplus()
 PUBLIC void outshex(num)
 offset_t num;
 {
-    if (num >= -(maxoffsetto + 1))
+    if ((uvalue_t) num >= -(maxoffsetto + 1))
     {
 	outminus();
 	num = -num;

@@ -388,12 +388,12 @@ PRIVATE void intconst()
 	error("more than one 'L' in integer constant");
     if (ucount > 1)
 	error("more than one 'U' in integer constant");
-    if (constant.value.v <= maxintto && lcount == 0 && ucount == 0)
+    if ((uvalue_t) constant.value.v <= maxintto && lcount == 0 && ucount == 0)
 	constant.type = itype;
-    else if (constant.value.v <= maxuintto && lcount == 0
+    else if ((uvalue_t) constant.value.v <= maxuintto && lcount == 0
 	     && (base != 10 || ucount != 0))
 	constant.type = uitype;
-    else if (constant.value.v <= maxlongto && ucount == 0)
+    else if ((uvalue_t) constant.value.v <= maxlongto && ucount == 0)
 	constant.type = ltype;
     else
 	constant.type = ultype;

@@ -204,12 +204,12 @@ offset_t lastargsp;
 {
     extend(target);
     push(target);
-    if (lastargsp != 0 && sp != lastargsp - target->type->typesize)
+    if (lastargsp != 0 && (uoffset_t) sp != lastargsp - target->type->typesize)
     {
 	loadany(target);
 	modstk(lastargsp);
 	push(target);
-	if (sp != lastargsp - target->type->typesize)
+	if ((uoffset_t) sp != lastargsp - target->type->typesize)
 	{
 	    bugerror("botched push of arg");
 #ifdef DEBUG

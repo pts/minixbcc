@@ -255,7 +255,7 @@ PRIVATE void docase()
     value_t caseval;
 
     caseval = constexpression() & intmaskto;	/* FIXME: warn overflow */
-    if (caseval > maxintto)
+    if ((uvalue_t) caseval > maxintto)
 	caseval -= (maxuintto + 1);
     colon();
     if (switchnow == NULL)

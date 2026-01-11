@@ -299,7 +299,7 @@ PRIVATE struct typestruct *declenum()
 	{
 	    nextsym();
 	    ordinal = constexpression() & intmaskto;	/* FIXME: warn ovflo */
-	    if (ordinal > maxintto)
+	    if ((uoffset_t) ordinal > maxintto)
 		ordinal -= (maxuintto + 1);
 	}
 	if (esymptr->storage == CONSTANT)

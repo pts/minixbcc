@@ -404,13 +404,13 @@ struct nodestruct *p2;
 	    else if (rscalar & SHORT)
 	    {
 		target->offset.offv &= shortmaskto;
-		if (!(rscalar & UNSIGNED) && target->offset.offv > maxshortto)
+		if (!(rscalar & UNSIGNED) && (uvalue_t) target->offset.offv > maxshortto)
 		    target->offset.offv -= (maxushortto + 1);
 	    }
 	    else if (rscalar & INT)
 	    {
 		target->offset.offv &= intmaskto;
-		if (!(rscalar & UNSIGNED) && target->offset.offv > maxintto)
+		if (!(rscalar & UNSIGNED) && (uvalue_t) target->offset.offv > maxintto)
 		    target->offset.offv -= (maxuintto + 1);
 	    }
 	    else if (rscalar & FLOAT)
@@ -666,19 +666,19 @@ struct nodestruct *p2;
 	break;
     case GEOP:
 	if (uflag)
-	    targval = (uvalue_t) targval >= sourceval;
+	    targval = (uvalue_t) targval >= (uvalue_t) sourceval;
 	else
 	    targval = targval >= sourceval;
 	goto intconst;
     case GTOP:
 	if (uflag)
-	    targval = (uvalue_t) targval > sourceval;
+	    targval = (uvalue_t) targval > (uvalue_t) sourceval;
 	else
 	    targval = targval > sourceval;
 	goto intconst;
     case LEOP:
 	if (uflag)
-	    targval = (uvalue_t) targval <= sourceval;
+	    targval = (uvalue_t) targval <= (uvalue_t) sourceval;
 	else
 	    targval = targval <= sourceval;
 	goto intconst;
@@ -693,7 +693,7 @@ struct nodestruct *p2;
 	goto intconst;
     case LTOP:
 	if (uflag)
-	    targval = (uvalue_t) targval < sourceval;
+	    targval = (uvalue_t) targval < (uvalue_t) sourceval;
 	else
 	    targval = targval < sourceval;
 	goto intconst;
@@ -764,7 +764,7 @@ struct nodestruct *p2;
 	else
 	{
 	    target->type = itype;
-	    if (targval > maxintto)
+	    if ((uvalue_t) targval > maxintto)
 		targval -= (maxuintto + 1);
 	}
     }
