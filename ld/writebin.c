@@ -415,9 +415,15 @@ struct nlist {  /* symbol table entry */
 	setsym(segboundary, tempoffset + comsz[seg]);
 						/* __segXCH */
     }
+    endoffset = combase[NSEG - 1] + comsz[NSEG - 1];
+    if (!argbits32) {
+	if (etextoffset > 0x10000L) fatalerror("text too large");
+	if (endoffset > 0xffc0L) fatalerror("data too large");  /* 0x20 bytes for the stack. */
+    }
+
     setsym("_etext", etextoffset);
     setsym("_edata", edataoffset);
-    setsym("_end", endoffset = combase[NSEG - 1] + comsz[NSEG - 1]);
+    setsym("_end", endoffset);
 
     openout(outfilename);
 #ifdef BSD_A_OUT
