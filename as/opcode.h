@@ -5,114 +5,114 @@ enum
 /* Pseudo-op routine numbers.
  * Conditionals are first - this is used to test if op is a conditional.
  */
-    ELSEOP,
-    ELSEIFOP,
-    ELSEIFCOP,
-    ENDIFOP,
-    IFOP,
-    IFCOP,
+    ELSEOP,          /* pelse */
+    ELSEIFOP,        /* pelseif */
+    ELSEIFCOP,       /* pelsifc */
+    ENDIFOP,         /* pendif */
+    IFOP,            /* pif */
+    IFCOP,           /* pifc */
 
 #define MIN_NONCOND	ALIGNOP
-    ALIGNOP,
-    BLKWOP,
-    BLOCKOP,
-    BSSOP,
-    COMMOP,
-    COMMOP1,
-    DATAOP,
-    ENDBOP,
-    ENTEROP,
-    ENTRYOP,
-    EQUOP,
-    EVENOP,
-    EXPORTOP,
-    FAILOP,
-    FCBOP,
-    FCCOP,
-    FDBOP,
-    FQBOP,
-    GETOP,
-    GLOBLOP,
-    IDENTOP,
-    IMPORTOP,
-    LCOMMOP,
-    LCOMMOP1,
-    LISTOP,
-    LOCOP,
-    MACLISTOP,
-    MACROOP,
-    MAPOP,
-    ORGOP,
-    PROCEOFOP,
-    RMBOP,
-    SECTOP,
-    SETOP,
-    SETDPOP,
-    TEXTOP,
+    ALIGNOP,         /* palign */
+    BLKWOP,          /* pblkw */
+    BLOCKOP,         /* pblock */
+    BSSOP,           /* pbss */
+    COMMOP,          /* pcomm */
+    COMMOP1,         /* pcomm1 */
+    DATAOP,          /* pdata */
+    ENDBOP,          /* pendb */
+    ENTEROP,         /* penter */
+    ENTRYOP,         /* pentry */
+    EQUOP,           /* pequ */
+    EVENOP,          /* peven */
+    EXPORTOP,        /* pexport */
+    FAILOP,          /* pfail */
+    FCBOP,           /* pfcb */
+    FCCOP,           /* pfcc */
+    FDBOP,           /* pfdb */
+    FQBOP,           /* pfqb */
+    GETOP,           /* pget */
+    GLOBLOP,         /* pglobl */
+    IDENTOP,         /* pident */
+    IMPORTOP,        /* pimport */
+    LCOMMOP,         /* plcomm */
+    LCOMMOP1,        /* plcomm1 */
+    LISTOP,          /* plist */
+    LOCOP,           /* ploc */
+    MACLISTOP,       /* pmaclist */
+    MACROOP,         /* pmacro */
+    MAPOP,           /* pmap */
+    ORGOP,           /* porg */
+    PROCEOFOP,       /* pproceof */
+    RMBOP,           /* prmb */
+    SECTOP,          /* psect */
+    SETOP,           /* pset */
+    SETDPOP,         /* psetdp */
+    TEXTOP,          /* ptext */
 #ifdef I80386
-    USE16OP,
-    USE32OP,
+    USE16OP,         /* puse16 */
+    USE32OP,         /* puse32 */
 #endif
-    WARNOP,
+    WARNOP,          /* pwarn */
 
 /* Machine-op routine numbers. */
 #ifdef I80386
-    BCC,
-    BSWAP,
-    CALL,
-    CALLI,
-    DIVMUL,
-    ENTER,
-    EwGw,
-    ExGx,
-    F_INHER,
-    F_M,
-    F_M2,
-    F_M2_AX,
-    F_M2_M4,
-    F_M2_M4_M8,
-    F_M4_M8_OPTST,
-    F_M4_M8_ST,
-    F_M4_M8_STST,
-    F_M4_M8_M10_ST,
-    F_M10,
-    F_OPTST,
-    F_ST,
-    F_STST,
-    F_W_INHER,
-    F_W_M,
-    F_W_M2,
-    F_W_M2_AX,
-    GROUP1,
-    GROUP2,
-    GROUP6,
-    GROUP7,
-    GROUP8,
-    GvEv,
-    GvMa,
-    GvMp,
-    IMUL,
-    IN,
-    INCDEC,
-    INHER,
-    INHER16,
-    INHER32,
-    INHER_A,
-    INT,
-    JCC,
-    JCXZ,
-    LEA,
-    MOV,
-    MOVX,
-    NEGNOT,
-    OUT,
-    PUSHPOP,
-    RET,
-    SEG,
-    SETCC,
-    SH_DOUBLE,
-    TEST,
-    XCHG,
+    BCC,             /* mbcc */
+    BSWAP,           /* mbswap */
+    CALL,            /* mcall */
+    CALLI,           /* mcalli */
+    DIVMUL,          /* mdivmul */
+    ENTER,           /* menter */
+    EwGw,            /* mEwGw */
+    ExGx,            /* mExGx */
+    F_INHER,         /* mf_inher */
+    F_M,             /* mf_m */
+    F_M2,            /* mf_m2 */
+    F_M2_AX,         /* mf_m2_ax */
+    F_M2_M4,         /* mf_m2_m4 */
+    F_M2_M4_M8,      /* mf_m2_m4_m8 */
+    F_M4_M8_OPTST,   /* mf_m4_m8_optst */
+    F_M4_M8_ST,      /* mf_m4_m8_st */
+    F_M4_M8_STST,    /* mf_m4_m8_stst */
+    F_M4_M8_M10_ST,  /* mf_m4_m8_m10_st */
+    F_M10,           /* mf_m10 */
+    F_OPTST,         /* mf_optst */
+    F_ST,            /* mf_st */
+    F_STST,          /* mf_stst */
+    F_W_INHER,       /* mf_w_inher */
+    F_W_M,           /* mf_w_m */
+    F_W_M2,          /* mf_w_m2 */
+    F_W_M2_AX,       /* mf_w_m2_ax */
+    GROUP1,          /* mgroup1 */
+    GROUP2,          /* mgroup2 */
+    GROUP6,          /* mgroup6 */
+    GROUP7,          /* mgroup7 */
+    GROUP8,          /* mgroup8 */
+    GvEv,            /* mGvEv */
+    GvMa,            /* mGvMa */
+    GvMp,            /* mGvMp */
+    IMUL,            /* mimul */
+    IN,              /* min */
+    INCDEC,          /* mincdec */
+    INHER,           /* minher */
+    INHER16,         /* minher16 */
+    INHER32,         /* minher32 */
+    INHER_A,         /* minhera */
+    INT,             /* mint */
+    JCC,             /* mjcc */
+    JCXZ,            /* mjcxz */
+    LEA,             /* mlea */
+    MOV,             /* mmov */
+    MOVX,            /* mmovx */
+    NEGNOT,          /* mnegnot */
+    OUT,             /* mout */
+    PUSHPOP,         /* mpushpop */
+    RET,             /* mret */
+    SEG,             /* mseg */
+    SETCC,           /* msetcc */
+    SH_DOUBLE,       /* mshdouble */
+    TEST,            /* mtest */
+    XCHG,            /* mxchg */
 #endif /* I80386 */
 
 #ifdef MC6809
