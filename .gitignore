@@ -27,3 +27,11 @@
 /ld/ld.m64
 /ld/ld.pts
 /ld/ld.exe
+/ar/ar
+/ar/ar.host
+/ar/ar.cross
+/ar/ar.mini*
+/ar/ar.m32
+/ar/ar.m64
+/ar/ar.pts
+/ar/ar.exe
