@@ -5,6 +5,10 @@ static long bdataoffset;
 
 /* writebin.c - write binary file for linker */
 
+#ifdef DEBUG_SIZE
+#  include <stdio.h>
+#endif
+
 #ifdef unix
 # ifdef BSD_A_OUT
 #  include "bsd-a.out.h"
@@ -182,6 +186,13 @@ bool_pt argreloc_output;
     while (needlink);
 }
 
+PRIVATE void checksize(void) {
+    if (!bits32) {
+	if (etextoffset > 0x10000L) fatalerror("a_text too large");
+	if (endoffset > 0xffc0L) fatalerror("a_data+a_bss too large");  /* 0x20 bytes for the stack. */
+    }
+}
+
 /* write binary file */
 
 PUBLIC void writebin(outfilename, argsepid, argbits32, argstripflag, arguzp)
@@ -279,6 +290,9 @@ struct nlist {  /* symbol table entry */
 	    register struct symstruct **symparray;
 	    register struct symstruct *symptr;
 
+#ifdef DEBUG_SIZE
+	    modptr->modcomsz = 0;
+#endif
 	    for (symparray = modptr->symparray;
 		 (symptr = *symparray) != NULL; ++symparray)
 		if (symptr->modptr == modptr && !(symptr->flags & A_MASK))
@@ -306,8 +320,11 @@ struct nlist {  /* symbol table entry */
 			if (!reloc_output || !(symptr->flags & I_MASK))
 #endif			
 #endif
-			{
+			{  /* C_MASK: common symbol. */
 			    tempoffset = roundup(symptr->value, 4, offset_t);
+#ifdef DEBUG_SIZE
+			    modptr->modcomsz += tempoffset;
+#endif
 			    /* temp kludge quad alignment for 386 */
 			    symptr->value = comsz[seg = symptr->flags & SEGM_MASK];
 			    comsz[seg] += tempoffset;
@@ -418,10 +435,14 @@ struct nlist {  /* symbol table entry */
 						/* __segXCH */
     }
     endoffset = combase[NSEG - 1] + comsz[NSEG - 1];
-    if (!argbits32) {
-	if (etextoffset > 0x10000L) fatalerror("text too large");
-	if (endoffset > 0xffc0L) fatalerror("data too large");  /* 0x20 bytes for the stack. */
-    }
+#ifdef DEBUG_SIZE
+    /* !! These values are not aligned (padded) to 0x10, while the Minix a.out header values are. */
+    /* These values are correct (except for alignment) for both values of sepid, and for uzp == 0. They may be correct with uzp == 1 as well. */
+    fprintf(stderr, "info: total executable size: a_text=%lu a_data=%lu a_bss=%lu a_data+a_bss=%lu\n", etextoffset - btextoffset, edataoffset - bdataoffset, endoffset - edataoffset, endoffset);
+#endif
+#ifndef DEBUG_SIZE  /* For DEBUG_SIZE, do it later, after padmod(...) has printed the per-module infos. */
+    checksize();
+#endif
 
     setsym("_etext", etextoffset);
     setsym("_edata", edataoffset);
@@ -445,6 +466,9 @@ struct nlist {  /* symbol table entry */
 	    linkmod(modptr);
 	    padmod(modptr);
 	}
+#ifdef DEBUG_SIZE
+    checksize();
+#endif
 
     /* dump symbol table */
 #ifdef MINIX
@@ -823,8 +847,19 @@ struct modstruct *modptr;
 	    writenulls(size);
 	    segpos[seg] = spos;
 	}
+#ifndef DEBUG_SIZE
+	segbase[seg] = segpos[seg];
+#endif
+    }
+#ifdef DEBUG_SIZE
+    /* This reports the padded size (because roundup has been called above. */
+    /* Please note that a_bss values don't add up, because common symbols (C_MASK, N_COMM) may be defined in multiple modules. */
+    fprintf(stderr, "info: module size: a_text=%lu a_data=%lu a_bss=%lu f=%s%s%s\n", segpos[0] - segbase[0], segpos[3] - segbase[3], modptr->modcomsz, modptr->filename, modptr->archentry ? "//" : "", modptr->archentry ? modptr->archentry : "");
+    for (seg = 0; seg < NSEG; ++seg)
+    {
 	segbase[seg] = segpos[seg];
     }
+#endif
 }
 
 PRIVATE void setsym(name, value)

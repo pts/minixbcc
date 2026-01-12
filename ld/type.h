@@ -38,6 +38,9 @@ struct modstruct		/* module table entry format */
 				/* 00 = 0, 01 = 1, 10 = 2, 11 = 4 */
     struct symstruct **symparray;	/* ^array of ptrs to referenced syms */
     struct modstruct *modnext;	/* next module in order of initial reading */
+#ifdef DEBUG_SIZE
+    offset_t modcomsz;		/* total size of common symbols (including alignment) defined in this module */
+#endif
     char segsize[1];		/* up to 64 size bytes begin here */
 };				/* careful with sizeof( struct modstruct )!! */
 
