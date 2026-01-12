@@ -1,6 +1,12 @@
 # This is a version of BCC (Dev86) ld by Bruce Evans newer than in
 # bccbin32.tar.Z (also by Bruce Evans), with patches by pts.
 #
+# This is already a smart linker:
+#
+# * Object files (*.o) and library files (*.a) can be specified in any order.
+# * Only those object files will be linked in which define a symbol needed
+#   in a relocation (transitively) reachable from _main.
+#
 # The patches by pts change this:
 #
 # * It supports Minix .a archives in addition to GNU `!<arch>` .a archives.
