@@ -376,10 +376,12 @@ outnl();
 		    common(symptr->name.namea);
 		outnhex(type->typesize);
 	    }
+#ifndef NOFP
     if (printf_fp)
 	globl("__xfpcvt");
     if (scanf_fp)
 	globl("__xfptvc");
+#endif
 }
 
 /* dumplocs() - define offsets of current locals */

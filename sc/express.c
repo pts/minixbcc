@@ -237,6 +237,7 @@ bool_pt seenlp;
 	case LPAREN:
 	    nextsym();
 	    nodeptr = node(FUNCOP, nodeptr, listargs());
+#ifndef NOFP
 	    {
 		register struct nodestruct *np;
 
@@ -282,6 +283,7 @@ bool_pt seenlp;
 		    }
 		}
 	    }
+#endif
 	    continue;
 	case STRUCPTROP:
 	    nodeptr = node(INDIRECTOP, nodeptr, NULLNODE);

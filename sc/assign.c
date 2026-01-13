@@ -15,7 +15,12 @@
 FORWARD void blockmove P((struct symstruct *source, struct symstruct *target));
 FORWARD void call3 P((char *funcname, struct symstruct *target,
 		      struct symstruct *source, uoffset_t size));
-FORWARD void fconvert P((struct symstruct *source, struct typestruct *type));
+
+#ifdef NOFP
+#  define fconvert(target, type) no_fp_cast()
+#else
+  FORWARD void fconvert P((struct symstruct *source, struct typestruct *type));
+#endif
 
 PUBLIC void assign(source, target)
 struct symstruct *source;
@@ -55,29 +60,27 @@ struct symstruct *target;
 	if (!(tscalar & CHAR) || source->flags != TEMP ||
 	    source->offset.offi != sp || source->type->typesize > itypesize)
 	    cast(target->type, source);
-	if (tscalar & RSCALAR)  /* !! size optimization: Remove all RSCALAR, FLOAT and DOUBLE code, including this one. tscalar shouldn't be RSCALAR here. */
+	if (tscalar & RSCALAR)
 	{
 #ifdef NOFP
 	    if (tscalar & DOUBLE) no_fp_move();
-#endif
+	    no_fp_cast();
+#else
 	    if (source->storage == CONSTANT && ((!reguse) & doubleregs))  /* !! Fix parentheses bug. */
 		load(source, doubleregs & ~DREG);
 	    if (source->storage != CONSTANT && source->indcount == 0)
 	    {
 		/* XXX - 386 only */
 		storereg(DREG, target);
-#ifndef NOFP
 		if (tscalar & DOUBLE)
 		{
 		    target->indcount = 1;  /* XXX - outnnadr clobbers this */
 		    target->offset.offi += accregsize;
 		    storereg(doubleregs & ~DREG, target);
 		}
-#endif
 		target->storage = source->storage;
 		target->offset.offi = 0;
 	    }
-#ifndef NOFP
 	    else if (f_indirect(source) && tscalar & DOUBLE
 		     && (!(reguse & OPREG) || target->storage == OPREG))
 	    {
@@ -89,9 +92,9 @@ struct symstruct *target;
 		outntypechar(temptarg.type);
 		sp += dtypesize;
 	    }
-#endif
 	    else
 		blockmove(source, target);
+#endif
 	}
 	else if (target->type->constructor & STRUCTU)
 	    blockmove(source, target);
@@ -310,10 +313,10 @@ struct symstruct *target;
     }
     else if (newscalar & RSCALAR)
     {
-	saveopreg();		/* XXX */
 #ifdef NOFP
-	if (oldscalar & (ISCALAR | FLOAT) || newscalar & FLOAT) no_fp_cast();
+	no_fp_cast();
 #else
+	saveopreg();		/* XXX */
 	if (oldscalar & (ISCALAR | FLOAT))
 	    fpush(target);
 	if (newscalar & FLOAT)
@@ -324,8 +327,8 @@ struct symstruct *target;
 	    justpushed(target);	/* XXX - sets dtype wrong (harmless) and
 				 * wastes (dtypesize - ftypesize) stack */
 	}
-#endif
 	restoreopreg();
+#endif
     }
     target->type = type;
 }
@@ -365,6 +368,7 @@ struct symstruct *target;
     }
 }
 
+#ifndef NOFP
 PRIVATE void fconvert(source, type)
 struct symstruct *source;
 struct typestruct *type;
@@ -397,3 +401,4 @@ struct typestruct *type;
     modstk(spmark);		/* could adjust later (load instead of pop) */
     poplist(reguse & OPREG);
 }
+#endif

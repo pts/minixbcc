@@ -56,11 +56,15 @@ register struct nodestruct *nodeptr;
     lscalar = nodeptr->left.nodeptr->nodetype->scalar;
     if ((bothscalar = lscalar | rscalar) & RSCALAR)
     {
+#ifdef NOFP
+	no_fp_cast();
+#else
 	nodeptr->nodetype = dtype;
 	if (!(lscalar & DOUBLE))
 	    nodeptr->left.nodeptr = castnode(dtype, nodeptr->left.nodeptr);
 	if (!(rscalar & DOUBLE))
 	    nodeptr->right = castnode(dtype, right);
+#endif
     }
     else if (!(bothscalar & DLONG) &&
 	     ((nodeptr->tag == ANDOP &&
@@ -390,26 +394,22 @@ struct nodestruct *p2;
 	    neednonstruct(p1);	/* H & S say functions & arrays must match */
 	if (((lscalar = p1->nodetype->scalar) | rscalar) & RSCALAR)
 	{
+#ifdef NOFP
+	    no_fp_cast();
+#else
 	    if (target->storage != CONSTANT)
 		goto node1;
 	    if (lscalar & RSCALAR && !(rscalar & RSCALAR))
 	    {
-#ifdef NOFP
-		no_2double_to_intvalue();
-#else
 		double val;
 
 		val = *target->offset.offd;
 		if (val > maxlongto)
 		    val -= (double) (unsigned long) 0xFFFFFFFF + 1;  /* XXX */
 		target->offset.offv = (value_t) val;
-#endif
 	    }
 	    if (!(lscalar & RSCALAR) && rscalar & RSCALAR)
 	    {
-#ifdef NOFP
-		no_intvalue_to_double();
-#else
 		value_t val;
 
 		val = target->offset.offv;
@@ -418,8 +418,8 @@ struct nodestruct *p2;
 		    *target->offset.offd = (uvalue_t) val;
 		else
 		    *target->offset.offd = val;
-#endif
 	    }
+#endif
 	}
 	if (target->storage == CONSTANT)
 	{

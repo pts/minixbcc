@@ -344,11 +344,11 @@ store_pt targreg;
     }
     else if (source->type->scalar & DOUBLE)
     {
-	if (source->storage == targreg && source->indcount == 0)
-	    return;
 #ifdef NOFP
 	no_fp_move();
 #else
+	if (source->storage == targreg && source->indcount == 0)
+	    return;
 	if (source->storage == CONSTANT)
 	{
 	    /* XXX - more for non-386 */
