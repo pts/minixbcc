@@ -300,8 +300,9 @@ again:
     {
 	lineptr = input.first;
 	input.blocksize = read(infil, input.buf, INBUFSIZE);
-	if ((int)input.blocksize < 0)
-		abort();
+	if ((int)input.blocksize < 0) {
+		as_abort("error reading input file");  /* TODO(pts): Save and display filename. */
+	}
 	if (input.blocksize == 0)
 	{
 	    clearsource();
