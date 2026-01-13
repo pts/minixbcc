@@ -4,7 +4,6 @@
 
 #undef  I8086			/* Intel 8086 */
 #define I80386			/* Intel 80386 */
-#undef  MC6809			/* Motorola 6809 */
 
 /* one of these target operating systems must be defined */
 

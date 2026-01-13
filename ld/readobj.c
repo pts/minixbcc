@@ -3,7 +3,6 @@
 #include "ar.h"			/* maybe local copy of <ar.h> for cross-link */
 #include "minixar.h"
 #include "const.h"
-#include "byteord.h"
 #include "obj.h"
 #include "type.h"
 #include "globvar.h"

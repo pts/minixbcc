@@ -1,4 +1,4 @@
-/* ld.c - linker for Introl format (6809 C) object files 6809/8086/80386 */
+/* ld.c - linker for Introl format (6809 C) object files 8086/80386 */
 
 #ifdef STDC_HEADERS_MISSING
 extern int errno;
@@ -7,7 +7,6 @@ extern int errno;
 #endif
 
 #include "const.h"
-#include "byteord.h"
 #include "type.h"
 #include "globvar.h"
 
@@ -15,14 +14,9 @@ extern int errno;
 
 PRIVATE bool_t flag[128];  /* !! Use a smaller array on an ANSI system. */
 PRIVATE char libdir[] = "/usr/local/lib/";
-#ifdef MC6809
-PRIVATE char libsubdir[] = "m09/";
-PRIVATE char lib[sizeof libdir - 1 + sizeof libsubdir - 1 + NAME_MAX + 1];
-#else
 PRIVATE char lib86subdir[] = "i86/";
 PRIVATE char lib386subdir[] = "i386/";
 PRIVATE char lib[sizeof libdir - 1 + sizeof lib386subdir - 1 + NAME_MAX + 1];
-#endif
 PRIVATE char libprefix[] = "lib";
 PRIVATE char libsuffix[] = ".a";
 long text_base_address;
@@ -38,7 +32,7 @@ char **argv;
     ioinit(argv[0]);
     objinit();
     syminit();
-    typeconv_init(LD_BIG_ENDIAN, LONG_BIG_ENDIAN);
+    typeconv_init(0  /* LD_BIG_ENDIAN */, 0  /* LONG_BIG_ENDIAN */);  /* !! size optimization: Hardcode these 0s to typeconv.c. */
     flag['3'] = sizeof(char *) >= 4;
     outfilename = NULL;
     for (argn = 1; argn < argc; ++argn)
@@ -75,9 +69,6 @@ char **argv;
 		break;
 	    case 'l':		/* library name */
 		strcpy(lib, libdir);
-#ifdef MC6809
-		strcat(lib, libsubdir);
-#endif
 #ifdef I80386
 		strcat(lib, flag['3'] ? lib386subdir : lib86subdir);
 #endif

@@ -6,18 +6,12 @@
 # define LONG_OFFSETS		/* others can use this, but wasteful */
 #endif
 
-#ifndef OMAGIC
-# ifdef I80386
-#  define OMAGIC 0x86A3
-# endif
+#ifdef I80386
+# define OMAGIC 0x86A3
+#endif
 
-# ifdef I8086
-#  define OMAGIC 0x86A0
-# endif
-
-# ifdef MC6809
-#  define OMAGIC 0x5331
-# endif
+#ifdef I8086
+# define OMAGIC 0x86A0
 #endif
 
 #ifdef LONG_OFFSETS
@@ -28,12 +22,8 @@
 # define offtocn u2cn
 #endif
 
-#ifdef MC6809			/* temp don't support alignment at all */
-# define roundup( num, boundary, type ) (num)
-#else
-# define roundup( num, boundary, type ) \
+#define roundup( num, boundary, type ) \
 	(((num) + ((boundary) - 1)) & (type) ~((boundary) - 1))
-#endif
 
 #define MAX_OFFSET_SIZE 4
 #define NSEG 16
