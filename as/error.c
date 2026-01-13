@@ -55,7 +55,7 @@ PRIVATE char *errormessage[] =
     /* BWRAP */    "binary file wrap-around",
     /* COUNTOV */  "counter overflow",
     /* COUNTUN */  "counter underflow",
-    /* GETOV */    "GET stack overflow",
+    /* GETOV */    "GET stack overflow",  /* GET == INCLUDE */
     /* IFOV */     "IF stack overflow",
 
     /* LINLONG */   "line too long",

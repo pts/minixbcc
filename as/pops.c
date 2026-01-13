@@ -580,9 +580,8 @@ PUBLIC void pfcb()
     fcflag = TRUE;
 }
 
-/* FCC pseudo-op */
-
-PUBLIC void pfcc()
+/* Parses a delimited string to databuf.fcbuf. Returns nonzero on success. Sets mcount to the number of bytes in databuf.fcbuf. */
+PUBLIC int as_getdelim()
 {
     register char *bufptr;
     unsigned char byte;
@@ -597,9 +596,10 @@ PUBLIC void pfcc()
     {
 	if (*reglineptr == EOLCHAR)
 	{
-	    symname = reglineptr;
+	    mcount = bufptr - databuf.fcbuf;
+	    symname = lineptr = reglineptr;
 	    error(DELEXP);
-	    break;
+	    return 0;
 	}
 	if (*reglineptr == delimiter)
 	{
@@ -619,10 +619,18 @@ PUBLIC void pfcc()
     }
     lineptr = reglineptr;
     getsym();
-    if (bufptr > databuf.fcbuf)
+    mcount = bufptr - databuf.fcbuf;
+    return 1;
+}
+
+/* FCC pseudo-op */
+
+PUBLIC void pfcc()
+{
+    as_getdelim();
+    if (mcount)
     {
 	lastexp.offset = databuf.fcbuf[0];	/* show 1st char only */
-	mcount = bufptr - databuf.fcbuf;
 	/* won't overflow, line length limits it */
 	fcflag = TRUE;
 	popflags = POPLO | POPLC;

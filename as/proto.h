@@ -166,6 +166,7 @@ void pexport P((void));
 void pfail P((void));
 void pfcb P((void));
 void pfcc P((void));
+int as_getdelim P((void));
 void pfdb P((void));
 void pfqb P((void));
 void pglobl P((void));

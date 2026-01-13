@@ -15,6 +15,7 @@
 #include "globvar.h"
 #include "macro.h"
 #include "scan.h"
+#include "address.h"
 #undef EXTERN
 #define EXTERN
 #include "source.h"
@@ -91,43 +92,57 @@ PUBLIC void initsource()
 PUBLIC fd_t open_input(name)
 char *name;
 {
-    fd_t fd;
+    int fd;
 
-    if ((unsigned) (fd = open(name, O_RDONLY)) > 255)
+    if ((fd = open(name, O_RDONLY)) < 0)  /* TODO(pts): Display filename. */
 	as_abort("error opening input file");
     clearsource();
-    return fd;
+    return (fd_t) fd;
 }
 
 /*
-  handle GET pseudo_op
+  handle GET (== INCLUDE) pseudo_op
+  syntax: include "filename"
   stack state of current file, open new file and reset global state vars
   file must be seekable for the buffer discard/restore method to work
 */
 
 PUBLIC void pget()
 {
-#if OLD
-    if (infiln >= MAXGET)
+    long position;
+
+    if (sym != STRINGCONST)
+    {
+        do_delexp: error(DELEXP);
+    }
+    else if (maclevel || macflag)
+    {
+        error(EOFMAC);  /* The actual error massage should be: "GET in macro". */
+    }
+    else if (infiln >= MAXGET)
+    {
 	error(GETOV);
+    }
     else
     {
-	skipline();
+        if (!as_getdelim()) { mcount = 0; goto do_delexp; }
+        --lineptr;  /* Skip over the EOLCHAR, may be a comment character. */
 	listline();
-	if (infiln != 0)
+	databuf.fcbuf[mcount] = '\0';
+	mcount = 0;
+	if (infiln != 0)  /* Typically the top-level file has infiln == 1 here. */
 	{
 	    --getstak;
 	    getstak->fd = infil;
 	    getstak->line = linum;
-	    getstak->position = lseek(infil, 0L, 1) - (inbufend - inbufptr);
+	    if ((position = lseek(infil, 0L, 1)) < 0)
+	        as_abort("error getting input position");
+	    getstak->position = position - (input.limit - lineptr) - (input.buf - input.first);
 	    ++infiln;
 	    linum = 0;
-	    infil = open_input(lineptr - 1);
+	    infil = open_input(databuf.fcbuf);
 	}
     }
-#else
-    abort();
-#endif
 }
 
 /* process end of file */
@@ -161,8 +176,10 @@ PUBLIC void pproceof()
     {
 	infil = getstak->fd;
 	linum = getstak->line;
-	if (--infiln != 0)
-	    lseek(infil, getstak->position, 0);
+	if (--infiln != 0) {
+	    if (lseek(infil, getstak->position, 0) != getstak->position)
+		as_abort("error setting input position");
+	}
 	++getstak;
     }
     else if (!pass)
