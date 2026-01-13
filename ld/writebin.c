@@ -188,7 +188,7 @@ bool_pt argreloc_output;
 
 PRIVATE void checksize(void) {
     if (!bits32) {
-	if (etextoffset > 0x10000L) fatalerror("a_text too large");
+	if (etextoffset > 0xff00L) fatalerror("a_text too large");  /* This is the actual limit for a_text in Minix 1.5.10 i86. */
 	if (endoffset > 0xffc0L) fatalerror("a_data+a_bss too large");  /* 0x20 bytes for the stack. */
     }
 }
