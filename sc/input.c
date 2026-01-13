@@ -24,6 +24,12 @@
 
 #define INBUFSIZE 2048
 
+#ifdef OPEN00
+  extern int open00(/* _CONST char *pathname */);  /* flags and mode are both 0. */
+#else
+#  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
+#endif
+
 struct fbufstruct		/* file buffer structure */
 {
     struct fcbstruct fcb;	/* status after opening an include sub-file */
@@ -315,7 +321,7 @@ ts_s_pathname_tot += dirnamelen + (charptr - fnameptr) + 2;
 		dirnamend = NULL;
 	    }
 	}
-	fd = open(fullnameptr, 0);
+	fd = open00(fullnameptr);
 	if (fd >= 0)
 	{
 #ifdef TS
@@ -440,7 +446,7 @@ char *argv[];
 	    if (fd != 0)
 		fatalerror("more than one input file");
 	    fname = arg;
-	    if ((fd = open(arg, 0)) < 0)
+	    if ((fd = open00(arg)) < 0)
 		fatalerror("cannot open input");
 	}
 	else
