@@ -8,7 +8,6 @@
 
 /* one of these target operating systems must be defined */
 
-#undef  EDOS			/* generate EDOS executable */
 #define MINIX			/* generate Minix executable */
 
 /* these may need to be defined to suit the source processor */
