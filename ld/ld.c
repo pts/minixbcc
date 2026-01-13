@@ -54,9 +54,6 @@ char **argv;
 	    case 'M':		/* print symbols linked */
 	    case 'i':		/* separate I & D output */
 	    case 'm':		/* print modules linked */
-#ifdef BSD_A_OUT
-	    case 'r':		/* relocatable output */
-#endif
 	    case 's':		/* strip symbols */
 	    case 'z':		/* unmapped zero page */
 		if (arg[2] == 0)

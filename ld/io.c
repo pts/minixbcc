@@ -17,11 +17,6 @@
 #define OUTBUFSIZE	2048
 #define TRELBUFSIZE	1024
 
-#ifdef BSD_A_OUT
-PRIVATE char *drelbuf;		/* extra output buffer for data relocations */
-PRIVATE char *drelbufptr;	/* data relocation output buffer ptr */
-PRIVATE char *drelbuftop;	/* data relocation output buffer top */
-#endif
 PRIVATE char *errbuf;		/* error buffer (actually uses STDOUT) */
 PRIVATE char *errbufptr;	/* error buffer ptr */
 PRIVATE char *errbuftop;	/* error buffer top */
@@ -37,19 +32,10 @@ PRIVATE int outfd;		/* output file descriptor */
 PRIVATE unsigned outputperms;	/* permissions of output file */
 PRIVATE char *outputname;	/* name of output file */
 PRIVATE char *refname;		/* name of program for error reference */
-#ifdef BSD_A_OUT
-PRIVATE char *trelbuf;		/* extra output buffer for text relocations */
-PRIVATE char *trelbufptr;	/* text relocation output buffer ptr */
-PRIVATE char *trelbuftop;	/* text relocation output buffer top */
-PRIVATE int trelfd;		/* text relocation output file descriptor */
-#endif
 PRIVATE unsigned warncount;	/* count of warnings */
 
 FORWARD void errexit P((char *message));
 FORWARD void flushout P((void));
-#ifdef BSD_A_OUT
-FORWARD void flushtrel P((void));
-#endif
 FORWARD void outhexdigs P((offset_t num));
 FORWARD void outputerror P((char *message));
 FORWARD void put04x P((unsigned num));
@@ -64,10 +50,6 @@ char *progname;
 	refname = progname;	/* name must be static (is argv[0]) */
     else
 	refname = "link";
-#ifdef BSD_A_OUT
-    drelbuf = malloc(DRELBUFSIZE);
-    drelbuftop = drelbuf + DRELBUFSIZE;
-#endif
     errbuf = malloc(ERRBUFSIZE);
     errbufptr = errbuf;
     errbuftop = errbuf + ERRBUFSIZE;
@@ -75,10 +57,6 @@ char *progname;
     outbuf = malloc(OUTBUFSIZE);/* outbuf invalid if this fails but then */
 				/* will not be used - tableinit() aborts */
     outbuftop = outbuf + OUTBUFSIZE;
-#ifdef BSD_A_OUT
-    trelbuf = malloc(TRELBUFSIZE);
-    trelbuftop = trelbuf + TRELBUFSIZE;
-#endif
 }
 
 PUBLIC void closein()
@@ -90,23 +68,9 @@ PUBLIC void closein()
 
 PUBLIC void closeout()
 {
-#ifdef BSD_A_OUT
-    unsigned nbytes;
-#endif
-
     flushout();
-#ifdef BSD_A_OUT
-    flushtrel();
-    nbytes = drelbufptr - drelbuf;
-    if (write(trelfd, drelbuf, nbytes) != nbytes)
-	outputerror("cannot write");
-#endif
     if (close(outfd) == ERR)
 	outputerror("cannot close");
-#ifdef BSD_A_OUT
-    if (close(trelfd) == ERR)
-	outputerror("cannot close");
-#endif
 }
 
 PUBLIC void executable()
@@ -137,18 +101,6 @@ PRIVATE void flushout()
     outbufptr = outbuf;
 }
 
-#ifdef BSD_A_OUT
-PRIVATE void flushtrel()
-{
-    unsigned nbytes;
-
-    nbytes = trelbufptr - trelbuf;
-    if (write(trelfd, trelbuf, nbytes) != nbytes)
-	outputerror("cannot write");
-    trelbufptr = trelbuf;
-}
-#endif
-
 PUBLIC void openin(filename)
 char *filename;
 {
@@ -174,15 +126,7 @@ char *filename;
 	outputerror("cannot stat");
     outputperms = statbuf.st_mode;
     chmod(filename, outputperms & ~EXEC_PERMS);
-#ifdef BSD_A_OUT
-    drelbufptr = drelbuf;
-#endif
     outbufptr = outbuf;
-#ifdef BSD_A_OUT
-    if ((trelfd = open(filename, O_WRONLY)) == ERR)
-	outputerror("cannot reopen");
-    trelbufptr = trelbuf;
-#endif
 }
 
 PRIVATE void outhexdigs(num)
@@ -335,16 +279,6 @@ long offset;
 	outputerror("cannot seek in");
 }
 
-#ifdef BSD_A_OUT
-PUBLIC void seektrel(offset)
-long offset;
-{
-    flushtrel();
-    if (lseek(trelfd, offset, SEEK_SET) != offset)
-	outputerror("cannot seek in");
-}
-#endif
-
 PUBLIC void writechar(ch)
 int ch;
 {
@@ -359,24 +293,6 @@ int ch;
     *obuf++ = ch;
     outbufptr = obuf;
 }
-
-#ifdef BSD_A_OUT
-PUBLIC void writedrel(buf, count)
-register char *buf;
-unsigned count;
-{
-    register char *rbuf;
-
-    rbuf = drelbufptr;
-    while (count--)
-    {
-	if (rbuf >= drelbuftop)
-	    inputerror("data relocation buffer full while processing");
-	*rbuf++ = *buf++;
-    }
-    drelbufptr = rbuf;
-}
-#endif
 
 PUBLIC void writeout(buf, count)
 register char *buf;
@@ -397,28 +313,6 @@ unsigned count;
     }
     outbufptr = obuf;
 }
-
-#ifdef BSD_A_OUT
-PUBLIC void writetrel(buf, count)
-register char *buf;
-unsigned count;
-{
-    register char *rbuf;
-
-    rbuf = trelbufptr;
-    while (count--)
-    {
-	if (rbuf >= trelbuftop)
-	{
-	    trelbufptr = rbuf;
-	    flushtrel();
-	    rbuf = trelbufptr;
-	}
-	*rbuf++ = *buf++;
-    }
-    trelbufptr = rbuf;
-}
-#endif
 
 /* error module */
 
@@ -545,11 +439,6 @@ PUBLIC void usage()
 {
     putstr("usage: ");
     putstr(refname);
-#ifdef BSD_A_OUT
-    errexit(
-    " [-03Mimrsz[-]] [-T textaddr] [-llib_extension] [-o outfile] infile...");
-#else
     errexit(
     " [-03Mimsz[-]] [-T textaddr] [-llib_extension] [-o outfile] infile...");
-#endif
 }
