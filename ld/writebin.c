@@ -29,9 +29,7 @@ static long bdataoffset;
 #undef EXTERN
 #include "globvar.h"
 
-#ifdef MINIX
-#  define FILEHEADERLENGTH A_MINHDR
-#endif
+#define FILEHEADERLENGTH A_MINHDR
 #define DPSEG 2
 
 #define CM_MASK 0xC0
@@ -157,8 +155,7 @@ bool_pt arguzp;
 {
     char buf4[4];
     char *cptr;
-#ifdef MINIX
-#if 0  /* Defined in <a.out.h>. */
+#if 0  /* Defined in "aout.h" and Minix /usr/include/a.out.h . */
 struct nlist {  /* symbol table entry */
   char            n_name[8];  /* symbol name */
   long            n_value;    /* value */
@@ -181,7 +178,6 @@ struct nlist {  /* symbol table entry */
 #define C_EXT   0020  /* external symbol */
 #define C_STAT  0030  /* static */
 #endif
-#endif  /* of #ifdef MINIX */
     struct nlist extsym;
     flags_t flags;
     struct modstruct *modptr;
@@ -377,7 +373,6 @@ struct nlist {  /* symbol table entry */
 #endif
 
     /* dump symbol table */
-#ifdef MINIX
     if (!stripflag)
     {
 	seekout(FILEHEADERLENGTH
@@ -437,7 +432,6 @@ struct nlist {  /* symbol table entry */
 	     memsizeof(struct exec, a_syms));
 	writeout(buf4, memsizeof(struct exec, a_syms));
     }
-#endif /* MINIX */
     closeout();
     executable();
 }
@@ -632,8 +626,6 @@ unsigned countsize;
     writenulls((offset_t) readsize(countsize));
 }
 
-#ifdef MINIX
-
 #ifndef A_UZP
 #  define A_UZP 1
 #endif
@@ -672,8 +664,6 @@ PRIVATE void writeheader()
     }
     writeout((char *) &header, FILEHEADERLENGTH);
 }
-
-#endif /* MINIX */
 
 PRIVATE void writenulls(count)
 offset_t count;

@@ -8,8 +8,6 @@
 
 /* one of these target operating systems must be defined */
 
-#define MINIX			/* generate Minix executable */
-
 /* these may need to be defined to suit the source processor */
 
 #define S_ALIGNMENT 8		/* source memory alignment, power of 2 */
