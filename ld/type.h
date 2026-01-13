@@ -40,6 +40,10 @@ struct modstruct		/* module table entry format */
     struct modstruct *modnext;	/* next module in order of initial reading */
 #ifdef DEBUG_SIZE
     offset_t modcomsz;		/* total size of common symbols (including alignment) defined in this module */
+#else
+#  ifdef DEBUG_SIZE_NOPAD
+    offset_t modcomsz;  /* See above. */
+#  endif
 #endif
     char segsize[1];		/* up to 64 size bytes begin here */
 };				/* careful with sizeof( struct modstruct )!! */

@@ -5,6 +5,11 @@ static long bdataoffset;
 
 /* writebin.c - write binary file for linker */
 
+#ifdef DEBUG_SIZE_NOPAD
+#  ifndef DEBUG_SIZE
+#    define DEBUG_SIZE
+#  endif
+#endif
 #ifdef DEBUG_SIZE
 #  include <stdio.h>
 #endif
@@ -436,11 +441,14 @@ struct nlist {  /* symbol table entry */
     }
     endoffset = combase[NSEG - 1] + comsz[NSEG - 1];
 #ifdef DEBUG_SIZE
-    /* !! These values are not aligned (padded) to 0x10, while the Minix a.out header values are. */
-    /* These values are correct (except for alignment) for both values of sepid, and for uzp == 0. They may be correct with uzp == 1 as well. */
-    fprintf(stderr, "info: total executable size: a_text=%lu a_data=%lu a_bss=%lu a_data+a_bss=%lu\n", etextoffset - btextoffset, edataoffset - bdataoffset, endoffset - edataoffset, endoffset);
-#endif
-#ifndef DEBUG_SIZE  /* For DEBUG_SIZE, do it later, after padmod(...) has printed the per-module infos. */
+#  ifdef DEBUG_SIZE_NOPAD
+#    define ETEXTMAYBEPADOFF etextoffset
+#  else
+#    define ETEXTMAYBEPADOFF etextpadoff
+#  endif
+    /* These values are correct for both values of sepid, and for uzp == 0. They may be correct with uzp == 1 as well. */
+    fprintf(stderr, "info: total executable size: a_text=%lu a_data=%lu a_bss=%lu a_data+a_bss=%lu\n", ETEXTMAYBEPADOFF - btextoffset, edataoffset - bdataoffset, endoffset - edataoffset, endoffset);
+#else  /* For DEBUG_SIZE, do it later, after padmod(...) has printed the per-module infos. */
     checksize();
 #endif
 
@@ -831,6 +839,10 @@ struct modstruct *modptr;
     unsigned sizecount;
     char *sizeptr;
 
+#ifdef DEBUG_SIZE_NOPAD
+    /* Please note that a_bss values don't add up, because common symbols (C_MASK, N_COMM) may be defined in multiple modules. */
+    fprintf(stderr, "info: module size: a_text=%lu a_data=%lu a_bss=%lu f=%s%s%s\n", segpos[0] - segbase[0], segpos[3] - segbase[3], modptr->modcomsz, modptr->filename, modptr->archentry ? "//" : "", modptr->archentry ? modptr->archentry : "");
+#endif
     for (seg = 0, sizeptr = modptr->segsize; seg < NSEG; ++seg)
     {
 	size = cntooffset(sizeptr,
@@ -852,9 +864,11 @@ struct modstruct *modptr;
 #endif
     }
 #ifdef DEBUG_SIZE
+#  ifndef DEBUG_SIZE_NOPAD
     /* This reports the padded size (because roundup has been called above. */
     /* Please note that a_bss values don't add up, because common symbols (C_MASK, N_COMM) may be defined in multiple modules. */
     fprintf(stderr, "info: module size: a_text=%lu a_data=%lu a_bss=%lu f=%s%s%s\n", segpos[0] - segbase[0], segpos[3] - segbase[3], modptr->modcomsz, modptr->filename, modptr->archentry ? "//" : "", modptr->archentry ? modptr->archentry : "");
+#  endif
     for (seg = 0; seg < NSEG; ++seg)
     {
 	segbase[seg] = segpos[seg];
