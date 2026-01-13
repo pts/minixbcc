@@ -277,6 +277,7 @@ PUBLIC void include()
 	    incptr = incptr->incnext;
 	else
 	{
+#if 0  /* This implementation uses strrchr(...). It's longer. */
 	    dirnameptr = inputbuf->fname;
 	    if ((dirnamend = strrchr(dirnameptr, DIRCHAR)) == NULL)
 		incptr->incdirname = NULL;
@@ -285,6 +286,21 @@ PUBLIC void include()
 		*dirnamend = 0;
 		incptr->incdirname = dirnameptr;
 	    }
+#else  /* This implementation doesn't use strrchr(...). */
+	    dirnameptr = inputbuf->fname;
+	    dirnamend = dirnameptr + strlen(dirnameptr);
+	    for (;;) {
+		if (dirnamend == dirnameptr) {
+		    incptr->incdirname = NULL;
+		    break;
+		}
+		if (*--dirnamend == DIRCHAR) {
+		    *dirnamend = 0;
+		    incptr->incdirname = dirnameptr;
+		    break;
+		}
+	    }
+#endif
 	}
     }
     do
