@@ -2,16 +2,14 @@
 
 #define OBJ_H
 
-#ifdef I80386
-# define LONG_OFFSETS		/* others can use this, but wasteful */
-#endif
+#define LONG_OFFSETS
 
-#ifdef I80386
-# define OMAGIC 0x86A3
-#endif
+#define OMAGIC 0x86A3
 
-#ifdef I8086
-# define OMAGIC 0x86A0
+#if 0
+#  define OMAGIC_MC6809 0x5331  /* Unused, because MC6809 support is not implemented. */
+#  define OMAGIC_I386 0x86A3
+#  define OMAGIC_I86 0x86A0  /* This is currently unused. The linker expects OMAGIC_I386 for i86 object files as well. */
 #endif
 
 #ifdef LONG_OFFSETS

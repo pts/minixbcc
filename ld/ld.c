@@ -69,9 +69,7 @@ char **argv;
 		break;
 	    case 'l':		/* library name */
 		strcpy(lib, libdir);
-#ifdef I80386
 		strcat(lib, flag['3'] ? lib386subdir : lib86subdir);
-#endif
 		strncat(lib, libprefix, NAME_MAX + 1);
 		strncat(lib, arg + 2, NAME_MAX - (sizeof libprefix - 1)
 					       - (sizeof libsuffix - 1));

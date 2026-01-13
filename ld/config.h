@@ -1,12 +1,5 @@
 /* config.h - configuration for linker */
 
-/* one of these target processors must be defined */
-
-#undef  I8086			/* Intel 8086 */
-#define I80386			/* Intel 80386 */
-
-/* one of these target operating systems must be defined */
-
 /* these may need to be defined to suit the source processor */
 
 #define S_ALIGNMENT 8		/* source memory alignment, power of 2 */
