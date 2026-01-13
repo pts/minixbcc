@@ -230,6 +230,30 @@ struct nodestruct *nodeptr;
     }
 }
 
+/* !! This uses the division on the host C system. Fix it so that it rounds towards 0. x86 idiv and C99 / round towards 0. C89 / allows rounding down or rounding towards 0. */
+#if 1  /*CONFIG_CPU_IDIV_TO_ZERO*/  /* !! size optimization: Define this if x86 is the host C system */  /* !! bugfix: it's safer to hardcode 0 here */
+#  define VALUE_DIV(a, b) ((value_t)(a) / (value_t)(b))
+#  define VALUE_MOD(a, b) ((value_t)(a) % (value_t)(b))
+#else
+#  define VALUE_DIV(a, b) value_div((a), (b))
+#  define VALUE_MOD(a, b) value_mod((a), (b))
+  /* Deterministic signed division, rounds towards zero.
+   * The result is undefined if b == 0. It's defined for a == int_min and b == -1.
+   */
+  static value_t value_div(a, b); value_t a; value_t b; {
+      fastin_t an, bn;
+      uvalue_t d;
+
+      an = (a < 0);  /* !! size optimization: change most fastin_t to int, see if code gets shorter. */
+      bn = (b < 0);
+      d = (uvalue_t)(an ? -a : a) / (uvalue_t)(bn ? -b : b);
+      return an == bn ? d : -d;
+  }
+  static value_t value_mod(a, b); value_t a, value_t b; {
+      return a - value_div(a, b) * b;
+  }
+#endif
+
 PUBLIC struct nodestruct *node(t, p1, p2)
 op_pt t;
 struct nodestruct *p1;
@@ -659,7 +683,7 @@ struct nodestruct *p2;
 	if (uflag)
 	    targval = (uvalue_t) targval / sourceval;
 	else
-	    targval /= sourceval;
+	    targval = VALUE_DIV(targval, sourceval);
 	break;
     case EOROP:
 	targval ^= sourceval;
@@ -710,7 +734,7 @@ struct nodestruct *p2;
 	if (uflag)
 	    targval = (uvalue_t) targval % sourceval;
 	else
-	    targval %= sourceval;
+	    targval = VALUE_MOD(targval, sourceval);
 	break;
     case MULOP:
 	targval *= sourceval;

@@ -986,8 +986,9 @@ bool_pt uflag;
 	clr(DREG);
     else
     {
-	if (sign)
+	if (sign)  /* !! Is this always correct? Add tests. */
 	    negDreg();
+	/* !! This code generation (sar instead of idiv) is incorrect if uflag == 0, becase `sar ax, #1' rounds down, x87 idiv round towards 0, so we'd need to add extra instructions, see divbug.txt. */
 	srconst((value_t) highbit((uvalue_t) divisor), uflag);
     }
     return TRUE;
@@ -1292,8 +1293,9 @@ bool_pt uflag;
 	clrBreg();		/* original divisor 1 or -1 yields 0 */
     else
     {
-	if (sign)
+	if (sign)  /* !! Is this always correct? Add tests. */
 	    negDreg();
+	/* !! This code generation (and instead of idiv) may be incorrect for uflag ==0, because it implements rounding down, and x87 idiv does rounds towards 0? Diagnose and fix it. See divbug.txt for details. */
 	andconst((offset_t) divisor);	/* if original divisor 0, this is
 					   null */
 	if (sign)
