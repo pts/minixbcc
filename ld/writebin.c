@@ -26,7 +26,6 @@ static long bdataoffset;
 #include "const.h"
 #include "obj.h"
 #include "type.h"
-#undef EXTERN
 #include "globvar.h"
 
 #define FILEHEADERLENGTH A_MINHDR

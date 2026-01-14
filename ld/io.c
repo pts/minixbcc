@@ -129,6 +129,8 @@ char *filename;
     outbufptr = outbuf;
 }
 
+PUBLIC char hexdigit[] = "0123456789abcdef";
+
 PRIVATE void outhexdigs(num)
 register offset_t num;
 {

@@ -22,6 +22,10 @@ The symbols referred to in a given module are linked together by a chain
 beginning in the module descriptor.
 */
 
+PUBLIC struct entrylist *entryfirst;	/* first on list of entry symbols */
+PUBLIC struct modstruct *modfirst;	/* data for 1st module */
+PUBLIC struct redlist *redfirst;	/* first on list of redefined symbols */
+
 PRIVATE char convertsize[NSEG / 4] = {0, 1, 2, 4};
 PRIVATE struct entrylist *entrylast;	/* last on list of entry symbols */
 PRIVATE struct redlist *redlast;	/* last on list of redefined symbols */
