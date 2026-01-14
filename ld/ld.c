@@ -1,16 +1,12 @@
 /* ld.c - linker for Introl format (6809 C) object files 8086/80386 */
 
-#ifdef STDC_HEADERS_MISSING
-extern int errno;
-#else
-#include <errno.h>
-#endif
-
 #include "const.h"
 #include "type.h"
 #include "globvar.h"
 
 #define NAME_MAX 14
+
+PUBLIC long text_base_address;
 
 PRIVATE bool_t flag[128];  /* !! Use a smaller array on an ANSI system. */
 PRIVATE char libdir[] = "/usr/local/lib/";
@@ -19,7 +15,40 @@ PRIVATE char lib386subdir[] = "i386/";
 PRIVATE char lib[sizeof libdir - 1 + sizeof lib386subdir - 1 + NAME_MAX + 1];
 PRIVATE char libprefix[] = "lib";
 PRIVATE char libsuffix[] = ".a";
-long text_base_address;
+
+/* This is similar to strtoul(argv[argn], (char **) NULL, 16), but it avoids
+ * dealing with errno. There are some differences: it allows only spaces or
+ * tabs as whitespace, it fails for trailing junk bytes.
+ */
+PRIVATE bool_pt parse_u_hex(s, output)
+char *s;
+long *output;
+{
+  register char c;
+  unsigned count;
+
+  *output = 0;
+  for (; (c = s[0]) == ' ' || c == '\t'; ++s) {}
+  if (s[0] == '0' && ((c = s[1]) == 'x' || c == 'X')) s += 2;
+  if (s[0] == '\0') return 0;  /* Number missing. */
+  for (; s[0] == '0'; ++s) {}  /* Don't count leading '0's as digits for overflow. */
+  count = 0;
+  while ((c = *s++) != '\0') {
+    if (++count == (sizeof(long) << 1) + 1) return 0;  /* Overflow in number of digits. */
+    if (c >= '0' && c <= '9') {
+      c -= '0';
+    } else if (c >= 'a' && c <= 'f') {
+      c -= 'a' - 10;
+    } else if (c >= 'A' && c <= 'F') {
+      c -= 'A' - 10;
+    } else {
+      return 0;  /* Bad hex digit in c. */
+    }
+    *output <<= 4;
+    *output += c;
+  }
+  return *output >= 0;
+}
 
 PUBLIC int main(argc, argv)
 int argc;
@@ -62,9 +91,7 @@ char **argv;
 	    case 'T':		/* text base address */
 		if (arg[2] != 0 || ++argn >= argc)
 		    usage();
-		errno = 0;    
-		text_base_address = strtoul(argv[argn], (char **) NULL, 16);
-		if (errno != 0)
+		if (!parse_u_hex(argv[argn], &text_base_address))
 		    fatalerror("invalid text address");
 		break;
 	    case 'l':		/* library name */
