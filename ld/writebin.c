@@ -143,6 +143,17 @@ PRIVATE void checksize() {
     }
 }
 
+PRIVATE void namecpy(p, pend, src)
+char *p;
+char *pend;
+char *src;
+{
+	register char *q;
+
+	for (q = p; q != pend && (*q++ = *src++) != '\0'; ) {}
+	for (; q != pend; *q++ = '\0') {}
+}
+
 /* write binary file */
 
 PUBLIC void writebin(outfilename, argsepid, argbits32, argstripflag, arguzp)
@@ -389,8 +400,7 @@ struct nlist {  /* symbol table entry */
 		     (symptr = *symparray) != NULL; ++symparray)
 		    if (symptr->modptr == modptr)
 		    {
-			strncpy((char *) &extsym.n_was_name, symptr->name,
-				sizeof extsym.n_was_name);
+		        namecpy((char *) &extsym.n_was_name, (char *) &extsym.n_was_name + sizeof extsym.n_was_name, symptr->name);
 			u4cn((char *) &extsym.n_value, (u4_t) symptr->value,
 			     sizeof extsym.n_value);
 #if 0
