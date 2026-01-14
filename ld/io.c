@@ -151,7 +151,7 @@ register unsigned num;
 
 #ifdef LONG_OFFSETS
 
-PUBLIC void put08lx(num)
+PUBLIC void put08lx(num)  /* Used by dumpsyms(). */
 register offset_t num;
 {
     put04x(num / 0x10000);
@@ -160,7 +160,7 @@ register offset_t num;
 
 #else /* not LONG_OFFSETS */
 
-PUBLIC void put08x(num)
+PUBLIC void put08x(num)  /* Used by dumpsyms(). */
 register offset_t num;
 {
     putstr("0000");

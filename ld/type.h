@@ -79,6 +79,9 @@ struct symstruct		/* symbol table entry format */
 void dumpmods P((void));
 void dumpsyms P((void));
 
+/* heap.c */
+void initheap P((void));
+
 /* io.c */
 void ioinit P((char *progname));
 void closein P((void));
@@ -136,7 +139,7 @@ void syminit P((void));
 struct symstruct *addsym P((char *name));
 struct symstruct *findsym P((char *name));
 char *moveup P((unsigned nbytes));
-char *ourmalloc P((unsigned nbytes));
+char *heapalloc P((unsigned nbytes));
 void ourfree P((char *cptr));
 char *readstring P((void));
 void release P((char *cptr));

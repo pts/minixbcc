@@ -110,7 +110,7 @@ char **parchentry;
 
     if (readineofok((char *) &arheader, sizeof arheader))
 	return 0;
-    strncpy (*parchentry = nameptr = ourmalloc(sizeof arheader.ar_name + 1),
+    strncpy (*parchentry = nameptr = heapalloc(sizeof arheader.ar_name + 1),
 	     arheader.ar_name, sizeof arheader.ar_name);
     endptr = nameptr + sizeof arheader.ar_name;
     do
@@ -128,7 +128,7 @@ char **parchentry;
 
     if (readineofok((char *) &marheader, sizeof marheader))
 	return 0;
-    strncpy (*parchentry = nameptr = ourmalloc(sizeof marheader.ar_name + 1),
+    strncpy (*parchentry = nameptr = heapalloc(sizeof marheader.ar_name + 1),
 	     marheader.ar_name, sizeof marheader.ar_name);
     endptr = nameptr + sizeof marheader.ar_name;
     do
@@ -199,7 +199,7 @@ char *archentry;
     modlast->archentry = archentry;
     nsymbol = readsize(2);
     symdptr = (struct symdstruct *)
-	ourmalloc(nsymbol * sizeof(struct symdstruct));
+	heapalloc(nsymbol * sizeof(struct symdstruct));
     for (endsymdptr = symdptr + nsymbol; symdptr < endsymdptr; ++symdptr)
     {
 	readsize(2);		/* discard string offset, assume strings seq */
@@ -212,7 +212,7 @@ char *archentry;
     symdptr = (struct symdstruct *)
 	moveup(nsymbol * sizeof(struct symdstruct));
     modlast->symparray = symparray = (struct symstruct **)
-	ourmalloc((nsymbol + 1) * sizeof(struct symstruct *));
+	heapalloc((nsymbol + 1) * sizeof(struct symstruct *));
     symname = readstring();	/* module name */
     modlast->modname = stralloc(symname);	/* likely OK overlapped copy */
     for (endsymdptr = symdptr + nsymbol; symdptr < endsymdptr;
@@ -268,7 +268,7 @@ struct symstruct *symptr;
     for (elptr = entryfirst; elptr != NULL; elptr = elptr->elnext)
 	if (symptr == elptr->elsymptr)
 	    return;
-    elptr = (struct entrylist *) ourmalloc(sizeof(struct entrylist));
+    elptr = (struct entrylist *) heapalloc(sizeof(struct entrylist));
     elptr->elnext = NULL;
     elptr->elsymptr = symptr;
     if (entryfirst == NULL)
@@ -297,7 +297,7 @@ PRIVATE void reedmodheader()
     struct modstruct *modptr;
 
     readin((char *) &modheader, sizeof modheader);
-    modptr = (struct modstruct *) ourmalloc(sizeof(struct modstruct));
+    modptr = (struct modstruct *) heapalloc(sizeof(struct modstruct));
     modptr->modnext = NULL;
     modptr->textoffset = c4u4(modheader.htextoffset);
     modptr->class = modheader.hclass;
@@ -309,9 +309,9 @@ PRIVATE void reedmodheader()
 	if ((count = segsizecount(seg, modptr)) != 0)
 	{
 	    if (cptr == modptr->segsize)
-		ourmalloc(count - 1);	/* 1st byte reserved in struct */
+		heapalloc(count - 1);	/* 1st byte reserved in struct */
 	    else
-		ourmalloc(count);
+		heapalloc(count);
 	    readin(cptr, count);
 	    cptr += count;
 	}
@@ -336,7 +336,7 @@ offset_t value;
 	    if (rlptr == NULL)
 	    {
 		rlptr = (struct redlist *)
-		    ourmalloc(sizeof(struct redlist));
+		    heapalloc(sizeof(struct redlist));
 		rlptr->rlnext = NULL;
 		rlptr->rlsymptr = symptr;
 		if (symptr->modptr->class < class)

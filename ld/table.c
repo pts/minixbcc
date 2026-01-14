@@ -9,9 +9,11 @@
 #define GOLDEN 157		/* GOLDEN/HASHTABSIZE approx golden ratio */
 #define HASHTABSIZE 256
 
+PUBLIC char *heapstart;		/* start of heap (catchall table) heapstart <= heapptr <= heapend */
+PUBLIC char *heapend;		/* end of free space in heap */
+PUBLIC char *heapptr;		/* next free space in heap */
+
 PRIVATE struct symstruct *hashtab[HASHTABSIZE];	/* hash table */
-PRIVATE char *tableptr;		/* next free spot in catchall table */
-PRIVATE char *tableend;		/* ptr to spot after last in table */
 
 FORWARD struct symstruct **gethashptr P((char *name));
 
@@ -21,13 +23,7 @@ PUBLIC void syminit()
 {
     unsigned i;
 
-    for (i = sizeof(int) <= 2 ? 0xE000 : (unsigned) 0x30000;
-	 i != 0; i -= 512)
-	if ((tableptr = malloc(i)) != NULL)
-	    break;
-    if (tableptr == NULL)
-	outofmemory();
-    tableend = tableptr + i;
+    initheap();  /* Initializes heapstart, heapptr and heapend. */
     for (i = 0; i < HASHTABSIZE; i++)
 	hashtab[i] = NULL;
 }
@@ -50,9 +46,9 @@ char *name;
 	oldsymptr = symptr;
 	symptr = symptr->next;
     }
-    align(tableptr);
-    symptr = (struct symstruct *) tableptr;
-    if ((tableptr = symptr->name + (strlen(name) + 1)) > tableend)
+    align(heapptr);
+    symptr = (struct symstruct *) heapptr;
+    if ((heapptr = symptr->name + (strlen(name) + 1)) > heapend)
 	outofmemory();
     symptr->modptr = NULL;
     symptr->next = NULL;
@@ -128,34 +124,26 @@ unsigned nbytes;
     register char *source;
     register char *target;
 
-    source = tableptr;
-    target = tableend;
+    source = heapptr;
+    target = heapend;
     while (nbytes--)
 	*--target = *--source;
-    tableptr = source;
-    return tableend = target;
+    heapptr = source;
+    return heapend = target;
 }
 
-/* our version of malloc */
+/* allocate from our heap */
 
-PUBLIC char *ourmalloc(nbytes)
+PUBLIC char *heapalloc(nbytes)
 unsigned nbytes;
 {
     char *allocptr;
 
-    align(tableptr);
-    allocptr = tableptr;
-    if ((tableptr += nbytes) > tableend)
+    align(heapptr);
+    allocptr = heapptr;
+    if ((heapptr += nbytes) > heapend)
 	outofmemory();
     return allocptr;
-}
-
-/* our version of free (release from bottom of table) */
-
-PUBLIC void ourfree(cptr)
-char *cptr;
-{
-    tableptr = cptr;
 }
 
 /* read string from file into table at offset suitable for next symbol */
@@ -166,11 +154,11 @@ PUBLIC char *readstring()
     char *s;
     char *start;
 
-    align(tableptr);
-    start = s = ((struct symstruct *) tableptr)->name;
+    align(heapptr);
+    start = s = ((struct symstruct *) heapptr)->name;
     while (TRUE)
     {
-	if (s >= tableend)
+	if (s >= heapend)
 	    outofmemory();
 	if ((c = readchar()) < 0)
 	    prematureeof();
@@ -185,7 +173,7 @@ PUBLIC char *readstring()
 PUBLIC void release(cptr)
 char *cptr;
 {
-    tableend = cptr;
+    heapend = cptr;
 }
 
 /* allocate space for string */
@@ -193,5 +181,5 @@ char *cptr;
 PUBLIC char *stralloc(s)
 char *s;
 {
-    return strcpy(ourmalloc((unsigned) strlen(s) + 1), s);
+    return strcpy(heapalloc((unsigned) strlen(s) + 1), s);
 }
