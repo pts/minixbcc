@@ -13,18 +13,12 @@
 /* defaults */
 
 #define DIRCHAR		'/'	/* character separating filename from dir */
-#define INBUFSIZE	8192
+#ifndef INBUFSIZE
+#  define INBUFSIZE	8192
+#endif
 #define SOS_EOLSTR	"\012"
 
 /* defaults modified by switches */
-
-#ifdef SOS_EDOS
-# undef INBUFSIZE
-# define INBUFSIZE	512
-# undef SOS_EOLSTR
-# define SOS_EOLSTR	"\015\012"
-# define STAKSIZ	256	/* table grows up to stack less this */
-#endif
 
 /* booleans */
 

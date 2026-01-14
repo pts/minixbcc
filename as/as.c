@@ -44,9 +44,6 @@ char **argv;
     heapend = heapptr + USERMEM;
     if (heapptr == 0)
 	as_abort("cannot allocate memory");
-#ifdef SOS_EDOS
-    heapend = stackreg() - STAKSIZ;
-#endif
     initp1();
     initp1p2();
     inst_keywords();
