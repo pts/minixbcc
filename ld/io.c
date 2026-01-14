@@ -17,15 +17,16 @@
 #define OUTBUFSIZE	2048
 #define TRELBUFSIZE	1024
 
-PRIVATE char *errbuf;		/* error buffer (actually uses STDOUT) */
+PUBLIC unsigned errcount;		/* count of errors */
+PRIVATE char errbuf[ERRBUFSIZE];  /* error buffer (actually uses STDOUT) */
 PRIVATE char *errbufptr;	/* error buffer ptr */
 PRIVATE char *errbuftop;	/* error buffer top */
-PRIVATE char *inbuf;		/* input buffer */
+PRIVATE char inbuf[INBUFSIZE];	/* input buffer */
 PRIVATE char *inbufend;		/* input buffer top */
 PRIVATE char *inbufptr;		/* end of input in input buffer */
 PRIVATE int infd;		/* input file descriptor */
 PRIVATE char *inputname;	/* name of current input file */
-PRIVATE char *outbuf;		/* output buffer */
+PRIVATE char outbuf[OUTBUFSIZE];  /* output buffer */
 PRIVATE char *outbufptr;	/* output buffer ptr */
 PRIVATE char *outbuftop;	/* output buffer top */
 PRIVATE int outfd;		/* output file descriptor */
@@ -50,12 +51,8 @@ char *progname;
 	refname = progname;	/* name must be static (is argv[0]) */
     else
 	refname = "link";
-    errbuf = malloc(ERRBUFSIZE);
     errbufptr = errbuf;
     errbuftop = errbuf + ERRBUFSIZE;
-    inbuf = malloc(INBUFSIZE);
-    outbuf = malloc(OUTBUFSIZE);/* outbuf invalid if this fails but then */
-				/* will not be used - tableinit() aborts */
     outbuftop = outbuf + OUTBUFSIZE;
 }
 
