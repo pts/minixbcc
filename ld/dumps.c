@@ -43,7 +43,11 @@ PUBLIC void dumpsyms()
 		    putstr("  ");
 		    putbstr(20, symptr->name);
 		    putstr("  ");
-		    putbyte(hexdigit[flags & SEGM_MASK]);
+#if SEGM_MASK == 0xf  /* True. Size optimization. */
+		    puthexdig(flags /* & SEGM_MASK */);
+#else
+		    puthexdig(flags & SEGM_MASK);
+#endif
 		    putstr("  ");
 		    if (uflag)
 			putstr("        ");

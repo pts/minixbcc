@@ -149,24 +149,29 @@ char *filename;
 
 PUBLIC char hexdigit[] = "0123456789abcdef";
 
+PUBLIC void puthexdig(num)
+unsigned num;
+{
+    putbyte(hexdigit[num & 0xf]);
+}
+
 PRIVATE void outhexdigs(num)
 register offset_t num;
 {
     if (num >= 0x10)
     {
-	outhexdigs(num / 0x10);
-	num %= 0x10;
+	outhexdigs(num >> 4);
     }
-    putbyte(hexdigit[num]);
+    puthexdig((unsigned) num);
 }
 
 PRIVATE void put04x(num)
 register unsigned num;
 {
-    putbyte(hexdigit[num / 0x1000]);
-    putbyte(hexdigit[(num / 0x100) & 0x0F]);
-    putbyte(hexdigit[(num / 0x10) & 0x0F]);
-    putbyte(hexdigit[num & 0x0F]);
+    puthexdig(num >> 12);
+    puthexdig(num >> 8);
+    puthexdig(num >> 4);
+    puthexdig(num);
 }
 
 #ifdef LONG_OFFSETS
@@ -174,8 +179,8 @@ register unsigned num;
 PUBLIC void put08lx(num)  /* Used by dumpsyms(). */
 register offset_t num;
 {
-    put04x(num / 0x10000);
-    put04x(num % 0x10000);
+    put04x(num >> 16);
+    put04x(num & 0xffff);
 }
 
 #else /* not LONG_OFFSETS */

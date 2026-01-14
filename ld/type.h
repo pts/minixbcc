@@ -91,6 +91,7 @@ void flusherr P((void));
 void openin P((char *filename));
 void openout P((char *filename));
 void putstr P((char *message));
+void puthexdig P((unsigned num));
 #ifdef OBJ_H
 void put08x P((offset_t num));
 void put08lx P((offset_t num));
