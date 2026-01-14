@@ -32,6 +32,7 @@ EXTERN char *linebuf;		/* buffer */
 
 /* for symbol table routines */
 
+EXTERN char *heapstart;		/* start of symbol list; heapstart <= heapptr <= heapend */
 EXTERN char *heapend;		/* end of free space for symbol list */
 EXTERN char *heapptr;		/* next free space in symbol list */
 EXTERN unsigned char inidata;	/* init sym entry data governed by "u" flag */

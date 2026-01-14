@@ -12,6 +12,9 @@ void as_abort P((char *message));
 void finishup P((void));
 void initp1p2 P((void));
 
+/* heap.c */
+void initheap P((void));
+
 /* assemble.c */
 void assemble P((void));
 
