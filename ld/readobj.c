@@ -32,6 +32,7 @@ PRIVATE struct redlist *redlast;	/* last on list of redefined symbols */
 PRIVATE struct modstruct *modlast;	/* data for last module */
 
 PRIVATE bool_pt parse_u_dec_lenient P((char *s, long *output));
+PRIVATE char *namedup P((char *p, unsigned size));
 PRIVATE bool_pt readarheader P((char **parchentry, long *filelength_out));
 PRIVATE bool_pt readminixarheader P((char **parchentry, long *filelength_out));
 PRIVATE unsigned readfileheader P((void));
@@ -128,22 +129,30 @@ long *output;
   return 1;
 }
 
+PRIVATE char *namedup(p, size)
+char *p;
+unsigned size;
+{
+    char *pend, *result;
+    register char *q;
+
+    for (pend = (q = p) + size; q != pend && *q != '\0'; ++q) {}
+    for (; q != p && q[-1] == ' '; --q) {}  /* Remove trailing spaces. */
+    size = q - p;
+    memcpy(result = heapalloc(size + 1), p, size);
+    result[size] = '\0';
+    return result;
+}
+
 PRIVATE bool_pt readarheader(parchentry, filelength_out)
 char **parchentry;
 long *filelength_out;
 {
     struct ar_hdr arheader;
-    char *endptr;
-    char *nameptr;
 
     if (readineofok((char *) &arheader, sizeof arheader))
 	return 0;
-    strncpy (*parchentry = nameptr = heapalloc(sizeof arheader.ar_name + 1),
-	     arheader.ar_name, sizeof arheader.ar_name);
-    endptr = nameptr + sizeof arheader.ar_name;
-    do
-	*endptr = 0;
-    while (endptr > nameptr && *--endptr == ' ');
+    *parchentry = namedup(arheader.ar_name, sizeof arheader.ar_name);
     return parse_u_dec_lenient(arheader.ar_size, filelength_out);
 }
 
@@ -152,17 +161,10 @@ char **parchentry;
 long *filelength_out;
 {
     struct minixar_hdr marheader;
-    char *endptr;
-    char *nameptr;
 
     if (readineofok((char *) &marheader, sizeof marheader))
 	return 0;
-    strncpy (*parchentry = nameptr = heapalloc(sizeof marheader.ar_name + 1),
-	     marheader.ar_name, sizeof marheader.ar_name);
-    endptr = nameptr + sizeof marheader.ar_name;
-    do
-	*endptr = 0;
-    while (endptr > nameptr && *--endptr == ' ');
+    *parchentry = namedup(marheader.ar_name, sizeof marheader.ar_name);
     *filelength_out = (long)c2u2(marheader.ar_size) << 16 | c2u2(marheader.ar_size + 2);  /* PDP-11 byte order. */
     return 1;
 }
