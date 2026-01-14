@@ -235,7 +235,7 @@ PRIVATE void listcode()
     {
 #if SIZEOF_OFFSET_T > 2
 	if (popflags & POPLONG)
-	    build_2hex_number((u16_t) (lastexp.offset / (offset_t) 0x10000L),
+	    build_2hex_number((u16_t) (lastexp.offset >> 16),
 			      listptr->displ4);
 #endif
 	if (popflags & POPHI)
