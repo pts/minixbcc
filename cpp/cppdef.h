@@ -344,16 +344,6 @@
 #define	VT			'\013'		/* Vertical Tab CTRL/K	*/
 #endif
 
-
 #ifndef	FILE_LOCAL
-#ifdef	decus
-#define	FILE_LOCAL		static
-#else
-#ifdef	vax11c
-#define	FILE_LOCAL		static
-#else
-#define	FILE_LOCAL				/* Others are global	*/
+#  define FILE_LOCAL static  /* Not only #ifdef decus or #ifdef vax11c */
 #endif
-#endif
-#endif
-
