@@ -30,7 +30,11 @@
 #define GOLDEN 157		/* GOLDEN/HASHTABSIZE approx golden ratio */
 #define HASHTABSIZE 256
 #define MARKER ((unsigned) 0x18C396A5L)	/* lint everywhere it is used */
-#define MAXEXPR 500
+#ifdef SMALLMEM
+#  define MAXEXPR 150
+#else
+#  define MAXEXPR 500
+#endif
 #define MAXLOCAL 100
 #define NKEYWORDS 34
 #define NSCALTYPES 12

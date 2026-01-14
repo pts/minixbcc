@@ -13,7 +13,11 @@
 #include "sizes.h"
 #include "type.h"
 
-#define ETREESIZE 1200
+#ifdef SMALLMEM
+#  define ETREESIZE 300
+#else
+#  define ETREESIZE 1200
+#endif
 #define errtype itype
 #define redtype ctype
 #define uredtype uctype

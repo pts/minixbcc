@@ -22,7 +22,13 @@
 #define EXTERN
 #include "input.h"
 
-#define INBUFSIZE 2048
+#ifndef INBUFSIZE
+#  ifdef SMALLMEM
+#    define INBUFSIZE 512
+#  else
+#    define INBUFSIZE 2048
+#  endif
+#endif
 
 #ifdef OPEN00
   extern int open00(/* _CONST char *pathname */);  /* flags and mode are both 0. */
