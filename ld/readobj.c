@@ -31,15 +31,16 @@ PRIVATE struct entrylist *entrylast;	/* last on list of entry symbols */
 PRIVATE struct redlist *redlast;	/* last on list of redefined symbols */
 PRIVATE struct modstruct *modlast;	/* data for last module */
 
-FORWARD long readarheader P((char **parchentry));
-FORWARD long readminixarheader P((char **parchentry));
-FORWARD unsigned readfileheader P((void));
-FORWARD unsigned readfileheader2 P((void));
-FORWARD void readmodule P((char *filename, char *archentry));
-FORWARD void reedmodheader P((void));
-FORWARD bool_pt redsym P((struct symstruct *symptr, offset_t value));
-FORWARD unsigned checksum P((char *string, unsigned length));
-FORWARD unsigned segbits P((unsigned seg, char *sizedesc));
+PRIVATE bool_pt parse_u_dec_lenient P((char *s, long *output));
+PRIVATE bool_pt readarheader P((char **parchentry, long *filelength_out));
+PRIVATE bool_pt readminixarheader P((char **parchentry, long *filelength_out));
+PRIVATE unsigned readfileheader P((void));
+PRIVATE unsigned readfileheader2 P((void));
+PRIVATE void readmodule P((char *filename, char *archentry));
+PRIVATE void reedmodheader P((void));
+PRIVATE bool_pt redsym P((struct symstruct *symptr, offset_t value));
+PRIVATE unsigned checksum P((char *string, unsigned length));
+PRIVATE unsigned segbits P((unsigned seg, char *sizedesc));
 PRIVATE unsigned readfilecommon P((char *fileheader));
 
 /* initialise object file handler */
@@ -71,7 +72,7 @@ char *filename;
 	break;
     case MINIXARMAG:
 	filepos = 2;
-	while ((filelength = readminixarheader(&archentry)) > 0)
+	while (readminixarheader(&archentry, &filelength))
 	{
 	    filepos += sizeof(struct minixar_hdr);
 	    for (modcount = readfileheader(); modcount-- != 0;)
@@ -88,7 +89,7 @@ char *filename;
 	if (strncmp(filemagic, ARMAG, sizeof filemagic) != 0)
 	    input1error(" has bad magic number");
 	filepos = SARMAG;
-	while ((filelength = readarheader(&archentry)) > 0)
+	while (readarheader(&archentry, &filelength))
 	{
 	    filepos += sizeof(struct ar_hdr);
 	    for (modcount = readfileheader(); modcount-- != 0;)
@@ -105,8 +106,31 @@ char *filename;
 
 /* read archive header and return length */
 
-PRIVATE long readarheader(parchentry)
+/* Parses an unsigned decimal number. It doesn't check for overflow. It allows leading and trailing ' '. */
+PRIVATE bool_pt parse_u_dec_lenient(s, output)
+char *s;
+long *output;
+{
+  register char c;
+
+  *output = 0;
+  for (; (c = s[0]) == ' '; ++s) {}
+  if ((c = s[0]) == '\0' || c == ' ') return 0;  /* Number missing. */
+  while ((c = *s++) != '\0' && c != ' ') {
+    if (c >= '0' && c <= '9') {
+      c -= '0';
+      *output *= 10;
+      *output += c;
+    } else {
+      return 0;  /* Bad digit in c. */
+    }
+  }
+  return 1;
+}
+
+PRIVATE bool_pt readarheader(parchentry, filelength_out)
 char **parchentry;
+long *filelength_out;
 {
     struct ar_hdr arheader;
     char *endptr;
@@ -120,11 +144,12 @@ char **parchentry;
     do
 	*endptr = 0;
     while (endptr > nameptr && *--endptr == ' ');
-    return strtoul(arheader.ar_size, (char **) NULL, 0);
+    return parse_u_dec_lenient(arheader.ar_size, filelength_out);
 }
 
-PRIVATE long readminixarheader(parchentry)
+PRIVATE bool_pt readminixarheader(parchentry, filelength_out)
 char **parchentry;
+long *filelength_out;
 {
     struct minixar_hdr marheader;
     char *endptr;
@@ -138,7 +163,8 @@ char **parchentry;
     do
 	*endptr = 0;
     while (endptr > nameptr && *--endptr == ' ');
-    return (long)c2u2(marheader.ar_size) << 16 | c2u2(marheader.ar_size + 2);  /* PDP-11 byte order. */
+    *filelength_out = (long)c2u2(marheader.ar_size) << 16 | c2u2(marheader.ar_size + 2);  /* PDP-11 byte order. */
+    return 1;
 }
 
 /* read and check file header of the object file just opened */
