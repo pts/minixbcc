@@ -4,7 +4,7 @@
 #include "type.h"
 #include "globvar.h"
 
-#define NAME_MAX 14
+#define LIBNAME_MAX 32  /* Number of bytes without the directory name, the lib prefix and the .a suffix and the trailing NUL. */
 
 PUBLIC long text_base_address;
 
@@ -12,7 +12,7 @@ PRIVATE bool_t flag[128];  /* !! Use a smaller array on an ANSI system. */
 PRIVATE char libdir[] = "/usr/local/lib/";
 PRIVATE char lib86subdir[] = "i86/";
 PRIVATE char lib386subdir[] = "i386/";
-PRIVATE char lib[sizeof libdir - 1 + sizeof lib386subdir - 1 + NAME_MAX + 1];
+PRIVATE char libtmp[sizeof libdir - 1 + sizeof lib386subdir - 1 + LIBNAME_MAX + 1];
 PRIVATE char libprefix[] = "lib";
 PRIVATE char libsuffix[] = ".a";
 
@@ -48,6 +48,13 @@ long *output;
     *output += c;
   }
   return *output >= 0;
+}
+
+PRIVATE char *appendstr(dest, src)
+char *dest;
+char *src;
+{
+	return strcpy(dest, src) + strlen(src);
 }
 
 PUBLIC int main(argc, argv)
@@ -95,13 +102,18 @@ char **argv;
 		    fatalerror("invalid text address");
 		break;
 	    case 'l':		/* library name */
-		strcpy(lib, libdir);
-		strcat(lib, flag['3'] ? lib386subdir : lib86subdir);
-		strncat(lib, libprefix, NAME_MAX + 1);
-		strncat(lib, arg + 2, NAME_MAX - (sizeof libprefix - 1)
-					       - (sizeof libsuffix - 1));
-		strcat(lib, libsuffix);
-		readsyms(lib);
+		if (strlen(arg) > LIBNAME_MAX + 1) {
+		    refer();
+		    putstr("library name too long ");
+		    errexit(arg);
+		}
+		appendstr(appendstr(appendstr(appendstr(appendstr(libtmp,
+		    libdir),
+		    flag['3'] ? lib386subdir : lib86subdir),
+		    libprefix),
+		    arg + 2),
+		    libsuffix);
+		readsyms(libtmp);
 		break;
 	    case 'o':		/* output file name */
 		if (arg[2] != 0 || ++argn >= argc || outfilename != NULL)

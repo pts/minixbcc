@@ -52,13 +52,11 @@ PRIVATE char *outputname;	/* name of output file */
 PRIVATE char *refname;		/* name of program for error reference */
 PRIVATE unsigned warncount;	/* count of warnings */
 
-FORWARD void errexit P((char *message));
 FORWARD void flushout P((void));
 FORWARD void outhexdigs P((offset_t num));
 FORWARD void outputerror P((char *message));
 FORWARD void put04x P((unsigned num));
 FORWARD void putstrn P((char *message));
-FORWARD void refer P((void));
 
 PUBLIC void ioinit(progname)
 char *progname;
@@ -338,7 +336,7 @@ unsigned count;
 
 /* error module */
 
-PRIVATE void errexit(message)
+PUBLIC void errexit(message)
 char *message;
 {
     putstrn(message);
@@ -420,7 +418,7 @@ char *defarchentry;
     putbyte('\n');
 }
 
-PRIVATE void refer()
+PUBLIC void refer()
 {
     putstr(refname);
     putstr(": ");
