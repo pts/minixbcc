@@ -10,12 +10,29 @@
 #include "type.h"
 #include "globvar.h"
 
-#define DRELBUFSIZE	2048
+#ifndef INBUFSIZE  /* Configurable at compile time: -DINBUFSIZE=... */
+#  ifdef SMALLMEM
+#    define INBUFSIZE  1024
+#  else
+#    define INBUFSIZE  1024
+#  endif
+#endif
+#ifndef OUTBUFSIZE  /* Configurable at compile time: -DOUTBUFSIZE=... */
+#  ifdef SMALLMEM
+#    define OUTBUFSIZE  1024
+#  else
+#    define OUTBUFSIZE  2048
+#  endif
+#endif
+#ifndef ERRBUFSIZE  /* Configurable at compile time: -DERRBUFSIZE=... */
+#  ifdef SMALLMEM
+#    define ERRBUFSIZE  512
+#  else
+#    define ERRBUFSIZE  1024
+#  endif
+#endif
+
 #define ERR		-1
-#define ERRBUFSIZE	1024
-#define INBUFSIZE	1024
-#define OUTBUFSIZE	2048
-#define TRELBUFSIZE	1024
 
 PUBLIC unsigned errcount;		/* count of errors */
 PRIVATE char errbuf[ERRBUFSIZE];  /* error buffer (actually uses STDOUT) */
