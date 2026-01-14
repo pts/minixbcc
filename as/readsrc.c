@@ -89,12 +89,18 @@ PUBLIC void initsource()
     clearsource();		/* sentinel to invoke blank skipping */
 }
 
+#ifdef OPEN00
+  extern int open00(/* _CONST char *pathname */);  /* flags and mode are both 0. */
+#else
+#  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
+#endif
+
 PUBLIC fd_t open_input(name)
 char *name;
 {
     int fd;
 
-    if ((fd = open(name, O_RDONLY)) < 0)  /* TODO(pts): Display filename. */
+    if ((fd = open00(name)) < 0)  /* TODO(pts): Display filename. */
 	as_abort("error opening input file");
     clearsource();
     return (fd_t) fd;
