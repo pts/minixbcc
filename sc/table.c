@@ -6,6 +6,9 @@
  * usually be set to some level different from OFFKLUDGELEVEL.
  */
 
+#if DEBUG_MALLOC
+#  include <stdio.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include "const.h"
@@ -544,6 +547,9 @@ unsigned nbytes;
 {
     void *ptr;
 
+#ifdef DEBUG_MALLOC
+    fprintf(stderr, "debug: ourmalloc(%u)\n", nbytes);
+#endif
     if ((ptr = malloc(nbytes)) == NULL)
 	outofmemoryerror("");
     return ptr;
@@ -615,6 +621,9 @@ unsigned size;
     if ((newptr = malloc(size += ALLOC_UNIT + ALLOC_OVERHEAD)) == NULL
 	&& (newptr = malloc(size -= ALLOC_UNIT)) == NULL)
 	outofmemoryerror("");
+#ifdef DEBUG_MALLOC
+    fprintf(stderr, "debug: growheap(%u)\n", size);
+#endif
 #ifdef TS
 ++ts_n_growheap;
 ts_s_growheap += size;
