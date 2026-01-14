@@ -115,6 +115,12 @@ PRIVATE void flushout()
     outbufptr = outbuf;
 }
 
+#ifdef OPEN00
+  extern int open00(/* _CONST char *pathname */);  /* flags and mode are both 0. */
+#else
+#  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
+#endif
+
 PUBLIC void openin(filename)
 char *filename;
 {
@@ -122,7 +128,7 @@ char *filename;
     {
 	closein();
 	inputname = filename;	/* this relies on filename being static */
-	if ((infd = open(filename, O_RDONLY)) < 0)
+	if ((infd = open00(filename)) < 0)
 	    inputerror("cannot open");
 	inbufptr = inbufend = inbuf;
     }
