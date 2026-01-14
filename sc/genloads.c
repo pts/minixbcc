@@ -295,7 +295,7 @@ struct symstruct *source;
     if (!(source->type->constructor & (ARRAY | POINTER)))
 	bugerror("illegal indirection");
     else if (source->indcount == (indn_t) - 1)
-	limiterror("too many indirections (256)");
+	limiterror("too many indirections (256)");  /* !! limit: HARDCODED_INDIRECTIONS: v0: 255 == v3: 255 */
     else
     {
 	if (source->storage & ALLDATREGS)

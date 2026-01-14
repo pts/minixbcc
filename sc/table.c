@@ -207,7 +207,7 @@ struct typestruct *type;
     symptr = locptr;
     locptr = (struct symstruct *) align(&symptr->name.namea[strlen(name) + 1]);
     if (locptr >= &locsyms[MAXLOCAL])
-	limiterror("too many local symbols (101)");
+	limiterror("too many local symbols (101)");  /* !! limit: MAXLOCAL: v0: 150; v3: 100 */
     addsym(name, type, symptr);
     if (type->constructor == FUNCTION)
 	symptr->storage = GLOBAL;
@@ -426,7 +426,13 @@ struct symstruct *symptr;
 
     newsymptr = exprptr++;
     if (exprptr >= &expr2syms[MAXEXPR])
-	limiterror("expression too complex (501 symbols)");
+    {
+#if MAXEXPR == 150
+	limiterror("expression too complex (150 symbols)");  /* !! Generate the string dynamically. */
+#else
+	limiterror("expression too complex (501 symbols)");  /* !! limit: MAXEXPR: v0: 150; v3: 500 */
+#endif
+    }
     *newsymptr = *symptr;
     newsymptr->level = EXPRLEVEL;
     newsymptr->name.namep = symptr->name.namea;
@@ -514,7 +520,7 @@ PUBLIC void newlevel()
     if (*(unsigned *) chartop != MARKER)
 	heapcorrupterror();
     if (level >= MAXLEVEL)
-	limiterror("compound statements nested too deeply (126 levels)");
+	limiterror("compound statements nested too deeply (126 levels)");  /* !! limit: MAXLEVEL: v0: 125 == v3: 125 */
     else
 	++level;
 }

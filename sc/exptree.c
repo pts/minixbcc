@@ -18,6 +18,7 @@
 #define redtype ctype
 #define uredtype uctype
 
+/* sizeof(struct nodestruct) == 10. !! etree is the large array here, of ~12 KiB. */
 PRIVATE struct nodestruct etree[ETREESIZE];	/* expression tree */
 PRIVATE struct nodestruct *ettop;
 
@@ -138,7 +139,11 @@ struct nodestruct *nodeptr;
 
 PRIVATE void etreefull()
 {
-    limiterror("expression too complex (1201 nodes)");
+#if ETREESIZE == 300
+    limiterror("expression too complex (301 nodes)");  /* !! Generate the string dynamically. */
+#else
+    limiterror("expression too complex (1201 nodes)");  /* !! limit: ETREESIZE: v0: 300; v3: 1200 */
+#endif
 }
 
 PUBLIC void etreeinit()

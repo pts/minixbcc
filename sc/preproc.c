@@ -516,7 +516,7 @@ PUBLIC void entermac()
 
     if (maclevel >= MAX_MACRO)
     {
-	limiterror("macros nested too deeply (33 levels)");
+	limiterror("macros nested too deeply (33 levels)");  /* !! limit: MAX_MACRO: v0: 32 == v3: 32 */
 	return;
     }
     symptr = gsymptr;
@@ -730,7 +730,7 @@ PRIVATE fastin_pt getparnames()
 	    error("repeated parameter");
 	symptr = addloc(gsname, itype);
 	if (nparnames >= MAX_PARAM)
-	    limiterror("too many macro parameters (128)");
+	    limiterror("too many macro parameters (128)");  /* !! limit: MAX_PARAM: v0: 127 == v3: 127 */
 	else
 	    ++nparnames;	/* number params from 1 */
 	symptr->indcount = nparnames;	/* param number */
@@ -755,7 +755,7 @@ sym_pt ifcase;
 
     if (iflevel >= MAX_IF)
     {
-	limiterror("#if's nested too deeply (33 levels)");
+	limiterror("#if's nested too deeply (33 levels)");  /* !! limit: MAX_IF: v0: 32 == v3: 32 */
 	return;
     }
     {

@@ -272,6 +272,7 @@ PRIVATE void docase()
 
 		ncases = (/* ptrdiff_t */ int)
 			 (switchnow->caseptr - &switchnow->caselist[0]);
+		/* !! limit: rather than realloc, limit this to 256? */
 		switchnow = realloc(switchnow,
 				    (/* size_t */ unsigned)
 				    ((char *) switchnow->caseptr
