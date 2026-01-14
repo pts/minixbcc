@@ -172,6 +172,7 @@ bool_pt nameflag;
     int size;
     struct sym_s *swap;
 
+    /* !! Add a faster sort algorithm here. It may not be stable. */
     size = top - array;
     /* choose gaps according to Knuth V3 p95 */
     for (gap = 1, i = 4; (j = 3 * i + 1) < size; gap = i, i = j)
