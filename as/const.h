@@ -13,8 +13,12 @@
 /* defaults */
 
 #define DIRCHAR		'/'	/* character separating filename from dir */
-#ifndef INBUFSIZE
-#  define INBUFSIZE	8192
+#ifndef INBUFSIZE  /* Configurable at compile time: -DINBUFSIZE=... */
+#  ifdef SMALLMEM
+#    define INBUFSIZE  1024
+#  else
+#    define INBUFSIZE  8192
+#  endif
 #endif
 #define SOS_EOLSTR	"\012"
 
