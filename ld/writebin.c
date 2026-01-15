@@ -325,12 +325,7 @@ struct nlist {  /* symbol table entry */
 		 (symptr = *symparray) != NULL; ++symparray)
 		if (symptr->modptr == modptr && !(symptr->flags & A_MASK))
 		{
-		    if (symptr->flags & (C_MASK | SA_MASK))
-		    {
-			symptr->value += combase[symptr->flags & SEGM_MASK];
-		    }
-		    else
-			symptr->value += segbase[symptr->flags & SEGM_MASK];
+		    symptr->value += ((symptr->flags & (C_MASK | SA_MASK)) ? combase : segbase)[symptr->flags & SEGM_MASK];
 		}
 	}
 
