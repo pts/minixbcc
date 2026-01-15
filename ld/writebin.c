@@ -154,6 +154,17 @@ char *src;
 	for (; q != pend; *q++ = '\0') {}
 }
 
+#ifdef ACKFIX  /* Helper function used below. */
+PRIVATE offset_t *addcomseg(symptr)
+struct symstruct *symptr;
+{
+    register offset_t *comszseg;
+
+    symptr->value = *(comszseg = &comsz[symptr->flags & SEGM_MASK]);
+    return comszseg;
+}
+#endif
+
 /* write binary file */
 
 PUBLIC void writebin(outfilename, argsepid, argbits32, argstripflag, arguzp)
@@ -261,8 +272,12 @@ struct nlist {  /* symbol table entry */
 			    modptr->modcomsz += tempoffset;
 #endif
 			    /* temp kludge quad alignment for 386 */
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler in optimized mode (cc -O). */
+			    *addcomseg(symptr) += tempoffset;    /* It works with any C compiler. */
+#else  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: `/usr/lib/cg -p4' crash-fails for this with: Error: Bombed out of codegen */
 			    symptr->value = comsz[seg = symptr->flags & SEGM_MASK];
 			    comsz[seg] += tempoffset;
+#endif
 			}
 			if (!(symptr->flags & SA_MASK))
 			    symptr->flags |= C_MASK;
