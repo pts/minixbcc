@@ -83,8 +83,10 @@ PRIVATE struct symstruct constemplate =
     NULL,			/* next */
     NULL,			/* prev */
     NULL,			/* type, init later to itype */
+#ifndef NOUNIONINIT  /* Use -DNOUNIONINIT for the Minix 1.5.10 i86 ACK 3.1 C compiler, which doesn't support union initialization. */
     { 0 }, /* offset is a union, set every time constemplate is used */
     { 0 }, /* name is a union, namea member is constant "\0" */
+#endif
 };
 
 PRIVATE struct keywordstruct keywords[NKEYWORDS] =
