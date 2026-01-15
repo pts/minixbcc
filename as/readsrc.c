@@ -59,8 +59,8 @@ PRIVATE struct fbufstruct *inputbuf;	/* current input file buffer */
 					/* its fcb only to date in includes */
 
 PRIVATE char hid_linebuf[LINLEN];	/* line buffer */
-PRIVATE char *maclinebuf;
-PRIVATE char *maclineptr;
+PRIVATE char *mac1linebuf;
+PRIVATE char *mac2linebuf;
 
 FORWARD void clearsource P((void));
 FORWARD void line_too_long P((void));
@@ -246,8 +246,8 @@ PUBLIC void readline()
 	{
 	    if (!macflag)
 	    {
-		maclinebuf = linebuf;
-		maclineptr = lineptr;
+		mac1linebuf = linebuf;
+		mac2linebuf = lineptr;
 		macflag = TRUE;
 	    }
 	    remaining = LINLEN + 2;
@@ -296,8 +296,8 @@ PUBLIC void readline()
     }
     if (macflag)
     {
-	linebuf = maclinebuf;
-	lineptr = maclineptr;
+	linebuf = mac1linebuf;
+	lineptr = mac2linebuf;
 	macflag = FALSE;
     }
 again:
