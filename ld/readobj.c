@@ -35,8 +35,8 @@ PRIVATE bool_pt parse_u_dec_lenient P((char *s, long *output));
 PRIVATE char *namedup P((char *p, unsigned size));
 PRIVATE bool_pt readarheader P((char **parchentry, long *filelength_out));
 PRIVATE bool_pt readminixarheader P((char **parchentry, long *filelength_out));
-PRIVATE unsigned readfileheader P((void));
-PRIVATE unsigned readfileheader2 P((void));
+PRIVATE unsigned read1fileheader1 P((void));
+PRIVATE unsigned read2fileheader2 P((void));
 PRIVATE void readmodule P((char *filename, char *archentry));
 PRIVATE void reedmodheader P((void));
 PRIVATE bool_pt redsym P((struct symstruct *symptr, offset_t value));
@@ -68,7 +68,7 @@ char *filename;
     switch ((unsigned) readsize(2))
     {
     case OMAGIC:
-	for (modcount = readfileheader2(); modcount-- != 0;)
+	for (modcount = read2fileheader2(); modcount-- != 0;)
 	    readmodule(filename, (char *) NULL);
 	break;
     case MINIXARMAG:
@@ -76,7 +76,7 @@ char *filename;
 	while (readminixarheader(&archentry, &filelength))
 	{
 	    filepos += sizeof(struct minixar_hdr);
-	    for (modcount = readfileheader(); modcount-- != 0;)
+	    for (modcount = read1fileheader1(); modcount-- != 0;)
 	    {
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
@@ -93,7 +93,7 @@ char *filename;
 	while (readarheader(&archentry, &filelength))
 	{
 	    filepos += sizeof(struct ar_hdr);
-	    for (modcount = readfileheader(); modcount-- != 0;)
+	    for (modcount = read1fileheader1(); modcount-- != 0;)
 	    {
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
@@ -182,7 +182,7 @@ char *fileheader;
     return c2u2(fileheader + 2  /* .count */);
 }
 
-PRIVATE unsigned readfileheader()
+PRIVATE unsigned read1fileheader1()
 {
     struct
     {
@@ -194,11 +194,11 @@ PRIVATE unsigned readfileheader()
     return readfilecommon((char *) &fileheader);
 }
 
-PRIVATE unsigned readfileheader2()
+PRIVATE unsigned read2fileheader2()
 {
     struct
     {
-	short omagic;
+	short omagic;  /* !! This depends on the byte order -- or does it? filechecksum doesn't depend on it. */
 	char count[2];		/* really an int */
     } fileheader;
 
