@@ -6,6 +6,18 @@
 #define P(x) ()
 #endif
 
+/* This is to avoid symbol names longer than 7 characters.
+ * The Minix 1.5.10 i86 ACK 3.1 C compiler truncates to 7.
+ */
+#define mf_m2_m4 mf24
+#define mf_m2_m4_m8 mf248
+#define mf_m4_m8_optst mf48o
+#define mf_m4_m8_st mf48s
+#define mf_m4_m8_stst mf48ss
+#define mf_m4_m8_m10_st mf4810
+#define mf_w_m2 mfwm2
+#define mf_w_m2_ax mfwm2a
+
 /* as.c */
 int main P((int argc, char **argv));
 void as_abort P((char *message));
