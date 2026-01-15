@@ -258,7 +258,11 @@ PUBLIC int readchar()
 	}
 	inbufend = ibuf + nread;
     }
-    ch = (unsigned char) *ibuf++;
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler. */
+    ch = *ibuf++ & 0xff;  /* It works with any C compiler. */
+#else
+    ch = (unsigned char) *ibuf++;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it ignores the `(unsigned char)' cast here. */
+#endif
     inbufptr = ibuf;
     return ch;
 }
@@ -268,7 +272,7 @@ char *buf;
 unsigned count;
 {
     int ch;
-    
+
     while (count--)
     {
 	if ((ch = readchar()) < 0)
