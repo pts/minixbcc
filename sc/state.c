@@ -2,7 +2,12 @@
 
 /* Copyright (C) 1992 Bruce Evans */
 
-#include <stdlib.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <stdlib.h>
+#  include <string.h>
+#endif
 #include "const.h"
 #include "types.h"
 #include "align.h"

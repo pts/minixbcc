@@ -5,10 +5,14 @@
 #define ARBITRARY_BACKSLASH_NEWLINES_NOT
 #define INSERT_BACKSLASH_NEWLINES_NOT
 
-#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
+#  include <fcntl.h>
+#  include <string.h>
+#  include <unistd.h>
+#endif
 #include "const.h"
 #include "types.h"
 #include "gencode.h"

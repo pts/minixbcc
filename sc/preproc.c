@@ -2,7 +2,11 @@
 
 /* Copyright (C) 1992 Bruce Evans */
 
-#include <string.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <string.h>
+#endif
 #include "const.h"
 #include "types.h"
 #include "input.h"

@@ -6,11 +6,15 @@
  * usually be set to some level different from OFFKLUDGELEVEL.
  */
 
-#if DEBUG_MALLOC
-#  include <stdio.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  if DEBUG_MALLOC
+#    include <stdio.h>
+#  endif
+#  include <stdlib.h>
+#  include <string.h>
 #endif
-#include <stdlib.h>
-#include <string.h>
 #include "const.h"
 #include "types.h"
 #include "align.h"
