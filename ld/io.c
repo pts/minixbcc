@@ -8,7 +8,11 @@
 #include "const.h"
 #include "obj.h"		/* needed for LONG_OFFSETS and offset_t */
 #include "type.h"
-#include "globvar.h"
+#ifdef GLOBVARI
+#  include "globvar"  /* Workaround for #include basename bug. `globvar' and `globvar.h' are the same. */
+#else
+#  include "globvar.h"
+#endif
 
 #ifndef INBUFSIZE  /* Configurable at compile time: -DINBUFSIZE=... */
 #  ifdef SMALLMEM
