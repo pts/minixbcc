@@ -8,7 +8,7 @@
  */
 
 #include	<ctype.h>
-#include	<stdlib.h>
+#include	"myslib.h"  /* <stdlib.h> */
 #include	<string.h>
 #include	<time.h>
 #include	<stdio.h>  /* Include it after the other <*.h> for Minix 1.5.10 with BCC, to avoid redefinition of NULL. */
