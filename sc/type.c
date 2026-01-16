@@ -187,6 +187,13 @@ PUBLIC void typeinit()
 #ifdef I8088
     if (i386_32)
     {
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler in optimized mode (cc -O). */
+	/* It works with any C compiler. */
+	dtype->alignmask = fltype->alignmask = ptypesize = ~(uoffset_t) (4 - 1);
+	uitype->alignmask = ltype->alignmask = ptypesize;
+	ultype->alignmask = itype->alignmask = ptypesize;
+	itypesize = uitype->typesize = itype->typesize = ptypesize = 4;
+#else  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: `/usr/lib/cg -p4' crash-fails for this with: Error: Bombed out of codegen */
 	uitype->typesize =
 	itype->typesize =
 	ptypesize =
@@ -197,6 +204,7 @@ PUBLIC void typeinit()
 	    ltype->alignmask =
 	    ultype->alignmask =
 	    itype->alignmask = ~(uoffset_t) (4 - 1);
+#endif
 	ltype->scalar = LONG;	/* not DLONG */
 	ultype->scalar = UNSIGNED | LONG;
     }
