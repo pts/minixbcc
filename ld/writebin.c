@@ -1,9 +1,11 @@
-extern long text_base_address;
-#define btextoffset text_base_address
-static long bdataoffset;
-#define page_size() 4096
-
 /* writebin.c - write binary file for linker */
+
+#include <string.h>
+#include "aout.h"
+#include "const.h"
+#include "obj.h"
+#include "type.h"
+#include "globvar.h"
 
 #ifdef DEBUG_SIZE_NOPAD
 #  ifndef DEBUG_SIZE
@@ -14,7 +16,7 @@ static long bdataoffset;
 #  include <stdio.h>
 #endif
 
-#include "aout.h"		/* maybe local copy of <a.out.h> for X-link */
+/* After aout.h */
 #define a_entry a_no_entry
 #define n_was_name n_name
 #define n_was_numaux n_numaux
@@ -23,10 +25,10 @@ static long bdataoffset;
 #define n_was_strx n_value
 #define n_was_type n_type
 
-#include "const.h"
-#include "obj.h"
-#include "type.h"
-#include "globvar.h"
+extern long text_base_address;
+#define btextoffset text_base_address
+static long bdataoffset;
+#define page_size() 4096
 
 #define FILEHEADERLENGTH A_MINHDR
 #define DPSEG 2

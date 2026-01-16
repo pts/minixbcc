@@ -2,9 +2,10 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#define MY_STAT_H
 #include <fcntl.h>
 #include <unistd.h>
+#include <string.h>
+#include <stdlib.h>
 #include "const.h"
 #include "obj.h"		/* needed for LONG_OFFSETS and offset_t */
 #include "type.h"

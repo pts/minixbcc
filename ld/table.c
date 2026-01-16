@@ -1,5 +1,6 @@
 /* table.c - table-handler module for linker */
 
+#include <string.h>
 #include "const.h"
 #include "align.h"
 #include "obj.h"

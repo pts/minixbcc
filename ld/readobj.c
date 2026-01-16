@@ -1,5 +1,6 @@
 /* readobj.c - read object file for linker */
 
+#include <string.h>
 #include "ar.h"			/* maybe local copy of <ar.h> for cross-link */
 #include "minixar.h"
 #include "const.h"

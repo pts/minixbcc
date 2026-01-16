@@ -1,5 +1,6 @@
 /* ld.c - linker for Introl format (6809 C) object files 8086/80386 */
 
+#include <string.h>
 #include "const.h"
 #include "type.h"
 #include "globvar.h"
