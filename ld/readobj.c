@@ -88,7 +88,7 @@ char *filename;
     default:
 	seekin(0L);
 	readin(filemagic, sizeof filemagic);
-	if (strncmp(filemagic, ARMAG, sizeof filemagic) != 0)
+	if (memcmp(filemagic, ARMAG, sizeof filemagic) != 0)
 	    input1error(" has bad magic number");
 	filepos = SARMAG;
 	while (readarheader(&archentry, &filelength))
