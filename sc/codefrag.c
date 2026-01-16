@@ -978,7 +978,11 @@ bool_pt uflag;
     if (divisor < 0 && !(bool_t) uflag)
     {
 	sign = TRUE;
-	divisor = -divisor;
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+	divisor = ~divisor + 1;  /* It works with any C compiler doing 2s complement arithmetic. */
+#else
+	divisor = -divisor;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
+#endif
     }
     if (bitcount((uvalue_t) divisor) > 1)
 	return FALSE;
@@ -1285,7 +1289,11 @@ bool_pt uflag;
     if (divisor < 0 && !(bool_t) uflag)
     {
 	sign = TRUE;
-	divisor = -divisor;
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */
+	divisor = ~divisor + 1;  /* It works with any C compiler doing 2s complement arithmetic. */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+#else
+	divisor = -divisor;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
+#endif
     }
     if (bitcount((uvalue_t) divisor) > 1)
 	return FALSE;
