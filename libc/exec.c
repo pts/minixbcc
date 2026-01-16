@@ -61,7 +61,7 @@ int nenvps;			/* number of environment strings */
   char *stack;
 
   /* Decide how big a stack is needed. Be paranoid about overflow. */
-#if ARG_MAX > INT_MAX
+#if ARG_MAX > INT_MAX || ARG_MAX > 0x7fff
 #error /* overflow checks and sbrk depend on sizes being ints */
 #endif
   overflow = FALSE;

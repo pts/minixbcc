@@ -136,7 +136,7 @@ va_list argpfix;		/* our argument list */
 			width = width * 10 + *format++ - '0';
 	} else {
 		widflag = 0;	/* no width spec */
-		width = (unsigned) UINT_MAX;	/* very wide */
+		width = (unsigned) -1  /* UINT_MAX */;	/* very wide */
 	}
 	if (longflag = (tolower(*format) == 'l')) ++format;
 	if (*format != 'c') while (isspace(ic))
