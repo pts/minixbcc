@@ -1,6 +1,10 @@
 /* writebin.c - write binary file for linker */
 
-#include <string.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <string.h>
+#endif
 #include "aout.h"
 #include "const.h"
 #include "obj.h"

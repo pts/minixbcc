@@ -1,6 +1,10 @@
 /* error.c - error routines for assembler */
 
-#include <string.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <string.h>
+#endif
 #include "const.h"
 #include "type.h"
 

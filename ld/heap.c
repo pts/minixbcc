@@ -1,9 +1,13 @@
-#ifndef MINIXHEAP
-#  include <stdlib.h>  /* For malloc(...). */
-#endif
-#ifdef DEBUG_MINIXHEAP
-#  include <sys/types.h>
-#  include <unistd.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  ifndef MINIXHEAP
+#    include <stdlib.h>  /* For malloc(...). */
+#  endif
+#  ifdef DEBUG_MINIXHEAP
+#    include <sys/types.h>
+#    include <unistd.h>
+#  endif
 #endif
 #include "const.h"
 #include "type.h"

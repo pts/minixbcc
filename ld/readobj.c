@@ -1,6 +1,10 @@
 /* readobj.c - read object file for linker */
 
-#include <string.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <string.h>
+#endif
 #include "ar.h"			/* maybe local copy of <ar.h> for cross-link */
 #include "minixar.h"
 #include "const.h"

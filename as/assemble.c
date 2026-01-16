@@ -1,6 +1,10 @@
 /* assemble.c - main loop for assembler */
 
-#include <stdlib.h>  /* For NULL. */
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <stdlib.h>  /* For NULL. */
+#endif
 #include "const.h"
 #include "type.h"
 #include "address.h"

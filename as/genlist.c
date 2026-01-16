@@ -1,8 +1,12 @@
 /* genlist.c - generate listing and error reports for assembler */
 
-#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
-#include <unistd.h>
-#include <string.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
+#  include <unistd.h>
+#  include <string.h>
+#endif
 #include "const.h"
 #include "type.h"
 #include "address.h"

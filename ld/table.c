@@ -1,6 +1,10 @@
 /* table.c - table-handler module for linker */
 
-#include <string.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <string.h>
+#endif
 #include "const.h"
 #include "align.h"
 #include "obj.h"

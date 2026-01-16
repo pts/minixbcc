@@ -1,11 +1,15 @@
 /* io.c - input/output and error modules for linker */
 
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <string.h>
-#include <stdlib.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <sys/types.h>
+#  include <sys/stat.h>
+#  include <fcntl.h>
+#  include <unistd.h>
+#  include <string.h>
+#  include <stdlib.h>
+#endif
 #include "const.h"
 #include "obj.h"		/* needed for LONG_OFFSETS and offset_t */
 #include "type.h"

@@ -1,9 +1,13 @@
 /* readsrc.c - read source files for assembler */
 
-#include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
-#include <fcntl.h>
-#include <stdlib.h>
-#include <unistd.h>
+#ifdef LIBCH
+#  include "libc.h"
+#else
+#  include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
+#  include <fcntl.h>
+#  include <stdlib.h>
+#  include <unistd.h>
+#endif
 
 #define MAXLINE 256		/* when this is made bigger, fix pfcc not
 				 * to store the string length in a byte-
