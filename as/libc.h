@@ -42,6 +42,5 @@ int read  _LIBCP((int _fd, char *_buf, unsigned _nbytes));
 int write _LIBCP((int _fd, char *_buf, unsigned _nbytes));
 long lseek _LIBCP((int _fd, long _offset, int _whence));
 int close _LIBCP((int _fd));
-int isatty _LIBCP((int _fd));
 
 #undef _LIBCP
