@@ -43,3 +43,11 @@
 /as/as.m64
 /as/as.pts
 /as/as.exe
+/cr/cr
+/cr/cr.host
+/cr/cr.cross
+/cr/cr.mini*
+/cr/cr.m32
+/cr/cr.m64
+/cr/cr.pts
+/cr/cr.exe
