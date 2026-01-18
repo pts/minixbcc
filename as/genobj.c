@@ -321,7 +321,7 @@ PUBLIC void objheader()
 #ifdef I80386
 	0xA3, 0x86,
 	1, 0,
-	(char) (0xA3 + 0x86 + 1 + 0),
+	(char) ((unsigned) (0xA3 + 0x86 + 1 + 0) & (unsigned) 0xff),
 #endif
 #ifdef MC6809
 	'S', '1',		/* 2 byte magic number */
@@ -361,17 +361,17 @@ PUBLIC void objheader()
     /* build array of imported/exported symbols */
 
     symosiz = 0;
-    if (truefilename == NULL)
+    if (truefilename == (char*) 0)
 	truefilename = filnamptr;
     nameptr = strrchr(truefilename, DIRCHAR);
-    strcpy(module_name, nameptr != NULL ? nameptr + 1 : truefilename);
-    if ((nameptr = strrchr(module_name, '.')) != NULL)
+    strcpy(module_name, nameptr != (char*) 0 ? nameptr + 1 : truefilename);
+    if ((nameptr = strrchr(module_name, '.')) != (char*) 0)
 	*nameptr = 0;
     strsiz = strlen(module_name) + 1;
     align(heapptr);
     for (hashptr = spt, arrext = copyptr = (struct sym_s **) heapptr;
 	 hashptr < spt_top;)
-	if ((symptr = *hashptr++) != NULL)
+	if ((symptr = *hashptr++) != (struct sym_s*) 0)
 	    do
 	    {
 		if ((symptr->type & EXPBIT || symptr->data & IMPBIT) ||
@@ -402,7 +402,7 @@ PUBLIC void objheader()
 		    ++numext;
 		}
 	    }
-	    while ((symptr = symptr->next) != NULL);
+	    while ((symptr = symptr->next) != (struct sym_s*) 0);
     heapptr = (char *) (copytop = copyptr);
 
     /* calculate length of text, and number of seg size bytes in header */

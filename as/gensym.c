@@ -43,7 +43,7 @@ PUBLIC void gensym()
     align(heapptr);
     for (hashptr = spt, symlptr = copyptr = (struct sym_s **) heapptr;
 	 hashptr < spt_top;)
-	if ((symptr = *hashptr++) != NULL)
+	if ((symptr = *hashptr++) != (struct sym_s*) 0)
 	    do
 		if (!(symptr->type & (MACBIT | MNREGBIT | VARBIT)))
 		{
@@ -58,7 +58,7 @@ PUBLIC void gensym()
 		    ++label_count;
 		    labels_length += symptr->length + 3; /* 3 for type, value */
 		}
-	    while ((symptr = symptr->next) != NULL);
+	    while ((symptr = symptr->next) != (struct sym_s*) 0);
 
 sort_symbols:
     sort(symlptr, copyptr, TRUE);	/* sort on name */

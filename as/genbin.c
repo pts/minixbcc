@@ -8,7 +8,7 @@
 
 PRIVATE char *asmbeg;		/* beginning of assembler code */
 				/* for overwrite check */
-				/* bss-init to zero = NULL and not changed */
+				/* bss zeroi-initialzation to (char*) 0, and not changed */
 PRIVATE offset_t binfbuf;	/* binary code buffer for file (counter) */
 PRIVATE offset_t binmax;	/* maximum value of binmbuf for pass 1 */
 PRIVATE offset_t binmin;	/* minimum value of binmbuf for pass 1 */
@@ -152,6 +152,14 @@ PUBLIC void initbin()
     binmin = -1;		/* greater than anything */
 }
 
+#ifdef ACKFIX0
+  typedef int myintptr;  /* Pacify ACK 3.1 warning on Minix 1.5.10 i86: conversion of long to pointer loses accuracy */
+  typedef char assert_ptrsize[sizeof(myintptr) == sizeof(char*) ? 1 : -1];
+#else
+  typedef offset_t myintptr;
+  typedef char assert_ptrsize[sizeof(myintptr) >= sizeof(char*) ? 1 : -1];
+#endif
+
 /* write char to binary file or directly to memory */
 
 PUBLIC void putbin(c)
@@ -188,7 +196,7 @@ opcode_pt c;
     {
 	register char *bufptr;
 
-	if ((bufptr = (char *) binmbuf) >= asmbeg && bufptr < heapptr)
+	if ((bufptr = (char *) (myintptr) binmbuf) >= asmbeg && bufptr < heapptr)  /* This converts an offset_t to a pointer. */
 	    error(OWRITE);
 	else
 	    *bufptr = c;

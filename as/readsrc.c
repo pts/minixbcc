@@ -262,9 +262,9 @@ PUBLIC void readline()
 		{
 		    parameters = macstak->parameters;
 		    for (paramnum = *bufptr++; paramnum-- != '0';)
-			if ((parameters = parameters->next) == NULL)
+			if ((parameters = parameters->next) == (struct schain_s*) 0)
 			    break;
-		    if (parameters != NULL)
+		    if (parameters != (struct schain_s*) 0)
 		    {
 			for (oldbufptr = bufptr, bufptr = parameters->string;
 			     *bufptr++ != 0;)

@@ -1,10 +1,5 @@
 /* assemble.c - main loop for assembler */
 
-#ifdef LIBCH
-#  include "libc.h"
-#else
-#  include <stdlib.h>  /* For NULL. */
-#endif
 #include "const.h"
 #include "type.h"
 #include "address.h"
@@ -159,7 +154,7 @@ PUBLIC void assemble()
     while (TRUE)
     {
 	asline();
-	if (label != NULL)	/* must be confirmed if still set */
+	if (label != (struct sym_s*) 0)	/* must be confirmed if still set */
 	{			/* it is nulled by EQU,	COMM and SET */
 #ifndef MC6809
 #define NEEDENDLABEL ILLAB
@@ -176,7 +171,7 @@ PUBLIC void assemble()
 	    if ((mcount | popflags) == 0)
 		/* unaccompanied label, display adr like EQU and SET */
 		showlabel();
-	    label = NULL;	/* reset for next line */
+	    label = (struct sym_s*) 0;	/* reset for next line */
 	}
         skipline();
 	listline();
@@ -214,7 +209,7 @@ PRIVATE void asline()
     if (!ifflag)
 	/* not assembling, just test for IF/ELSE/ELSEIF/ENDIF */
     {
-	if (symptr == NULL || !(symptr->type & MNREGBIT) ||
+	if (symptr == (struct sym_s*) 0 || !(symptr->type & MNREGBIT) ||
 	    symptr->data & REGBIT ||
 	    symptr->value_reg_or_op.op.routine >= MIN_NONCOND)
 	    return;

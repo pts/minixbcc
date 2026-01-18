@@ -3,7 +3,6 @@
 #ifdef LIBCH
 #  include "libc.h"
 #else
-#  include <stdlib.h>  /* For NULL. */
 #  include <string.h>
 #endif
 #include "const.h"
@@ -13,6 +12,14 @@
 #undef EXTERN
 #define EXTERN
 #include "macro.h"
+
+#ifdef ACKFIX0
+  typedef int myintptr;  /* Pacify ACK 3.1 warning on Minix 1.5.10 i86: conversion of long to pointer loses accuracy */
+  typedef char assert_ptrsize[sizeof(myintptr) == sizeof(char*) ? 1 : -1];
+#else
+  typedef offset_t myintptr;
+  typedef char assert_ptrsize[sizeof(myintptr) >= sizeof(char*) ? 1 : -1];
+#endif
 
 /*
   Enter macro: stack macro and get its parameters.
@@ -36,9 +43,10 @@ struct sym_s *symptr;
 	register char *stringptr;
 
 	++maclevel;
-	(--macstak)->text = (char *) symptr->value_reg_or_op.value;
+	/* !! porting: this converts a long to a pointer; add a static assert checking that it fits (i.e. sizeof(offset_t) >= sizeof(char*). */
+	(--macstak)->text = (char*) (myintptr) symptr->value_reg_or_op.value;  /* This converts an offset_t to a pointer. */
 	macstak->parameters = param1 = macpar;
-	param1->next = NULL;
+	param1->next = (struct schain_s*) 0;
 	*(stringptr = build_number(++macnum, 3, param1->string)) = 0;
 	macpar = (struct schain_s *) (stringptr + 1);
 				/* TODO: alignment */
@@ -69,7 +77,7 @@ struct sym_s *symptr;
 		}
 		*stringptr = 0;
 		param1->next = macpar;	/* ptr from previous */
-		(param1 = macpar)->next = NULL;
+		(param1 = macpar)->next = (struct schain_s*) 0;
 					/* this goes nowhere */
 		macpar = (struct schain_s *) (stringptr + 1);
 					/* but is finished OK - TODO align */
@@ -99,7 +107,7 @@ PUBLIC void pmacro()
     saving =			/* prepare for bad macro */
 	savingc = FALSE;	/* normally don't save comments */
     macload = TRUE;		/* show loading */
-    if (label != NULL)
+    if (label != (struct sym_s*) 0)
 	error(ILLAB);
     else if (sym != IDENT)
 	error(LABEXP);
