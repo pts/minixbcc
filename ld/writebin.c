@@ -29,9 +29,6 @@
 #define n_was_strx n_value
 #define n_was_type n_type
 
-extern long text_base_address;
-#define btextoffset text_base_address
-static long bdataoffset;
 #define page_size() 4096
 
 #define FILEHEADERLENGTH A_MINHDR
@@ -83,6 +80,10 @@ PRIVATE bool_t sepid;		/* nonzero for separate I & D */
 PRIVATE bool_t stripflag;	/* nonzero to strip symbols */
 PRIVATE offset_t spos;		/* position in current seg */
 PRIVATE bool_t uzp;		/* nonzero for unmapped zero page */
+
+PUBLIC offset_t btextoffset;  /* text base address; default: 0 */
+PUBLIC offset_t bdataoffset;  /* data base address: will be computed automatically */
+PUBLIC offset_t dynam_size;   /* desired dynamic memory size (including heap, stack, argv and environ); the default of 0 means automatic */
 
 FORWARD void linkmod P((struct modstruct *modptr));
 FORWARD void linkrefs P((struct modstruct *modptr));
@@ -657,16 +658,14 @@ unsigned countsize;
 
 PRIVATE void writeheader()
 {
-    struct exec header;
+    struct exec header;  /* !! Don't use `struct exec' here, to avoid alignment issues. */
+    offset_t a_total;
 
     memset(&header, 0, sizeof header);
     header.a_magic[0] = A_MAGIC0;
     header.a_magic[1] = A_MAGIC1;
-    {
-	header.a_flags = sepid ? A_SEP : A_EXEC;
-	if (uzp)
-	    header.a_flags |= A_UZP;
-    }
+    header.a_flags = sepid ? A_SEP : A_EXEC;
+    if (uzp) header.a_flags |= A_UZP;
     header.a_cpu = bits32 ? A_I80386 : A_I8086;
     header.a_hdrlen = FILEHEADERLENGTH;
     offtocn((char *) &header.a_text, etextpadoff - btextoffset,
@@ -675,18 +674,20 @@ PRIVATE void writeheader()
 	    sizeof header.a_data);
     offtocn((char *) &header.a_bss, endoffset - edataoffset,
 	    sizeof header.a_bss);
-    {
-	if (uzp)
-	    offtocn((char *) &header.a_entry, page_size(),
-		    sizeof header.a_entry);
-	offtocn((char *) &header.a_total, (offset_t)(
+    if (uzp) offtocn((char *) &header.a_entry, page_size(), sizeof header.a_entry);
+
+    if (dynam_size) { a_total = endoffset + dynam_size; }
 #ifdef MINIXBUGCOMPAT
-	    endoffset < 0x00010000L ? 0x00010000L : endoffset + 0x0008000L
+    else if (endoffset < 0x10000L) { a_total = (offset_t) 0x10000L; }
 #else  /* The ACK C compiler in Minix 1.5.10 i86 targeting Minix 1.5.10 i86 always sets a_total to 0x10000, so we do the same for !bits32. */
-	    !bits32 || endoffset <= (0x10000L - 0x8000L) ? 0x10000L : endoffset + 0x8000L
+    else if (!bits32 || endoffset <= (offset_t) (0x10000L - 0x8000L)) { a_total = (offset_t) 0x10000L; }
 #endif
-	    ), sizeof header.a_total);
+    else { a_total = endoffset + (offset_t) 0x8000L; }
+    if (a_total < endoffset || a_total > (bits32 ? ~a_total : (offset_t) 0x10000L)) {
+	fatalerror(dynam_size ? "dynamic memory size (-h) makes a_total too large" : "a_total too large");
     }
+    offtocn((char *) &header.a_total, a_total, sizeof header.a_total);
+
     writeout((char *) &header, FILEHEADERLENGTH);
 }
 

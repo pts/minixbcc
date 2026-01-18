@@ -36,10 +36,9 @@ PRIVATE struct entrylist *entrylast;	/* last on list of entry symbols */
 PRIVATE struct redlist *redlast;	/* last on list of redefined symbols */
 PRIVATE struct modstruct *modlast;	/* data for last module */
 
-PRIVATE bool_pt parse_u_dec_lenient P((char *s, long *output));
 PRIVATE char *namedup P((char *p, unsigned size));
-PRIVATE bool_pt readarheader P((char **parchentry, long *filelength_out));
-PRIVATE bool_pt readminixarheader P((char **parchentry, long *filelength_out));
+PRIVATE bool_pt readarheader P((char **parchentry, offset_t *filelength_out));
+PRIVATE bool_pt readminixarheader P((char **parchentry, offset_t *filelength_out));
 PRIVATE unsigned read1fileheader1 P((void));
 PRIVATE unsigned read2fileheader2 P((void));
 PRIVATE void readmodule P((char *filename, char *archentry));
@@ -64,9 +63,9 @@ PUBLIC void readsyms(filename)
 char *filename;
 {
     char *archentry;
-    long filelength;
     char filemagic[SARMAG];
-    long filepos;
+    offset_t filepos;
+    offset_t filelength;
     unsigned modcount;
 
     openin(filename);		/* input is not open, so position is start */
@@ -86,7 +85,7 @@ char *filename;
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
 	    }
-	    seekin(filepos += roundup(filelength, 2, long));
+	    seekin(filepos += roundup(filelength, 2, offset_t));
 	}
 	break;
     default:
@@ -103,7 +102,7 @@ char *filename;
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
 	    }
-	    seekin(filepos += roundup(filelength, 2, long));
+	    seekin(filepos += roundup(filelength, 2, offset_t));
 	}
 	break;
     }
@@ -112,26 +111,66 @@ char *filename;
 
 /* read archive header and return length */
 
-/* Parses an unsigned decimal number. It doesn't check for overflow. It allows leading and trailing ' '. */
-PRIVATE bool_pt parse_u_dec_lenient(s, output)
+/* Parses an unsigned decimal, hexadecimal or octal number. It doesn't check
+ * for overflow. It allows leading ' ' and '\t'. It allows trailing ' ' and
+ * '\t'. It fails if the result is negative. Returns nonzero on success. It
+ * produces a twos complement number if the input has a minus sign.
+ *
+ * It uses the speified base (8, 10 or 16), or if 0 is specified, then it
+ * autodetects the base just like c does.
+ */
+bool_pt parse_nonneg_lenient(s, base, output)
 char *s;
-long *output;
+unsigned base;
+offset_t *output;
 {
-  register char c;
+    register char c;
+    bool_t sign;
+    unsigned long v;
 
-  *output = 0;
-  for (; (c = s[0]) == ' '; ++s) {}
-  if ((c = s[0]) == '\0' || c == ' ') return 0;  /* Number missing. */
-  while ((c = *s++) != '\0' && c != ' ') {
-    if (c >= '0' && c <= '9') {
-      c -= '0';
-      *output *= 10;
-      *output += c;
+    sign = 0;
+    v = 0;
+    for (; (c = *s) == ' ' || c == '\t'; ++s) {}
+    if (*s == '-') { ++s; sign = 1; }
+    if (*s == '0' && ((c = s[1]) == 'x' || c == 'X') && (base == 0 || base == 16)) {
+	s += 2;
+	base = 16;
+    } else if (*s == '0' && (base == 0 || base == 8)) {
+	base = 8;
+    } else if (base == 10) {
+    } else if (base == 0) {
+	base = 10;
     } else {
-      return 0;  /* Bad digit in c. */
+	return 0;    /* Invalid base. */
     }
-  }
-  return 1;
+    c = *s++;
+    do {
+	if (c >= '0' && c <= '9' && base == 10) {    /* This doesn't work in EBCDIC, it's probably ASCII-only. */
+	    c -= '0';
+	    v *= 10;
+	} else if (c >= '0' && c <= '7' && base == 8) {
+	    c -= '0';
+	    v <<= 3;
+	} else if (c >= '0' && c <= '9' && base == 16) {    /* This doesn't work in EBCDIC, it's probably ASCII-only. */
+	    c -= '0';
+	    v <<= 4;
+	} else if (c >= 'a' && c <= 'f' && base == 16) {
+	    c -= 'a' - 10;
+	    v <<= 4;
+	} else if (c >= 'A' && c <= 'F' && base == 16) {
+	    c -= 'A' - 10;
+	    v <<= 4;
+	} else {
+	    return 0;    /* Bad digit in c. */
+	}
+	v += c;
+    } while ((c = *s++) != '\0' && c != ' ' && c != '\t');
+    for (; c == ' ' || c == '\t'; c = *s++) {}
+    if (c != '\0') return 0;    /* Trailing garbage. */
+    if (sign) v = ~v + 1;    /* Twos complement. */
+    if (v > ~v) return 0;    /* Negative twos complement. */
+    *output = v;  /* Always nonnegative here. */
+    return 1;
 }
 
 PRIVATE char *namedup(p, size)
@@ -151,26 +190,26 @@ unsigned size;
 
 PRIVATE bool_pt readarheader(parchentry, filelength_out)
 char **parchentry;
-long *filelength_out;
+offset_t *filelength_out;
 {
     struct ar_hdr arheader;
 
     if (readineofok((char *) &arheader, sizeof arheader))
 	return 0;
     *parchentry = namedup(arheader.ar_name, sizeof arheader.ar_name);
-    return parse_u_dec_lenient(arheader.ar_size, filelength_out);
+    return parse_nonneg_lenient(arheader.ar_size, 10, filelength_out);  /* Always ASCII decimal. */
 }
 
 PRIVATE bool_pt readminixarheader(parchentry, filelength_out)
 char **parchentry;
-long *filelength_out;
+offset_t *filelength_out;
 {
     struct minixar_hdr marheader;
 
     if (readineofok((char *) &marheader, sizeof marheader))
 	return 0;
     *parchentry = namedup(marheader.ar_name, sizeof marheader.ar_name);
-    *filelength_out = (long)c2u2(marheader.ar_size) << 16 | c2u2(marheader.ar_size + 2);  /* PDP-11 byte order. */
+    *filelength_out = (offset_t) c2u2(marheader.ar_size) << 16 | c2u2(marheader.ar_size + 2);  /* PDP-11 byte order. */
     return 1;
 }
 

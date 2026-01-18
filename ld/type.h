@@ -8,15 +8,15 @@ typedef unsigned u2_pt;
 typedef unsigned long u4_t;
 typedef unsigned long u4_pt;
 
-#ifdef OBJ_H			/* obj.h is included */
-
-typedef unsigned flags_t;	/* unsigned makes shifts logical */
-
 #ifdef LONG_OFFSETS
 typedef unsigned long offset_t;
 #else
-typedef unsigned offset_t;
+typedef unsigned offset_t;  /* !! Enable this in sc, ld, cr for sizeof(int) == 32, especially for `gcc -m64', where sizeof(long) == 8. */
 #endif
+
+#ifdef OBJ_H			/* obj.h is included */
+
+typedef unsigned flags_t;	/* unsigned makes shifts logical */
 
 struct entrylist		/* list of entry symbols */
 {
@@ -130,6 +130,7 @@ int main P((int argc, char **argv));
 /* readobj.c */
 void objinit P((void));
 void readsyms P((char *filename));
+bool_pt parse_nonneg_lenient P((char *s, unsigned base, offset_t *output));
 #ifdef OBJ_H
 void entrysym P((struct symstruct *symptr));
 offset_t readconvsize P((unsigned countindex));

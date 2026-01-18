@@ -11,8 +11,6 @@
 
 #define LIBNAME_MAX 32  /* Number of bytes without the directory name, the lib prefix and the .a suffix and the trailing NUL. */
 
-PUBLIC long text_base_address;
-
 PRIVATE bool_t flag[128];  /* !! Use a smaller array on an ANSI system. */
 PRIVATE char libdir[] = "/usr/local/lib/";
 PRIVATE char lib86subdir[] = "i86/";
@@ -20,40 +18,6 @@ PRIVATE char lib386subdir[] = "i386/";
 PRIVATE char libtmp[sizeof libdir - 1 + sizeof lib386subdir - 1 + LIBNAME_MAX + 1];
 PRIVATE char libprefix[] = "lib";
 PRIVATE char libsuffix[] = ".a";
-
-/* This is similar to strtoul(argv[argn], (char **) NULL, 16), but it avoids
- * dealing with errno. There are some differences: it allows only spaces or
- * tabs as whitespace, it fails for trailing junk bytes.
- */
-PRIVATE bool_pt parse_u_hex(s, output)
-char *s;
-long *output;
-{
-  register char c;
-  unsigned count;
-
-  *output = 0;
-  for (; (c = s[0]) == ' ' || c == '\t'; ++s) {}
-  if (s[0] == '0' && ((c = s[1]) == 'x' || c == 'X')) s += 2;
-  if (s[0] == '\0') return 0;  /* Number missing. */
-  for (; s[0] == '0'; ++s) {}  /* Don't count leading '0's as digits for overflow. */
-  count = 0;
-  while ((c = *s++) != '\0') {
-    if (++count == (sizeof(long) << 1) + 1) return 0;  /* Overflow in number of digits. */
-    if (c >= '0' && c <= '9') {
-      c -= '0';
-    } else if (c >= 'a' && c <= 'f') {
-      c -= 'a' - 10;
-    } else if (c >= 'A' && c <= 'F') {
-      c -= 'A' - 10;
-    } else {
-      return 0;  /* Bad hex digit in c. */
-    }
-    *output <<= 4;
-    *output += c;
-  }
-  return *output >= 0;
-}
 
 PRIVATE char *appendstr(dest, src)
 char *dest;
@@ -100,11 +64,18 @@ char **argv;
 		if (arg[1] == '0')	/* flag 0 is negative logic flag 3 */
 		    flag['3'] = !flag['0'];
 		break;
-	    case 'T':		/* text base address */
+	    case 'T':		/* text base address; default: 0 */
 		if (arg[2] != 0 || ++argn >= argc)
 		    usage();
-		if (!parse_u_hex(argv[argn], &text_base_address))
+		/* Earlier versions of ld (such as early v1) had base == 16 below. */
+		if (!parse_nonneg_lenient(argv[argn], 0  /* base */, &btextoffset))
 		    fatalerror("invalid text address");
+		break;
+	    case 'h':		/* dynamic memory size (including heap, stack, argv and environ); the default of 0 means automatic */
+		if (arg[2] != 0 || ++argn >= argc)
+		    usage();
+		if (!parse_nonneg_lenient(argv[argn], 0  /* base */, &dynam_size))
+		    fatalerror("invalid dynamic memory size");
 		break;
 	    case 'l':		/* library name */
 		if (strlen(arg) > LIBNAME_MAX + 1) {
