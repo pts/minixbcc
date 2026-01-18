@@ -419,7 +419,7 @@ char *defarchentry;
     putstr(message);
     putstr(" in file ");
     putstr(inputname);
-    if (archentry != NULL)
+    if (archentry != (char*) 0)
     {
 	putbyte('(');
 	putstr(archentry);
@@ -427,7 +427,7 @@ char *defarchentry;
     }
     putstr("; using definition in ");
     putstr(deffilename);
-    if (defarchentry != NULL)
+    if (defarchentry != (char*) 0)
     {
 	putbyte('(');
 	putstr(defarchentry);

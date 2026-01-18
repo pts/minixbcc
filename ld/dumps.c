@@ -11,7 +11,7 @@ PUBLIC void dumpmods()
 {
     struct modstruct *modptr;
 
-    for (modptr = modfirst; modptr != NULL; modptr = modptr->modnext)
+    for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
     {
 	putstr(modptr->loadflag ? "L " : "  ");
 	putbstr(20, modptr->modname);
@@ -29,11 +29,11 @@ PUBLIC void dumpsyms()
     struct symstruct *symptr;
     char uflag;
 
-    for (modptr = modfirst; modptr != NULL; modptr = modptr->modnext)
+    for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	if (modptr->loadflag)
 	{
 	    for (symparray = modptr->symparray;
-		 (symptr = *symparray) != NULL; ++symparray)
+		 (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
 		if (symptr->modptr == modptr)
 		{
 		    uflag = FALSE;

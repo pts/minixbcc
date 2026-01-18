@@ -52,9 +52,9 @@ PRIVATE unsigned readfilecommon P((char *fileheader));
 
 PUBLIC void objinit()
 {
-    modfirst = modlast = NULL;
-    entryfirst = entrylast = NULL;
-    redfirst = redlast = NULL;
+    modfirst = modlast = (struct modstruct*) 0;
+    entryfirst = entrylast = (struct entrylist*) 0;
+    redfirst = redlast = (struct redlist*) 0;
 }
 
 /* read all symbol definitions in an object file */
@@ -73,7 +73,7 @@ char *filename;
     {
     case OMAGIC:
 	for (modcount = read2fileheader2(); modcount-- != 0;)
-	    readmodule(filename, (char *) NULL);
+	    readmodule(filename, (char *) 0);
 	break;
     case MINIXARMAG:
 	filepos = 2;
@@ -231,7 +231,7 @@ PRIVATE unsigned read1fileheader1()
     struct
     {
 	char magic[2];
-	char count[2];		/* really an int */
+	char count_ca[2];	/* really an int */
     } fileheader;
 
     readin((char *) &fileheader, sizeof fileheader);
@@ -243,11 +243,11 @@ PRIVATE unsigned read2fileheader2()
     struct
     {
 	short omagic;  /* !! This depends on the byte order -- or does it? filechecksum doesn't depend on it. */
-	char count[2];		/* really an int */
+	char count_ca[2];	/* really an int */
     } fileheader;
 
     fileheader.omagic = OMAGIC;
-    readin((char *) &fileheader.count, 2);
+    readin(fileheader.count_ca, 2);
     return readfilecommon((char *) &fileheader);
 }
 
@@ -296,7 +296,7 @@ char *archentry;
     {
 	symname = readstring();
 	if ((flags = symdptr->dflags) & (E_MASK | I_MASK) &&
-	    (symptr = findsym(symname)) != NULL)
+	    (symptr = findsym(symname)) != (struct symstruct*) 0)
 	{
 	    /*
 	       weaken segment-checking by letting the maximum segment
@@ -331,7 +331,7 @@ char *archentry;
 	if (flags & N_MASK)
 	    entrysym(symptr);
     }
-    *symparray = NULL;
+    *symparray = (struct symstruct*) 0;
 }
 
 /* put symbol on entry symbol list if it is not already */
@@ -341,13 +341,13 @@ struct symstruct *symptr;
 {
     register struct entrylist *elptr;
 
-    for (elptr = entryfirst; elptr != NULL; elptr = elptr->elnext)
+    for (elptr = entryfirst; elptr != (struct entrylist*) 0; elptr = elptr->elnext)
 	if (symptr == elptr->elsymptr)
 	    return;
     elptr = (struct entrylist *) heapalloc(sizeof(struct entrylist));
-    elptr->elnext = NULL;
+    elptr->elnext = (struct entrylist*) 0;
     elptr->elsymptr = symptr;
-    if (entryfirst == NULL)
+    if (entryfirst == (struct entrylist*) 0)
 	entryfirst = elptr;
     else
 	entrylast->elnext = elptr;
@@ -374,7 +374,7 @@ PRIVATE void reedmodheader()
 
     readin((char *) &modheader, sizeof modheader);
     modptr = (struct modstruct *) heapalloc(sizeof(struct modstruct));
-    modptr->modnext = NULL;
+    modptr->modnext = (struct modstruct*) 0;
     modptr->textoffset = c4u4(modheader.htextoffset);
     modptr->class = modheader.hclass;
     readin(modptr->segmaxsize, sizeof modptr->segmaxsize);
@@ -392,7 +392,7 @@ PRIVATE void reedmodheader()
 	    cptr += count;
 	}
     }
-    if (modfirst == NULL)
+    if (modfirst == (struct modstruct*) 0)
 	modfirst = modptr;
     else
 	modlast->modnext = modptr;
@@ -409,11 +409,11 @@ offset_t value;
     if (symptr->modptr->class != (class = modlast->class))
 	for (rlptr = redfirst;; rlptr = rlptr->rlnext)
 	{
-	    if (rlptr == NULL)
+	    if (rlptr == (struct redlist*) 0)
 	    {
 		rlptr = (struct redlist *)
 		    heapalloc(sizeof(struct redlist));
-		rlptr->rlnext = NULL;
+		rlptr->rlnext = (struct redlist*) 0;
 		rlptr->rlsymptr = symptr;
 		if (symptr->modptr->class < class)
 		    /* prefer lower class - put other on redlist */
@@ -428,7 +428,7 @@ offset_t value;
 		    rlptr->rlvalue = symptr->value;
 		    symptr->value = value;
 		}
-		if (redfirst == NULL)
+		if (redfirst == (struct redlist*) 0)
 		    redfirst = rlptr;
 		else
 		    redlast->rlnext = rlptr;

@@ -26,7 +26,7 @@
 #ifdef MAXHEAP  /* Configurable at compile time: -DMAXHEAP=... */
 #  define MAXHEAPEXPR ((unsigned) (MAXHEAP))
 #else
-#  define MAXHEAPEXPR (sizeof(int) <= 2 ? (unsigned) (MAXHEAP16) : (unsigned) (MAXHEAP32))
+#  define MAXHEAPEXPR (sizeof(int) <= 2 ? (unsigned) (MAXHEAP16) : (unsigned) ((MAXHEAP32) & (unsigned) ~0))
 #endif
 
 #ifdef MINIXHEAP  /* Use brk(2) on Minix. It uses less code, and it wastes less data than malloc(3). */

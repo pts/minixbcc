@@ -39,7 +39,7 @@ char **argv;
     syminit();
     typeconv_init(0  /* LD_BIG_ENDIAN */, 0  /* LONG_BIG_ENDIAN */);  /* !! size optimization: Hardcode these 0s to typeconv.c. */
     flag['3'] = sizeof(char *) >= 4;
-    outfilename = NULL;
+    outfilename = (char*) 0;
     for (argn = 1; argn < argc; ++argn)
     {
 	arg = argv[argn];
@@ -92,7 +92,7 @@ char **argv;
 		readsyms(libtmp);
 		break;
 	    case 'o':		/* output file name */
-		if (arg[2] != 0 || ++argn >= argc || outfilename != NULL)
+		if (arg[2] != 0 || ++argn >= argc || outfilename != (char*) 0)
 		    usage();
 		outfilename = argv[argn];
 		break;
@@ -101,7 +101,7 @@ char **argv;
 	    }
     }
     linksyms(flag['r']);
-    if (outfilename == NULL)
+    if (outfilename == (char*) 0)
 	outfilename = "a.out";
     writebin(outfilename, flag['i'], flag['3'], flag['s'], flag['z']);
     if (flag['m'])

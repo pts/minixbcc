@@ -106,26 +106,26 @@ bool_pt argreloc_output;
     struct symstruct *symptr;
 
     (void)argreloc_output;  /* !! Size optimization: remove this argument. */
-    if ((symptr = findsym("_main")) != NULL)
+    if ((symptr = findsym("_main")) != (struct symstruct*) 0)
 	entrysym(symptr);
     do
     {
-	if ((elptr = entryfirst) == NULL)
+	if ((elptr = entryfirst) == (struct entrylist*) 0)
 	    fatalerror("no start symbol");
-	for (modptr = modfirst; modptr != NULL; modptr = modptr->modnext)
+	for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	    modptr->loadflag = FALSE;
-	for (; elptr != NULL; elptr = elptr->elnext)
+	for (; elptr != (struct entrylist*) 0; elptr = elptr->elnext)
 	    linkrefs(elptr->elsymptr->modptr);
-	if ((symptr = findsym("start")) != NULL ||
-	    (symptr = findsym("crtso")) != NULL)
+	if ((symptr = findsym("start")) != (struct symstruct*) 0 ||
+	    (symptr = findsym("crtso")) != (struct symstruct*) 0)
 	    linkrefs(symptr->modptr);
 	needlink = FALSE;
 	{
 	    struct redlist *prlptr;
 	    struct redlist *rlptr;
 
-	    prlptr = NULL;  /* Pacify GCC -Wmaybe-uninitialized warning below. */
-	    for (rlptr = redfirst; rlptr != NULL;
+	    prlptr = (struct redlist*) 0;  /* Pacify GCC -Wmaybe-uninitialized warning below. */
+	    for (rlptr = redfirst; rlptr != (struct redlist*) 0;
 		 rlptr = (prlptr = rlptr)->rlnext)
 		if (rlptr->rlmodptr->loadflag &&
 		    rlptr->rlmodptr->class > rlptr->rlsymptr->modptr->class)
@@ -206,7 +206,7 @@ struct nlist {  /* symbol table entry */
 #define C_EXT   0020  /* external symbol */
 #define C_STAT  0030  /* static */
 #endif
-    struct nlist extsym;
+    struct nlist extsym;  /* !! Don't use this struct, to avoid alignment issues during serialization. */
     flags_t flags;
     struct modstruct *modptr;
     unsigned seg;
@@ -247,7 +247,7 @@ struct nlist {  /* symbol table entry */
     /* calculate segment and common sizes (sum over loaded modules) */
     /* use zero init of segsz[] */
     /* also relocate symbols relative to starts of their segments */
-    for (modptr = modfirst; modptr != NULL; modptr = modptr->modnext)
+    for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	if (modptr->loadflag)
 	{
 	    register struct symstruct **symparray;
@@ -257,7 +257,7 @@ struct nlist {  /* symbol table entry */
 	    modptr->modcomsz = 0;
 #endif
 	    for (symparray = modptr->symparray;
-		 (symptr = *symparray) != NULL; ++symparray)
+		 (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
 		if (symptr->modptr == modptr && !(symptr->flags & A_MASK))
 		{
 		    if (!(symptr->flags & (I_MASK | SA_MASK)))
@@ -337,14 +337,14 @@ struct nlist {  /* symbol table entry */
     }
 
     /* relocate symbols by offsets of segments in memory */
-    for (modptr = modfirst; modptr != NULL; modptr = modptr->modnext)
+    for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	if (modptr->loadflag)
 	{
 	    register struct symstruct **symparray;
 	    register struct symstruct *symptr;
 
 	    for (symparray = modptr->symparray;
-		 (symptr = *symparray) != NULL; ++symparray)
+		 (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
 		if (symptr->modptr == modptr && !(symptr->flags & A_MASK))
 		{
 		    symptr->value += ((symptr->flags & (C_MASK | SA_MASK)) ? combase : segbase)[symptr->flags & SEGM_MASK];
@@ -389,7 +389,7 @@ struct nlist {  /* symbol table entry */
 
     openout(outfilename);
     writeheader();
-    for (modptr = modfirst; modptr != NULL; modptr = modptr->modnext)
+    for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	if (modptr->loadflag)
 	{
 	    linkmod(modptr);
@@ -407,17 +407,17 @@ struct nlist {  /* symbol table entry */
 		+ (long) (edataoffset - bdataoffset)
 		);
 	extsym.n_was_numaux = extsym.n_was_type = 0;
-	for (modptr = modfirst; modptr != NULL; modptr = modptr->modnext)
+	for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	    if (modptr->loadflag)
 	    {
 		register struct symstruct **symparray;
 		register struct symstruct *symptr;
 
 		for (symparray = modptr->symparray;
-		     (symptr = *symparray) != NULL; ++symparray)
+		     (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
 		    if (symptr->modptr == modptr)
 		    {
-		        namecpy((char *) &extsym.n_was_name, (char *) &extsym.n_was_name + sizeof extsym.n_was_name, symptr->name);
+		        namecpy(extsym.n_was_name, extsym.n_was_name + sizeof extsym.n_was_name, symptr->name);
 			u4cn((char *) &extsym.n_value, (u4_t) symptr->value,
 			     sizeof extsym.n_value);
 #if 0
@@ -557,7 +557,7 @@ struct modstruct *modptr;
 
     modptr->loadflag = TRUE;
     for (symparray = modptr->symparray;
-	 (symptr = *symparray) != NULL; ++symparray)
+	 (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
 	if (symptr->modptr->loadflag == FALSE)
 	    linkrefs(symptr->modptr);
 }
@@ -614,7 +614,7 @@ offset_t value;
 {
     struct symstruct *symptr;
 
-    if ((symptr = findsym(name)) != NULL)
+    if ((symptr = findsym(name)) != (struct symstruct*) 0)
 	symptr->value = value;
 }
 
@@ -623,7 +623,7 @@ register char *name;
 {
     register struct symstruct *symptr;
 
-    if ((symptr = findsym(name)) != NULL)
+    if ((symptr = findsym(name)) != (struct symstruct*) 0)
     {
 	if ((symptr->flags & SEGM_MASK) == SEGM_MASK)
 	    symptr->flags &= ~SEGM_MASK | curseg;

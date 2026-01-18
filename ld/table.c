@@ -30,7 +30,7 @@ PUBLIC void syminit()
 
     initheap();  /* Initializes heapstart, heapptr and heapend. */
     for (i = 0; i < HASHTABSIZE; i++)
-	hashtab[i] = NULL;
+	hashtab[i] = (struct symstruct*) 0;
 }
 
 /* add named symbol to end of table - initialise only name and next fields */
@@ -43,10 +43,10 @@ char *name;
     struct symstruct *oldsymptr;
     struct symstruct *symptr;
 
-    oldsymptr = NULL;  /* Pacify GCC -Wmaybe-uninitialized warning below. */
+    oldsymptr = (struct symstruct*) 0;  /* Pacify GCC -Wmaybe-uninitialized warning below. */
     hashptr = gethashptr(name);
     symptr = *hashptr;
-    while (symptr != NULL)
+    while (symptr != (struct symstruct*) 0)
     {
 	oldsymptr = symptr;
 	symptr = symptr->next;
@@ -55,11 +55,11 @@ char *name;
     symptr = (struct symstruct *) heapptr;
     if ((heapptr = symptr->name + (strlen(name) + 1)) > heapend)
 	outofmemory();
-    symptr->modptr = NULL;
-    symptr->next = NULL;
+    symptr->modptr = (struct modstruct*) 0;
+    symptr->next = (struct symstruct*) 0;
     if (name != symptr->name)
 	strcpy(symptr->name, name);	/* should't happen */
-    if (*hashptr == NULL)
+    if (*hashptr == (struct symstruct*) 0)
 	*hashptr = symptr;
     else if (oldsymptr)
 	oldsymptr->next = symptr;
@@ -74,7 +74,7 @@ char *name;
     struct symstruct *symptr;
 
     symptr = *gethashptr(name);
-    while (symptr != NULL && (!(symptr->flags & (E_MASK | I_MASK)) ||
+    while (symptr != (struct symstruct*) 0 && (!(symptr->flags & (E_MASK | I_MASK)) ||
 			      strcmp(symptr->name, name) != 0))
 	symptr = symptr->next;
     return symptr;
