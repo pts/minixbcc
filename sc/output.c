@@ -817,7 +817,7 @@ PUBLIC void setoutbufs()
 {
     if (!isatty(output))
     {
-	outbufptr = outbuf = ourmalloc(2 * OUTBUFSIZE);
+	outbufptr = outbuf = (char*) ourmalloc(2 * OUTBUFSIZE);
 #ifdef TS
 ts_s_outputbuf += 2 * OUTBUFSIZE;
 #endif

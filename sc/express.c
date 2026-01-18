@@ -42,7 +42,7 @@ PRIVATE struct nodestruct *cast_exp()
     if (sym != LPAREN)
 	return unary_exp();
     nextsym();
-    if ((vartype = typename()) == NULL)
+    if ((vartype = typename()) == (struct typestruct*) 0)
 	return postfix_exp(TRUE);
     rparen();
     scalar = (nodeptr = cast_exp())->nodetype->scalar;
@@ -245,7 +245,7 @@ bool_pt seenlp;
 	    {
 		register struct nodestruct *np;
 
-		for (np = nodeptr->right; np != NULL; np = np->right)
+		for (np = nodeptr->right; np != (struct nodeptr*) 0; np = np->right)
 		{
 		    if (np->nodetype->scalar & RSCALAR)
 		    {
@@ -265,7 +265,7 @@ bool_pt seenlp;
 			break;
 		    }
 		}
-		for (np = nodeptr->right; np != NULL; np = np->right)
+		for (np = nodeptr->right; np != (struct nodeptr*) 0; np = np->right)
 		{
 		    if (np->nodetype->constructor & POINTER
 			&& np->nodetype->nexttype->scalar & RSCALAR)
@@ -296,7 +296,7 @@ bool_pt seenlp;
 	    nextsym();
 	    gs2name[0] = nodeptr->nodetype->structkey[0];
 	    gs2name[1] = nodeptr->nodetype->structkey[1];
-	    if ((gsymptr = findlorg(gs2name)) == NULL)
+	    if ((gsymptr = findlorg(gs2name)) == (struct symstruct*) 0)
 	    {
 		error("undefined structure element");
 		gsymptr = addglb(gs2name, itype);
@@ -329,7 +329,7 @@ cpp_ident:
 	    nextsym();
 	    return leafnode(constsym((value_t) 0));
 	}
-	if ((symptr = gsymptr) != NULL)
+	if ((symptr = gsymptr) != (struct symstruct*) 0)
 	    nextsym();
 	else
 	{
@@ -388,7 +388,7 @@ cpp_ident:
 	    needvarname();
 	else
 	{
-	    if ((symptr = findlorg(gsname)) != NULL &&
+	    if ((symptr = findlorg(gsname)) != (struct symstruct*) 0 &&
 		symptr->flags == DEFINITION)
 		isdefined = TRUE;
 	    nextsym();
@@ -462,7 +462,7 @@ PRIVATE struct nodestruct *unary_exp()
 	else
 	{
 	    nextsym();
-	    if ((vartype = typename()) != NULL)
+	    if ((vartype = typename()) != (struct typestruct*) 0)
 	    {
 		rparen();
 		size = vartype->typesize;

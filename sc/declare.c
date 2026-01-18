@@ -57,7 +57,7 @@ PRIVATE struct typestruct *chainprefix(pretype, sufftype)
 struct typestruct *pretype;
 struct typestruct *sufftype;
 {
-    if (pretype->nexttype != NULL)
+    if (pretype->nexttype != (struct typestruct*) 0)
     {
 	sufftype = chainprefix(pretype->nexttype, sufftype);
 	if (pretype->constructor != ARRAY)
@@ -130,7 +130,7 @@ PRIVATE void declaf()
 		dbtype(gvartype);
 		outbyte(' ');
 #if 0
-	    if (gvarname[0] != 0 && gsymptr != NULL
+	    if (gvarname[0] != 0 && gsymptr != (struct symstruct*) 0
 		    && gsymptr->level == level)
 		    error("repeated argument");
 #endif
@@ -166,7 +166,7 @@ PRIVATE void declaf()
 #endif /* TESTING_PROTOTYPES */
 	    while (sym == IDENT)
 	    {
-		if (gsymptr != NULL && gsymptr->level == level)
+		if (gsymptr != (struct symstruct*) 0 && gsymptr->level == level)
 		    error("repeated argument");
 		if (levelnew)
 		    addloc(gsname, itype);  /* adjust types and offsets later */
@@ -264,7 +264,7 @@ PRIVATE struct typestruct *declenum()
     nextsym();
     if (sym != IDENT && sym != TYPEDEFNAME)
 	enumtype = addstruct("");
-    else if ((esymptr = findstruct(gsname)) == NULL)
+    else if ((esymptr = findstruct(gsname)) == (struct symstruct*) 0)
     {
 	enumtype = addstruct(gsname);
 	nextsym();
@@ -291,7 +291,7 @@ PRIVATE struct typestruct *declenum()
     ordinal = 0;
     while (sym == IDENT)
     {
-	if ((esymptr = gsymptr) != NULL && esymptr->level == level)
+	if ((esymptr = gsymptr) != (struct symstruct*) 0 && esymptr->level == level)
 	    multidecl(gsname);
 	else
 	{
@@ -379,7 +379,7 @@ struct typelist **ptypelist;
 	    gvar2name[0] = structype->structkey[0];
 	    gvar2name[1] = structype->structkey[1];
 	    /* key provides unique name space */
-	    if (findlorg(gvar2name) != NULL)
+	    if (findlorg(gvar2name) != (struct symstruct*) 0)
 		multidecl(gvarname);
 	    else
 	    {
@@ -392,14 +392,14 @@ struct typelist **ptypelist;
 		{
 		    register struct typelist *newtypelist;
 
-		    newtypelist = qmalloc(sizeof *newtypelist);
+		    newtypelist = (struct typelist*) qmalloc(sizeof *newtypelist);
 #ifdef TS
 ++ts_n_newtypelist;
 ts_s_newtypelist += sizeof *newtypelist;
 #endif
-		    newtypelist->tlnext = NULL;
+		    newtypelist->tlnext = (struct typelist*) 0;
 		    newtypelist->tltype = gvartype;
-		    if (*ptypelist == NULL)
+		    if (*ptypelist == (struct typelist*) 0)
 			structype->listtype = newtypelist;
 		    else
 			(*ptypelist)->tlnext = newtypelist;
@@ -537,7 +537,7 @@ PRIVATE struct typestruct *declsu()
     nextsym();
     if (sym != IDENT && sym != TYPEDEFNAME)
 	structype = addstruct("");
-    else if ((gvarsymptr = findstruct(gsname)) == NULL)
+    else if ((gvarsymptr = findstruct(gsname)) == (struct symstruct*) 0)
     {
 	structype = addstruct(gsname);
 	nextsym();
@@ -557,7 +557,7 @@ PRIVATE struct typestruct *declsu()
     nextsym();
     ogvarsc = gvarsc;
     struclength = soffset = 0;
-    typelist = NULL;
+    typelist = (struct typelist*) 0;
     while (sym != RBRACE && sym != EOFSYM)
     {
 	declselt(structype, &soffset, &typelist);
@@ -586,7 +586,7 @@ PRIVATE void declfunc()
     struct symstruct *symptr;
 
     strcpy(funcname, gvarname);
-    if (gvarsymptr == NULL)
+    if (gvarsymptr == (struct symstruct*) 0)
 	gvarsymptr = addglb(gvarname, gvartype);
     else if (gvarsymptr->type != gvartype ||
 	     (gvarsymptr->flags & INITIALIZED))
@@ -712,11 +712,11 @@ PRIVATE void idecllist()
 	argsallowed = FALSE;
 	if (level == ARGLEVEL)
 	{
-	    if (gvarsymptr == NULL)
+	    if (gvarsymptr == (struct symstruct*) 0)
 		gvarsymptr = addglb(gvarname, gvartype);	/* error soon */
 	    declarg();
 	}
-	else if (gvarsymptr != NULL && (gvarsymptr->level == level ||
+	else if (gvarsymptr != (struct symstruct*) 0 && (gvarsymptr->level == level ||
 					gvartype->constructor == FUNCTION ||
 					(gvarsc == EXTERNDECL &&
 					 gvarsymptr->level == GLBLEVEL)))
@@ -940,7 +940,7 @@ struct typestruct *type;
     struct typelist *typelist;
 
     offset = 0;
-    if ((typelist = type->listtype) != NULL)
+    if ((typelist = type->listtype) != (struct typelist*) 0)
 	do
 	{
 	    memtype = typelist->tltype;
@@ -949,7 +949,7 @@ struct typestruct *type;
 	    offset = newoffset + memtype->typesize;
 	    inititem(memtype);
 	}
-	while ((typelist = typelist->tlnext) != NULL && sym == COMMA &&
+	while ((typelist = typelist->tlnext) != (struct typelist*) 0 && sym == COMMA &&
 	       initlistflag && (nextsym(), sym != RBRACE));
     /* eof here will break next time */
     defnulls(type->typesize - offset);
@@ -1054,7 +1054,7 @@ PRIVATE void rdeclarator()
     else
     {
 	gvarname[0] = 0;
-	gvarsymptr = NULL;
+	gvarsymptr = (struct symstruct*) 0;
     }
     declaf();
 }
@@ -1120,7 +1120,7 @@ PUBLIC struct typestruct *typename()
 	type = gvartype;
     }
     else
-	type = NULL;
+	type = (struct typestruct*) 0;
     strcpy(gvarname, ogvarname);
     gvarsc = ogvarsc;
     gvarsymptr = ogvarsymptr;

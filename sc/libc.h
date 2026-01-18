@@ -12,8 +12,6 @@
 #  define _LIBCP(x) ()
 #endif
 
-#define NULL 0  /* Silence most Minix 1.5.10 i86 ACK 3.1 C compiler warnings. */
-
 #define O_RDONLY 0
 
 /* <fcntl.h> */

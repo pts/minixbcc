@@ -158,7 +158,7 @@ PRIVATE void control()
     sname[1] = 0;
     while (blanksident())
     {
-	if ((gsymptr = findlorg(gsname)) == NULL ||
+	if ((gsymptr = findlorg(gsname)) == (struct symstruct*) 0 ||
 	    gsymptr->flags != DEFINITION)
 	{
 	    strcat(sname, gsname);
@@ -170,7 +170,7 @@ PRIVATE void control()
 	return;
     if (SYMOFCHAR(ch) == INTCONST)
 	return;			/* XXX - # linenumber not implemented */
-    if ((symptr = findlorg(sname)) == NULL)
+    if ((symptr = findlorg(sname)) == (struct symstruct*) 0)
     {
 	if (ifstate.ifflag)
 	    error(" bad control");
@@ -256,7 +256,7 @@ PUBLIC void define()
     else
     {
 	nparnames = 0;
-	locmark = NULL;  /* Pacify GCC warning -Wmaybe-uninitialized. */
+	locmark = (struct symstruct*) 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     }
     blanks();
     macstring = charptr;
@@ -264,10 +264,10 @@ PUBLIC void define()
     while (ch != EOL)
     {
 	if (charptr >= char1top)  /* check room for char and end of string */
-	    macstring = growobject(macstring, 2);
+	    macstring = (char*) growobject(macstring, 2);
 	if (nparnames && isident())
 	{
-	    if ((symptr = findlorg(gsname)) != NULL &&
+	    if ((symptr = findlorg(gsname)) != (struct symstruct*) 0 &&
 		symptr->level == level)
 	    {
 #ifdef TS
@@ -280,7 +280,7 @@ ts_s_macstring += 2;
 	    else
 	    {
 		if (charptr + strlen(gsname) >= chartop)	/* null too */
-		    macstring = growobject(macstring, strlen(gsname) + 1);
+		    macstring = (char*) growobject(macstring, strlen(gsname) + 1);
 #ifdef TS
 ++ts_n_macstring_ident;
 ts_s_macstring += strlen(gsname);;
@@ -341,7 +341,7 @@ ts_s_macstring += 2;
 	    charptr = rcp;
     }
     if (charptr >= char1top)
-	macstring = growobject(macstring, 2);
+	macstring = (char*) growobject(macstring, 2);
 #ifdef TS
 ++ts_n_macstring_term;
 ts_s_macstring += 2;
@@ -356,7 +356,7 @@ ts_s_macstring += 2;
     if (asmmode)
 	equ(sname, macstring);
 
-    if ((symptr = findlorg(sname)) != NULL && symptr->flags == DEFINITION)
+    if ((symptr = findlorg(sname)) != (struct symstruct*) 0 && symptr->flags == DEFINITION)
     {
 	if (strcmp(macstring, oldstring = symptr->offset.offp) != 0)
 	    error("%wredefined macro");
@@ -369,7 +369,7 @@ ts_s_macstring += 2;
 	}
 	return;
     }
-    symptr = qmalloc(sizeof (struct symstruct) + strlen(sname));
+    symptr = (struct symstruct*) qmalloc(sizeof (struct symstruct) + strlen(sname));
 #ifdef TS
 ++ts_n_defines;
 ts_s_defines += sizeof (struct symstruct) + strlen(sname);
@@ -380,7 +380,7 @@ ts_s_defines += sizeof (struct symstruct) + strlen(sname);
     symptr->flags = DEFINITION;
     symptr->level = GLBLEVEL;
     symptr->offset.offp = macstring;
-    if (*(hashptr = gethashptr(sname)) != NULL)
+    if (*(hashptr = gethashptr(sname)) != (struct symstruct*) 0)
     {
 	symptr->next = *hashptr;
 	symptr->next->prev = &symptr->next;
@@ -525,14 +525,14 @@ PUBLIC void entermac()
     }
     symptr = gsymptr;
     ngoodparams = 0;
-    paramhead = NULL;
+    paramhead = (char**) 0;
     if (symptr->indcount != 0)
     {
 	nparleft = symptr->indcount - 1;
 	if (nparleft == 0)
-	    paramhead = NULL;
+	    paramhead = (char**) 0;
 	else
-	    paramhead = ourmalloc(sizeof *paramlist * nparleft);
+	    paramhead = (char**) ourmalloc(sizeof *paramlist * nparleft);
 	paramlist = paramhead;
 #ifdef TS
 ++ts_n_macparam;
@@ -563,7 +563,7 @@ ts_s_macparam_tot += sizeof *paramlist * nparleft;
 		    {
 			gch1();
 			if (charptr >= char1top)
-			    *(paramlist - 1) = growobject(*(paramlist - 1), 2);
+			    *(paramlist - 1) = (char*) growobject(*(paramlist - 1), 2);
 #ifdef TS
 ++ts_n_macparam_string_quoted;
 ++ts_s_macparam_string;
@@ -600,7 +600,7 @@ ts_s_macparam_tot += sizeof *paramlist * nparleft;
 		    if (ch == EOL)
 			ch = ' ';
 		    if (charptr >= char1top)
-			*(paramlist - 1) = growobject(*(paramlist - 1), 2);
+			*(paramlist - 1) = (char*) growobject(*(paramlist - 1), 2);
 #ifdef TS
 ++ts_n_macparam_string_ordinary;
 ++ts_s_macparam_string;
@@ -631,7 +631,7 @@ ts_s_macparam_tot += sizeof *paramlist * nparleft;
 
 		    oldparam = *(paramlist - 1);
 		    size = (/* size_t */ unsigned) (charptr - oldparam);
-		    newparam = ourmalloc(size);
+		    newparam = (char*) ourmalloc(size);
 #ifdef TS
 ts_s_macparam_string_alloced += size;
 ts_s_macparam_string_alloced_tot += size;
@@ -729,7 +729,7 @@ PRIVATE fastin_pt getparnames()
     gch1();
     while (blanksident())
     {
-	if ((symptr = findlorg(gsname)) != NULL &&
+	if ((symptr = findlorg(gsname)) != (struct symstruct*) 0 &&
 	    symptr->level == level)
 	    error("repeated parameter");
 	symptr = addloc(gsname, itype);
@@ -775,7 +775,7 @@ sym_pt ifcase;
 	if ((sym_t) ifcase != IFCNTL)
 	{
 	    iftrue = FALSE;
-	    if (blanksident() && (symptr = findlorg(gsname)) != NULL &&
+	    if (blanksident() && (symptr = findlorg(gsname)) != (struct symstruct*) 0 &&
 		symptr->flags == DEFINITION)
 		iftrue = TRUE;
 	}
@@ -943,7 +943,7 @@ PRIVATE void undef()
 {
     struct symstruct *symptr;
 
-    if (blanksident() && (symptr = findlorg(gsname)) != NULL &&
+    if (blanksident() && (symptr = findlorg(gsname)) != (struct symstruct*) 0 &&
 	symptr->flags == DEFINITION)
 	delsym(symptr);
 }

@@ -54,7 +54,7 @@ struct switchstruct
 };
 
 PRIVATE struct loopstruct *loopnow;	/* currently active for/switch/while */
-					/* depends on NULL init */
+					/* depends on zero-initialization to (struct loopstruct*) 0 */
 PRIVATE bool_t returnflag;	/* set if last effective statement */
 				/* was a return */
 PRIVATE label_t swstacklab;	/* label giving stack for switch statement */
@@ -133,11 +133,12 @@ PRIVATE void exprstatement()
 PRIVATE bool_pt isforever(exp)
 register struct nodestruct *exp;
 {
-    return exp == NULL ||
+    return exp == (struct nodestruct*) 0 ||
 	(exp->tag == LEAF && exp->left.symptr->storage == CONSTANT &&
 	 exp->left.symptr->offset.offv != 0);
 }
 
+/* !! Add a faster sort algorithm. */
 PRIVATE void sort(caselist, count)	/* shell sort */
 struct casestruct *caselist;
 int count;
@@ -206,7 +207,7 @@ PUBLIC void compound()		/* have just seen "{" */
     {
 	if (level != ARGLEVEL)
 	{
-	    if (switchnow == NULL)
+	    if (switchnow == (struct switchstruct*) 0)
 	    {
 #ifdef FRAMEPOINTER
 		if (framep != 0)
@@ -241,11 +242,11 @@ PRIVATE void dobreak()
 {
     offset_t spmark;
 
-    if (loopnow == NULL)
+    if (loopnow == (struct loopstruct*) 0)
 	badloop();
     else
     {
-	if (switchnow == NULL)
+	if (switchnow == (struct switchstruct*) 0)
 	{
 	    spmark = sp;
 	    modstk(loopnow->spmark);
@@ -263,7 +264,7 @@ PRIVATE void docase()
     if ((uvalue_t) caseval > maxintto)
 	caseval -= (maxuintto + 1);
     colon();
-    if (switchnow == NULL)
+    if (switchnow == (struct switchstruct*) 0)
 	error("case not in switch");
     else
     {
@@ -278,7 +279,7 @@ PRIVATE void docase()
 		ncases = (/* ptrdiff_t */ int)
 			 (switchnow->caseptr - &switchnow->caselist[0]);
 		/* !! limit: rather than realloc, limit this to 256? */
-		switchnow = realloc(switchnow,
+		switchnow = (struct switchstruct*) realloc(switchnow,
 				    (/* size_t */ unsigned)
 				    ((char *) switchnow->caseptr
 				    - (char *) switchnow)
@@ -288,7 +289,7 @@ PRIVATE void docase()
 ts_s_case += GROWCASES * sizeof (struct casestruct);
 ts_s_case_tot += GROWCASES * sizeof (struct casestruct);
 #endif
-		if (switchnow == NULL)
+		if (switchnow == (struct switchstruct*) 0)
 		    outofmemoryerror("");
 		switchnow->caseptr = &switchnow->caselist[ncases];
 		switchnow->casetop = switchnow->caseptr + GROWCASES;
@@ -309,7 +310,7 @@ PRIVATE void docont()
     for (contloop = loopnow, switchthen = switchnow; ;
 	 contloop = contloop->prevloop, switchthen = switchthen->prevswitch)
     {
-	if (contloop == NULL)
+	if (contloop == (struct loopstruct*) 0)
 	{
 	    badloop();
 	    return;
@@ -317,13 +318,13 @@ PRIVATE void docont()
 	if (contloop->contlab != 0)
 	    break;
     }
-    if (switchnow == NULL)
+    if (switchnow == (struct switchstruct*) 0)
     {
 	spmark = sp;
 	modstk(contloop->spmark);
 	sp = spmark;
     }
-    else if (switchthen == NULL)
+    else if (switchthen == (struct switchstruct*) 0)
     {
 	outaddsp();
 	outshex(contloop->spmark);
@@ -344,7 +345,7 @@ PRIVATE void docont()
 PRIVATE void dodefault()
 {
     colon();
-    if (switchnow == NULL)
+    if (switchnow == (struct switchstruct*) 0)
 	error("default not in switch");
     else if (switchnow->dfaultlab != 0)
 	error("multiple defaults");
@@ -388,12 +389,12 @@ PRIVATE void dofor()
     semicolon();
     addloop(&forloop);
     if (sym == SEMICOLON)
-	testexp = NULL;
+	testexp = (struct nodestruct*) 0;
     else
 	testexp = expression();	/* remember test expression */
     semicolon();
     if (sym == RPAREN)
-	loopexp = NULL;
+	loopexp = (struct nodestruct*) 0;
     else
 	loopexp = expression();	/* remember loop expression */
     rparen();
@@ -402,7 +403,7 @@ PRIVATE void dofor()
     deflabel(forstatlab = getlabel());	/* back here if test succeeds */
     statement();
     deflabel(forloop.contlab);
-    if (loopexp != NULL)
+    if (loopexp != (struct nodestruct*) 0)
 	evalexpression(loopexp);
     if (isforevert)
 	jump(forstatlab);
@@ -490,25 +491,25 @@ ts_s_case_tot += sizeof *sw;
     sw->charselector = loadexpression(DREG, NULLTYPE)->scalar & CHAR;
     rparen();
     spmark = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
-    if (switchnow == NULL)
+    if (switchnow == (struct switchstruct*) 0)
 	spmark = lowsp = sp;
     addloop(&switchloop);
     sw->dfaultlab = switchloop.contlab = 0; /* kill to show this is a switch */
     sw->casetop = (sw->caseptr = sw->caselist) + INITIALCASES;
     sw->prevswitch = switchnow;
     jump(sdecidelab = getlabel());	/* to case decision label */
-    if (switchnow == NULL)
+    if (switchnow == (struct switchstruct*) 0)
 	swstacklab = gethighlabel();
     switchnow = sw;
     statement();		/* cases */
     sw = switchnow;
     jump(switchloop.breaklab);	/* over case decision to break label */
     deflabel(sdecidelab);
-    if (sw->prevswitch == NULL)
+    if (sw->prevswitch == (struct switchstruct*) 0)
 	modstk(lowsp);
     jumptocases();
     deflabel(switchloop.breaklab);
-    if ((switchnow = sw->prevswitch) == NULL)
+    if ((switchnow = sw->prevswitch) == (struct switchstruct*) 0)
     {
 	equlab(swstacklab, lowsp);
 	clearswitchlabels();
@@ -776,7 +777,7 @@ more:
 	    else
 	    {
 		deflabel(symptr->offset.offlabel);
-		if (switchnow != NULL)
+		if (switchnow != (struct switchstruct*) 0)
 		    symptr->indcount = 3;
 		else
 		{

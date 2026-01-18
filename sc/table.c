@@ -33,7 +33,8 @@
 
 #define GOLDEN 157		/* GOLDEN/HASHTABSIZE approx golden ratio */
 #define HASHTABSIZE 256
-#define MARKER ((unsigned) 0x18C396A5L)	/* lint everywhere it is used */
+/* The `& ~(unsigned) 0' pacifies the ACK 3.1 warning on Minix 1.5.10 i86: overflow in unsigned constant expression */
+#define MARKER (unsigned) (0x18C396A5L & ~(unsigned) 0)  /* lint everywhere it is used */
 #ifdef SMALLMEM
 #  define MAXEXPR 150
 #else
@@ -74,7 +75,7 @@ PRIVATE struct symstruct *hashtab[HASHTABSIZE];
 				/* depends on zero init */
 #ifdef HOLDSTRINGS
 PRIVATE struct string *laststring;	/* last in list of strings */
-					/* depends on NULL init */
+					/* depends on zero-initialization to (struct string*) 0 */
 #endif
 PUBLIC struct symstruct locsyms[MAXLOCAL];
 
@@ -84,9 +85,9 @@ PRIVATE struct symstruct constemplate =
     0,				/* indcount */
     0,				/* flags */
     EXPRLEVEL,			/* level */
-    NULL,			/* next */
-    NULL,			/* prev */
-    NULL,			/* type, init later to itype */
+    (struct symstruct*) 0,	/* next */
+    (struct symstruct**) 0,	/* prev */
+    (struct typestruct*) 0,	/* type, init later to itype */
 #ifndef NOUNIONINIT  /* Use -DNOUNIONINIT for the Minix 1.5.10 i86 ACK 3.1 C compiler, which doesn't support union initialization. */
     { 0 }, /* offset is a union, set every time constemplate is used */
     { 0 }, /* name is a union, namea member is constant "\0" */
@@ -166,12 +167,12 @@ struct typestruct *type;
     hashptr = gethashptr(name);
     symptr = *hashptr;
     oldsymptr = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
-    while (symptr != NULL)
+    while (symptr != (struct symstruct*) 0)
     {
 	oldsymptr = symptr;
 	symptr = symptr->next;
     }
-    symptr = qmalloc(sizeof (struct symstruct) + strlen(name));
+    symptr = (struct symstruct*) qmalloc(sizeof (struct symstruct) + strlen(name));
 #ifdef TS
 ++ts_n_global;
 ts_size_global += sizeof (struct symstruct) + strlen(name);
@@ -179,14 +180,14 @@ ts_size_global += sizeof (struct symstruct) + strlen(name);
     addsym(name, type, symptr);
     symptr->storage = GLOBAL;
     symptr->level = GLBLEVEL;
-    if (*hashptr == NULL)
+    if (*hashptr == (struct symstruct*) 0)
     {
 	*hashptr = symptr;
 	symptr->prev = hashptr;
     }
     else
     {
-	oldsymptr->next = symptr;  /* oldsymptr is never NULL here. */
+	oldsymptr->next = symptr;  /* oldsymptr is never (struct symstruct*) 0 here. */
 	symptr->prev = &oldsymptr->next;
     }
     return symptr;
@@ -212,7 +213,7 @@ struct typestruct *type;
 
     hashptr = gethashptr(name);
     symptr = *hashptr;
-    while (symptr != NULL)
+    while (symptr != (struct symstruct*) 0)
 	symptr = symptr->next;
     symptr = locptr;
     locptr = (struct symstruct *) align(&symptr->name.namea[strlen(name) + 1]);
@@ -224,7 +225,7 @@ struct typestruct *type;
     else
 	symptr->storage = LOCAL;
     symptr->level = level;
-    if (*hashptr != NULL)
+    if (*hashptr != (struct symstruct*) 0)
     {
 	symptr->next = *hashptr;
 	symptr->next->prev = &symptr->next;
@@ -253,7 +254,7 @@ register struct symstruct *symptr;
     else
 	symptr->indcount = 1;
     symptr->flags = 0;
-    symptr->next = NULL;
+    symptr->next = (struct symstruct*) 0;
     symptr->type = type;
     symptr->offset.offi = 0;
     strcpy(symptr->name.namea, name);
@@ -272,7 +273,7 @@ value_t longconst;
 PUBLIC void delsym(symptr)
 register struct symstruct *symptr;
 {
-    if ((*(symptr->prev) = symptr->next) != NULL)
+    if ((*(symptr->prev) = symptr->next) != (struct symstruct*) 0)
 	symptr->next->prev = symptr->prev;
 }
 
@@ -367,7 +368,7 @@ outnl();
     bssseg();
 #endif
     for (i = 0; i < HASHTABSIZE; ++i)
-	for (symptr = hashtab[i]; symptr != NULL; symptr = symptr->next)
+	for (symptr = hashtab[i]; symptr != (struct symstruct*) 0; symptr = symptr->next)
 	    if (symptr->storage == GLOBAL && !(symptr->flags & EXTERNAL)
 		&& *symptr->name.namea >= 'A' && symptr->flags <= MAXDUMPFLAG
 		/* Don't access type unless flags <= MAXDUMPFLAG, because
@@ -405,7 +406,7 @@ PUBLIC void dumplocs()
     int i;
 
     for (i = 0; i < HASHTABSIZE; ++i)
-	for (symptr = hashtab[i]; symptr != NULL; symptr = symptr->next)
+	for (symptr = hashtab[i]; symptr != (struct symstruct*) 0; symptr = symptr->next)
 	    if (symptr->storage == LOCAL)
 		set(symptr->name.namea, symptr->offset.offi - sp);
 }
@@ -419,7 +420,7 @@ PUBLIC void dumpstrings()
     struct string *stringp;
 
     dseg();
-    for (stringp = laststring; stringp != NULL; stringp = stringp->snext)
+    for (stringp = laststring; stringp != (struct string*) 0; stringp = stringp->snext)
     {
 	outnlabel(stringp->slabel);
 	defstr(stringp->sptr, stringp->stop, TRUE);
@@ -455,7 +456,7 @@ char *name;
     struct symstruct *symptr;
 
     symptr = *gethashptr(name);
-    while (symptr != NULL && (strcmp(symptr->name.namea, name) != 0 ||
+    while (symptr != (struct symstruct*) 0 && (strcmp(symptr->name.namea, name) != 0 ||
 			      symptr->flags == STRUCTNAME))
 	symptr = symptr->next;
     return symptr;
@@ -467,7 +468,7 @@ char *name;
     struct symstruct *symptr;
 
     symptr = *gethashptr(name);
-    while (symptr != NULL && (symptr->flags != STRUCTNAME ||
+    while (symptr != (struct symstruct*) 0 && (symptr->flags != STRUCTNAME ||
 			      strcmp(symptr->name.namea, name) != 0))
 	symptr = symptr->next;
     return symptr;
@@ -511,7 +512,7 @@ char *stop;
 {
     register struct string *stringp;
 
-    stringp = qmalloc(sizeof *stringp);
+    stringp = (struct string*) qmalloc(sizeof *stringp);
 #ifdef TS
 ++ts_n_holdstr;
 ts_size_holdstr += sizeof *stringp;
@@ -566,7 +567,7 @@ unsigned nbytes;
 #ifdef DEBUG_MALLOC
     fprintf(stderr, "debug: ourmalloc(%u)\n", nbytes);
 #endif
-    if ((ptr = malloc(nbytes)) == NULL)
+    if ((ptr = malloc(nbytes)) == (void *) 0)
 	outofmemoryerror("");
     return ptr;
 }
@@ -582,7 +583,7 @@ char *message;
 	char *ptr;
 
 	for (size = 0x1000; size != 0; --size)
-	    if ((ptr = malloc(size)) != NULL)
+	    if ((ptr = malloc(size)) != (void *) 0)
 	    {
 		outstr("found free memory at ");
 		outuvalue((uvalue_t) ptr);
@@ -617,7 +618,7 @@ ts_size_growobj_wasted += chartop - (char *) object;
 ++ts_n_growobj;
 #endif
     memcpy(charptr, object, oblength);
-    object = charptr;
+    object = (void*) charptr;
     charptr += oblength;
     return object;
 }
@@ -634,8 +635,8 @@ unsigned size;
 {
     register char *newptr;
 
-    if ((newptr = malloc(size += ALLOC_UNIT + ALLOC_OVERHEAD)) == NULL
-	&& (newptr = malloc(size -= ALLOC_UNIT)) == NULL)
+    if ((newptr = (char*) malloc(size += ALLOC_UNIT + ALLOC_OVERHEAD)) == (char*) 0
+	&& (newptr = (char*) malloc(size -= ALLOC_UNIT)) == (char*) 0)
 	outofmemoryerror("");
 #ifdef DEBUG_MALLOC
     fprintf(stderr, "debug: growheap(%u)\n", size);
@@ -655,11 +656,11 @@ ts_s_growheap += size;
 PUBLIC void *qmalloc(size)
 unsigned size;
 {
-    register char *ptr;
+    register void *ptr;
 
     if ((charptr = (char *) align(charptr)) + size > chartop)
 	growheap(size);
-    ptr = charptr;
+    ptr = (void*) charptr;
     charptr += size;
     return ptr;
 }

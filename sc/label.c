@@ -28,7 +28,7 @@ struct labdatstruct
 {
     label_t labnum;		/* 0 if not active */
     offset_t lablc;		/* location counter for branch or label */
-    char *labpatch;		/* buffer ptr for branch, NULL for label */
+    char *labpatch;		/* buffer ptr for branch, (char*) 0 for label */
     ccode_t labcond;		/* condition code for branch */
 };
 
@@ -56,15 +56,17 @@ PRIVATE char condnames[][2] =	/* names of condition codes */
 };
 #endif
 
-PRIVATE label_t lasthighlab = 0xFFFF+1;	/* temp & temp init so labels fixed */
+/* The `& ~(label_t) 0' pacifies the ACK 3.1 warning on Minix 1.5.10 i86: overflow in unsigned constant expression */
+/* !! Is it really OK to overflow lasthighlab to 0 here if sizeof(unsigned) == 2? */
+PRIVATE label_t lasthighlab = (label_t) ((0xFFFFL + 1L) & ~(label_t) 0);  /* temp & temp init so labels fixed */
 				/* lint */
 PRIVATE label_t lastlab;	/* bss init to 0 */
 PRIVATE offset_t lc;		/* bss init to 0 */
 
 PRIVATE struct labdatstruct vislab[MAXVISLAB];	/* bss, all labnum's init 0 */
-PRIVATE smalin_t nextvislab;	/* bss init to NULL */
-PRIVATE struct symstruct *namedfirst;	/* bss init to NULL */
-PRIVATE struct symstruct *named2last;	/* bss init to NULL */
+PRIVATE smalin_t nextvislab;	/* bss init to 0 */
+PRIVATE struct symstruct *namedfirst;	/* bss init to (struct symstruct*) 0 */
+PRIVATE struct symstruct *named2last;	/* bss init to (struct symstruct*) 0 */
 
 FORWARD void addlabel P((ccode_pt cond, label_t label, char *patch));
 FORWARD struct labdatstruct *findlabel P((label_t label));
@@ -115,16 +117,16 @@ PUBLIC void clearfunclabels()
     register struct symstruct *symptr;
     register struct symstruct *tmp;
 
-    for (symptr = namedfirst; symptr != NULL;)
+    for (symptr = namedfirst; symptr != (struct symstruct*) 0;)
     {
 	if (symptr->indcount == 2)
 	    error("undefined label");
 	symptr->indcount = 0;
 	tmp = symptr;
 	symptr = (struct symstruct *) symptr->type;
-	tmp->type = NULL;
+	tmp->type = (struct typestruct*) 0;
     }
-    named2last = namedfirst = NULL;
+    named2last = namedfirst = (struct symstruct*) 0;
 }
 
 /* clear out labels no longer in buffer */
@@ -149,7 +151,7 @@ PUBLIC void clearswitchlabels()
 {
     register struct symstruct *symptr;
 
-    for (symptr = namedfirst; symptr != NULL;
+    for (symptr = namedfirst; symptr != (struct symstruct*) 0;
 	 symptr = (struct symstruct *) symptr->type)
 	if (symptr->indcount == 3)
 	{
@@ -193,7 +195,7 @@ label_t label;
 		--labptr;
 		if (labptr->labnum == label)
 		{
-		    if ((labpatch = labptr->labpatch) != NULL &&
+		    if ((labpatch = labptr->labpatch) != (char*) 0 &&
 			isshortbranch(lc - labptr->lablc))
 		    {
 #ifdef I8088 /* patch "bcc(c) to j(c)(c)( ) */
@@ -238,7 +240,7 @@ label_t label;
 	    }
 	    while (labptr != labmid);
     }
-    addlabel((ccode_pt) 0, label, (char *) NULL);
+    addlabel((ccode_pt) 0, label, (char *) 0);
 }
 
 PRIVATE struct labdatstruct *findlabel(label)
@@ -255,7 +257,7 @@ label_t label;
 		break;
 	    return labptr;
 	}
-    return (struct labdatstruct *) NULL;
+    return (struct labdatstruct *) 0;
 }
 
 /* reserve a new label, from top down to temp avoid renumbering low labels */
@@ -295,7 +297,7 @@ label_t label;
 
     if ((ccode_t) cond == RN)
 	return;
-    if ((labptr = findlabel(label)) != NULL &&
+    if ((labptr = findlabel(label)) != (struct labdatstruct*) 0 &&
 	isshortbranch(lc - labptr->lablc + 2))
     {
 	sbranch(cond, label);
@@ -326,7 +328,7 @@ label_t label;
     }
     outlabel(label);
     outnl();
-    if (labptr == NULL && oldoutptr < outbufptr)	/* no wrap-around */
+    if (labptr == (struct labdatstruct*) 0 && oldoutptr < outbufptr)	/* no wrap-around */
 	addlabel(cond, label, oldoutptr);
 }
 
@@ -337,7 +339,7 @@ PUBLIC struct symstruct *namedlabel()
     struct symstruct *symptr;
 
     gs2name[1] = 0xFF;
-    if ((symptr = findlorg(gs2name + 1)) == NULL)
+    if ((symptr = findlorg(gs2name + 1)) == (struct symstruct*) 0)
     {
 	symptr = addglb(gs2name + 1, vtype);
 	symptr->flags = LABELLED;
@@ -346,12 +348,12 @@ PUBLIC struct symstruct *namedlabel()
     {
 	symptr->indcount = 2;
 	symptr->offset.offlabel = gethighlabel();
-	if (namedfirst == NULL)
+	if (namedfirst == (struct symstruct*) 0)
 	    namedfirst = symptr;
 	else
 	    named2last->type = (struct typestruct *) symptr;
 	named2last = symptr;
-	symptr->type = NULL;
+	symptr->type = (struct typestruct*) 0;
     }
     return symptr;
 }

@@ -249,7 +249,7 @@ bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
     spmark = sp;
     bileaf(exp);
     target = exp->left.nodeptr->left.symptr;
-    source = exp->right->left.symptr;	/* exp->right != NULL since cond */
+    source = exp->right->left.symptr;	/* exp->right != (struct nodestruct*) 0 since cond */
     switch (exp->tag)
     {
     case GEOP:

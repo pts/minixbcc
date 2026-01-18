@@ -14,13 +14,13 @@ PUBLIC void changesp(newsp, absflag)
 offset_t newsp;
 bool_pt absflag;
 {
-    if (newsp != sp || ((bool_t) absflag && switchnow != NULL))
+    if (newsp != sp || ((bool_t) absflag && switchnow != (struct switchstruct*) 0))
     {
 #ifdef FRAMEPOINTER
-	if (newsp != framep || (!(bool_t) absflag && switchnow != NULL))
+	if (newsp != framep || (!(bool_t) absflag && switchnow != (struct switchstruct*) 0))
 	{
 	    outleasp();
-	    if (!(bool_t) absflag && switchnow != NULL)
+	    if (!(bool_t) absflag && switchnow != (struct switchstruct*) 0)
 		outswoffset(newsp);
 	    else
 		outoffset(newsp - framep);
@@ -80,7 +80,7 @@ offset_t newsp;
     if (newsp != sp)
     {
 #ifdef FRAMEPOINTER
-	if (newsp != framep || framep == 0 || switchnow != NULL)
+	if (newsp != framep || framep == 0 || switchnow != (struct switchstruct*) 0)
 	    addconst(newsp - sp, STACKREG);
 	else
 	    regtransfer(FRAMEREG, STACKREG);
@@ -192,7 +192,7 @@ offset_t saveoffset;
 	    spoffset = saveoffset + *regoffptr * maxregsize;
 #ifdef I8088
 # ifdef FRAMEPOINTER
-	    if (switchnow != NULL)
+	    if (switchnow != (struct switchstruct*) 0)
 		outswoffset(spoffset);
 	    else
 		outoffset(spoffset - framep);

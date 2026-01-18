@@ -221,7 +221,7 @@ struct nodestruct *exp;
     struct symstruct *target;
 
     left = exp->left.nodeptr;
-    if ((right = exp->right) == NULL)
+    if ((right = exp->right) == (struct nodestruct*) 0)
     {
 	makeleaf(left);
 #ifdef DEBUG
@@ -533,7 +533,7 @@ struct nodestruct *exp;
     }
     regmark = reguse;
     saveoffset = savelist = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
-    structarg = NULL;  /* Pacify GCC warning -Wmaybe-uninitialized. */
+    structarg = (struct symstruct*) 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     if ((op_t) op == FUNCOP)
     {
 	saveargsp = lastargsp;
@@ -560,10 +560,10 @@ struct nodestruct *exp;
     }
     spmark = sp;
     bileaf(exp);
-    if (exp->right != NULL)
+    if (exp->right != (struct nodestruct*) 0)
 	source = exp->right->left.symptr;
     else
-	source = NULL;
+	source = (struct symstruct*) 0;
     target = exp->left.nodeptr->left.symptr;
     switch ((op_t) op)
     {

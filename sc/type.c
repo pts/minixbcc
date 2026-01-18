@@ -80,7 +80,7 @@ PUBLIC struct typestruct *newtype()
 {
     register struct typestruct *type;
 
-    type = qmalloc(sizeof *type);
+    type = (struct typestruct *) qmalloc(sizeof *type);
 #ifdef TS
 ++ts_n_type;
 ts_s_type += sizeof *type;
@@ -91,8 +91,8 @@ ts_s_type += sizeof *type;
 	type->structkey[0] = 0;
     type->nexttype =
 	type->prevtype =
-	type->sidetype = NULL;
-    type->listtype = NULL;
+	type->sidetype = (struct typestruct*) 0;
+    type->listtype = (struct typelist*) 0;
     type->tname = "";
     return type;
 }
@@ -116,7 +116,7 @@ struct typestruct *type;
 {
     register struct typestruct *searchtype;
 
-    for (searchtype = type->prevtype; searchtype != NULL;
+    for (searchtype = type->prevtype; searchtype != (struct typestruct*) 0;
 	 searchtype = searchtype->sidetype)
 	if (searchtype->constructor == (constr_t) constructor &&
 	    searchtype->typesize == size)

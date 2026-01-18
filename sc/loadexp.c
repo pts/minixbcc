@@ -164,10 +164,10 @@ struct typestruct *targtype;
     etmark = etptr;
     exprmark = exprptr;
     exp = expression();
-    if (targtype != NULL)
+    if (targtype != (struct typestruct*) 0)
 	exp = castnode(targtype, exp);
     makeleaf(exp);
-    if (targtype == NULL)	/* this is for a switch */
+    if (targtype == (struct typestruct*) 0)  /* this is for a switch */
     {
 	targtype = exp->left.symptr->type;
 	if (!(targtype->scalar & (CHAR | INT))

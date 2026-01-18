@@ -741,7 +741,7 @@ struct symstruct *adr;
 		bumplc();
 	    else
 	    {
-		if (switchnow != NULL && adr->flags == TEMP)
+		if (switchnow != (struct switchstruct*) 0 && adr->flags == TEMP)
 		    outswoffset(adr->offset.offi);
 		else
 		    outoffset(adr->offset.offi - framep);

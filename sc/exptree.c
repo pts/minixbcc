@@ -199,7 +199,7 @@ struct symstruct *source;
     leafptr->flags = leafptr->weight = 0;
     leafptr->nodetype = source->type;
     leafptr->left.symptr = source;
-    leafptr->right = NULL;
+    leafptr->right = (struct nodestruct*) 0;
     return leafptr;
 }
 
@@ -574,7 +574,7 @@ struct nodestruct *p2;
     }
     if (target->storage != CONSTANT ||
 	(!(lscalar & (ISCALAR | RSCALAR)) && (op_t) t != PTRSUBOP) ||
-	(p2 != NULL &&
+	(p2 != (struct nodestruct*) 0 &&
 	 (p2->tag != LEAF || (source = p2->left.symptr)->storage != CONSTANT ||
 	  (!((rscalar = source->type->scalar) & (ISCALAR | RSCALAR))
 	   && (op_t) t != PTRSUBOP))))
@@ -583,7 +583,7 @@ struct nodestruct *p2;
     sourceval = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     lflag = lscalar & LONG;
     uflag = lscalar & UNSIGNED;
-    if (p2 != NULL)
+    if (p2 != (struct nodestruct*) 0)
     {
 	if (rscalar & RSCALAR)
 	{
@@ -598,7 +598,7 @@ struct nodestruct *p2;
 	    uflag |= rscalar & UNSIGNED;
 	}
     }
-    if (lscalar & RSCALAR || (p2 != NULL && rscalar & RSCALAR))
+    if (lscalar & RSCALAR || (p2 != (struct nodestruct*) 0 && rscalar & RSCALAR))
     {
 #ifdef NOFP
     no_3double_op();
@@ -611,7 +611,7 @@ struct nodestruct *p2;
 	else
 	    dtargval = targval;
     }
-    if (p2 != NULL && !(rscalar & RSCALAR))
+    if (p2 != (struct nodestruct*) 0 && !(rscalar & RSCALAR))
     {
 	if (rscalar & UNSIGNED)
 	    dsourceval = (uvalue_t) sourceval;
@@ -834,12 +834,12 @@ node1:
 	{
 #if MAXREGS == 1
 	    if ((nodeptr->weight = p1->weight) <= MAXREGS &&
-		(regp2 == NULL ||
+		(regp2 == (struct nodestruct*) 0 ||
 		 (nodeptr->weight = regp2->weight) < MAXREGS))
 		nodeptr->weight = MAXREGS;
 #else
 	    nodeptr->weight = p1->weight;
-	    if (regp2 == NULL)
+	    if (regp2 == (struct nodestruct*) 0)
 		rightweight = 1;	/* could do POST-ops with 0 */
 	    else		/* 0 more approp for LIST-ops but 1 OK */
 		rightweight = regp2->weight;

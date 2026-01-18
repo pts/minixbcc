@@ -55,9 +55,6 @@
 /* local style */
 
 #define FALSE 0
-#ifndef NULL
-#define NULL 0
-#endif
 #define TRUE 1
 
 #define EXTERN extern

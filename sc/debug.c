@@ -131,7 +131,7 @@ struct symstruct *item;
 PUBLIC void dbtype(type)
 struct typestruct *type;
 {
-    for ( ; type != NULL; type = type->nexttype)
+    for ( ; type != (struct typestruct *) 0; type = type->nexttype)
     {
 	outbyte(' ');
 	switch (type->constructor)
@@ -168,7 +168,7 @@ struct nodestruct *exp;
 	outstr("unknown op");
     else
 	outstr(opname[exp->tag - FIRSTOP]);
-    if (exp->right != NULL && exp->tag != FUNCOP &&
+    if (exp->right != NULLNODE && exp->tag != FUNCOP &&
 	exp->tag != LISTOP && exp->tag != ROOTLISTOP)
     {
 	dbitem(exp->right->left.symptr);

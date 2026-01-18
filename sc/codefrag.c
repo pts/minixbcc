@@ -690,7 +690,7 @@ label_t label;
     outaddsp();
     outbyte(LOCALSTARTCHAR);
     outlabel(label);
-    if (switchnow != NULL)
+    if (switchnow != (struct switchstruct*) 0)
     {
 	outminus();
 	outswstacklab();

@@ -186,7 +186,7 @@ PUBLIC void cppscan()
 	    break;
 	case IDENT:
 	    getident();
-	    if ((gsymptr = findlorg(gsname)) != NULL)
+	    if ((gsymptr = findlorg(gsname)) != (struct symstruct*) 0)
 	    {
 		if (gsymptr->flags == DEFINITION)
 		{
@@ -462,7 +462,7 @@ PUBLIC void nextsym()
 	    --lineptr;
 	    ch = lastch;
 	    getident();
-	    if ((gsymptr = findlorg(gsname)) != NULL)
+	    if ((gsymptr = findlorg(gsname)) != (struct symstruct*) 0)
 	    {
 		if (gsymptr->flags == DEFINITION)
 		{
@@ -677,7 +677,7 @@ PRIVATE void ppnumber()
     while (TRUE)
     {
 	if (charptr >= char1top)
-	    constant.value.s = growobject(constant.value.s, 2);
+	    constant.value.s = (char*) growobject(constant.value.s, 2);
 	*charptr++ = ch;
 	if (ch == 'E' || ch == 'e')
 	{
@@ -702,7 +702,7 @@ PUBLIC void stringorcharconst()
     while (TRUE)
     {
 	if (charptr >= char3top)
-	    constant.value.s = growobject(constant.value.s, 4);
+	    constant.value.s = (char*) growobject(constant.value.s, 4);
 	*charptr++ = ch;
 	if (ch == '\\')
 	{

@@ -266,7 +266,7 @@ PUBLIC void reslocals()
 # endif
 #endif
 
-    if (switchnow != NULL)
+    if (switchnow != (struct switchstruct*) 0)
     {
 #ifdef FRAMEPOINTER
 	if (framep == 0 && softsp != sp)
@@ -376,7 +376,7 @@ PUBLIC void ret()
     if (framep != 0)
     {
 	newsp = -(offset_t) func1saveregsize;
-	if (switchnow != NULL || newsp - sp >= 0x80)
+	if (switchnow != (struct switchstruct*) 0 || newsp - sp >= 0x80)
 	    changesp(newsp, TRUE);
 	else
 	    modstk(newsp);

@@ -53,7 +53,7 @@ EXTERN offset_t sp;		/* hardware relative stack ptr */
 EXTERN bool_t stackarg;		/* nonzero to show function has arg on stack */
 #endif
 EXTERN struct switchstruct *switchnow;	/* currently active switch */
-				/* depends on NULL init */
+				/* depends on zero-initialization to (struct switcstruct*) 0 */
 
 /* variables to be initialised to nonzero */
 

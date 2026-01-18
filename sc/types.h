@@ -203,7 +203,7 @@ struct typelist
   definitions to avoid passing raw NULLs to functions
 */
 
-#define NULLNODE ((struct nodestruct *) NULL)
-#define NULLTYPE ((struct typestruct *) NULL)
+#define NULLNODE ((struct nodestruct *) 0)
+#define NULLTYPE ((struct typestruct *) 0)
 
 #include "proto.h"

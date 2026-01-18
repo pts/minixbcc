@@ -59,7 +59,7 @@ struct inclist			/* list of include file directories */
 
 PRIVATE char filemacro[] = "__FILE__";
 PRIVATE struct inclist incabsolute;	/* dummy list for absolute names */
-				/* depends on zero (NULL) init */
+				/* depends on zero-initialization */
 PRIVATE struct inclist incfirst;
 				/* begin include searches here for "" */
 				/* at next in list for <> */
@@ -68,13 +68,13 @@ PRIVATE struct inclist incfirst;
 PRIVATE struct inclist inclast =
 {
     DEFAULT_INCLUDE_DIR,
-    NULL,
+    (struct inclist*) 0,
 };
 PRIVATE fastin_t inclevel;	/* nest level of include files */
 				/* depends on zero init */
 PRIVATE struct fbufstruct *inputbuf;	/* current input file buffer */
 					/* its fcb only to date in includes */
-					/* depends on zero (NULL) init */
+					/* depends on zero-initialization */
 PRIVATE bool_t suppress_line_numbers;
 
 #ifdef ARBITRARY_BACKSLASH_NEWLINES
@@ -166,7 +166,7 @@ char *fname;
 {
     char *def;
 
-    def = ourmalloc(sizeof filemacro - 1 + 2 + strlen(fname) + 1 + 1);
+    def = (char*) ourmalloc(sizeof filemacro - 1 + 2 + strlen(fname) + 1 + 1);
     strcpy(def, filemacro);
     strcat(def, "=\"");
     strcat(def, fname);
@@ -179,7 +179,7 @@ PUBLIC void errorloc()
 {
     register struct fbufstruct *infbuf;
 
-    if ((infbuf = inputbuf) == NULL)
+    if ((infbuf = inputbuf) == (struct fbufstruct*) 0)
 	return;
     outstr(infbuf->fname);
     outbyte(':');
@@ -201,7 +201,7 @@ PUBLIC void errorloc()
 	}
     }
     infbuf->fcb.includer = input.includer;
-    while ((infbuf = infbuf->fcb.includer) != NULL)
+    while ((infbuf = infbuf->fcb.includer) != (struct fbufstruct*)0)
     {
 	outstr(" (from ");
 	outstr(infbuf->fname);
@@ -236,7 +236,7 @@ PUBLIC void include()
 
     while (blanksident())
     {
-	if ((gsymptr = findlorg(gsname)) == NULL ||
+	if ((gsymptr = findlorg(gsname)) == (struct symstruct*) 0 ||
 	    gsymptr->flags != DEFINITION)
 	    break;
 	entermac();
@@ -260,7 +260,7 @@ PUBLIC void include()
 	    break;
 	}
 	if (charptr >= chartop)
-	    fnameptr = growobject(fnameptr, 1);
+	    fnameptr = (char*) growobject(fnameptr, 1);
 #ifdef TS
 ++ts_n_filename;
 ++ts_s_filename;
@@ -270,14 +270,14 @@ PUBLIC void include()
 	gch1();
     }
     if (charptr >= chartop)
-	fnameptr = growobject(fnameptr, 1);
+	fnameptr = (char*) growobject(fnameptr, 1);
 #ifdef TS
 ++ts_n_filename_term;
 ++ts_s_filename_term;
 ++ts_s_filename_tot;
 #endif
     *charptr++ = 0;
-    dirnamend = NULL;
+    dirnamend = (char*) 0;
     if (isabspath(fnameptr, &ch))
 	incptr = &incabsolute;
     else
@@ -289,8 +289,8 @@ PUBLIC void include()
 	{
 #if 0  /* This implementation uses strrchr(...). It's longer. */
 	    dirnameptr = inputbuf->fname;
-	    if ((dirnamend = strrchr(dirnameptr, DIRCHAR)) == NULL)
-		incptr->incdirname = NULL;
+	    if ((dirnamend = strrchr(dirnameptr, DIRCHAR)) == (char*) 0)
+		incptr->incdirname = (char*) 0;
 	    else
 	    {
 		*dirnamend = 0;
@@ -301,7 +301,7 @@ PUBLIC void include()
 	    dirnamend = dirnameptr + strlen(dirnameptr);
 	    for (;;) {
 		if (dirnamend == dirnameptr) {
-		    incptr->incdirname = NULL;
+		    incptr->incdirname = (char*) 0;
 		    break;
 		}
 		if (*--dirnamend == DIRCHAR) {
@@ -315,9 +315,9 @@ PUBLIC void include()
     }
     do
     {
-	if (incptr->incdirname == NULL)
+	if (incptr->incdirname == (char*) 0)
 	{
-	    fullnameptr = ourmalloc(strlen(fnameptr) + 1);
+	    fullnameptr = (char*) ourmalloc(strlen(fnameptr) + 1);
 #ifdef TS
 ++ts_n_pathname;
 ts_s_pathname += strlen(fnameptr) + 1;
@@ -328,7 +328,7 @@ ts_s_pathname_tot += strlen(fnameptr) + 1;
 	else
 	{
 	    dirnamelen = strlen(incptr->incdirname);
-	    fullnameptr = ourmalloc(dirnamelen + (int) (charptr - fnameptr)
+	    fullnameptr = (char*) ourmalloc(dirnamelen + (int) (charptr - fnameptr)
 				    + 2);
 				/* 2 extra for null and maybe DIRCHAR */
 #ifdef TS
@@ -341,10 +341,10 @@ ts_s_pathname_tot += dirnamelen + (charptr - fnameptr) + 2;
 	    if (*fullnameptr != 0 && *(dirnameptr - 1) != DIRCHAR)
 		strcat(fullnameptr, DIRSTRING);
 	    strcat(fullnameptr, fnameptr);
-	    if (dirnamend != NULL)
+	    if (dirnamend != (char*) 0)
 	    {
 		*dirnamend = DIRCHAR;
-		dirnamend = NULL;
+		dirnamend = (char*) 0;
 	    }
 	}
 	fd = open00(fullnameptr);
@@ -366,7 +366,7 @@ ts_s_pathname_tot -= strlen(fullnameptr) + 1;
 #endif
 	ourfree(fullnameptr);
     }
-    while ((incptr = incptr->incnext) != NULL);
+    while ((incptr = incptr->incnext) != (struct inclist*) 0);
     error("cannot find include file");
 #ifdef TS
 ts_s_filename_tot -= charptr - fnameptr;
@@ -404,7 +404,7 @@ ts_s_inputbuf_tot += sizeof *inputbuf;
     undefinestring(filemacro);
     definefile(fname);
     if (orig_cppmode && !suppress_line_numbers)
-	outcpplinenumber(1, fname, input.includer == NULL ? "" : " 1");
+	outcpplinenumber(1, fname, input.includer == (struct fbufstruct*) 0 ? "" : " 1");
     *(input.limit = newinputbuf->fbuf) = EOL;
 
     /* dummy line so #include processing can start with skipline() */
