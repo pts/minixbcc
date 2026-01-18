@@ -482,7 +482,7 @@ int		size;
 {
 	register char	*result;
 
-	if ((result = malloc((unsigned) size)) == NULL)
+	if ((result = (char*) malloc((unsigned) size)) == (char*) 0)
 	    cfatal("Out of memory", NULLST);
 	return (result);
 }
