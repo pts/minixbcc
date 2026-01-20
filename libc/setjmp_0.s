@@ -33,4 +33,4 @@ _longjmp:
 
 	mov	bp,BP_OFF(bx)
 	mov	sp,SP_OFF(bx)
-	jmp	IP_OFF(bx)
+	jmp	@IP_OFF(bx)

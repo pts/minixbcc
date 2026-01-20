@@ -1,26 +1,25 @@
-/* strchr.x
- *	char *strchr(const char *s, int c)
- *
- *	Returns location of the first occurrence of c (converted to char)
- *	in the string pointed to by s.  Returns NULL if c does not occur.
- */
+| strchr.s
+|	char *strchr(const char *s, int c)
+|
+|	Returns location of the first occurrence of c (converted to char)
+|	in the string pointed to by s.  Returns NULL if c does not occur.
 
 .define	_strchr
 .text
 _strchr:
-	mov	bx,si		/* save si */
+	mov	bx,si		| save si
 	mov	si,sp
 	movb	dl,4(si)
 	mov	si,2(si)
 	cld
-	test	si,#1		/* align string on word boundary */
+	test	si,#1		| align string on word boundary
 	jz	word_loop
 	lodb
 	cmpb	al,dl
 	je	one_past
 	orb	al,al
 	jz	no_match
-word_loop:			/* look for c word by word */
+word_loop:			| look for c word by word
 	lodw
 	cmpb	al,dl
 	je	two_past
@@ -32,16 +31,12 @@ word_loop:			/* look for c word by word */
 	jnz	word_loop
 no_match:
 	xor	ax,ax
-	mov	si,bx		/* restore si */
+	mov	si,bx		| restore si
 	ret
 two_past:
 	dec	si
 one_past:
-#ifdef i8088
 	dec	si
 	mov	ax,si
-#else
-	lea	ax,-1(si)
-#endif
-	mov	si,bx		/* restore si */
+	mov	si,bx		| restore si
 	ret

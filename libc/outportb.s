@@ -10,5 +10,5 @@ _oportb:
 	pop	dx
 	pop	ax
 	sub	sp,*4
-	out
+	outb
 	jmp	bx

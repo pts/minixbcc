@@ -10,7 +10,7 @@ crtso:
 	.zerow 13		| stack for inital IRET when common I&D
 				| also padding to make INIT_SP same as
 				| for separate I&D
-.0:	mov esp,_stackpt
+.0:	mov esp,[_stackpt]
 	call _main
 .1:	jmp .1			| this will never be executed
 _exit:	jmp _exit		| this will never be executed either
