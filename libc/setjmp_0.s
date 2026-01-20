@@ -1,36 +1,36 @@
-.define _setjmp,_longjmp
-.globl _setjmp, _longjmp
-.text
-_setjmp:	mov	bx,sp
-		mov	ax,(bx)
-		mov	bx,*2(bx)
-		mov	(bx),bp
-		mov	*2(bx),sp
-		mov	*4(bx),ax
-		xor	ax,ax
-		ret
+| setjmp.s
 
-_longjmp:	xor	ax,ax
-		push	bp
-		mov	bp,sp
-		mov	bx,*4(bp)
-		mov	ax,*6(bp)
-		or	ax,ax
-		jne	L1
-		inc	ax
-L1:		mov	cx,(bx)
-L2:		cmp	cx,*0(bp)
-		je	L3
-		mov	bp,*0(bp)
-		or	bp,bp
-		jne	L2
-		hlt
-L3:
-		mov	bp,*0(bp)
-		mov	sp,*2(bx)
-		mov	cx,*4(bx)
-		mov	bx,sp
-		mov	(bx),cx
-		ret
+	.define	_setjmp
+	.define	_longjmp
 
+BP_OFF		=	0
+SP_OFF		=	2
+IP_OFF		=	4
 
+	.text
+	.even
+_setjmp:
+	pop	cx		| ip
+	pop	bx		| pointer to jmp_buf
+	dec	sp
+	dec	sp
+	mov	BP_OFF(bx),bp
+	mov	SP_OFF(bx),sp
+	mov	IP_OFF(bx),cx
+	xor	ax,ax		| non-jump return
+	jmp	cx
+
+	.even
+_longjmp:
+	pop	bx		| junk ip
+	pop	bx		| pointer to jmp_buf
+	pop	ax		| value (sp now junk, don't fake args)
+	cmp	ax,#1		| fixup 0 value to 1 (avoiding branches)
+	adc	al,#0		| change ax to 1 iff ax was 0
+
+| the  setjmp.s  in  MINIX 1.2  backtraces the frame pointers here
+| this can't be done with more efficient nonstandard frames
+
+	mov	bp,BP_OFF(bx)
+	mov	sp,SP_OFF(bx)
+	jmp	IP_OFF(bx)

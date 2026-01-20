@@ -1,5 +1,4 @@
 .define _begsig
-.globl ___vectab, __M
 mtype = 2			| _M+mtype = &_M.m_type
 _begsig:
 	push ax			| after interrupt, save all regs
@@ -19,7 +18,7 @@ _begsig:
 	mov bx,___vectab(bx)	| bx = address of routine to call
 	push __M+mtype		| push status of last system call
 	push ax			| func called with signal number as arg
-	call (bx)
+	call bx
 back:
 	pop ax			| get signal number off stack
 	pop __M+mtype		| restore status of previous system call
@@ -35,3 +34,5 @@ back:
 	add sp,*2		| remove signal number from stack
 	iret
 
+.data 
+.extern ___vectab, __M

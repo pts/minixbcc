@@ -1,4 +1,4 @@
-.define _send, _receive, _sendrec
+.define _send,_receive,_sendrec
 
 | See ../h/com.h for C definitions
 SEND = 1
@@ -9,24 +9,34 @@ SYSVEC = 32
 |*========================================================================*
 |                           send and receive                              *
 |*========================================================================*
-| send(), receive(), sendrec() all save bp, but destroy ax, bx, and cx.
+| send(), receive(), sendrec() save all registers but ax, bx, cx, dx and flags.
 .globl _send, _receive, _sendrec
-_send:	mov cx,*SEND		| send(dest, ptr)
-	jmp L0
+_send:
+	pop dx			| return addr
+	pop ax			| dest-src
+	pop bx			| message pointer
+	sub sp,*4
+	push dx
+	mov cx,*SEND		| send(dest, ptr)
+	int SYSVEC		| trap to the kernel
+	ret
 
 _receive:
+	pop dx
+	pop ax
+	pop bx
+	sub sp,*4
+	push dx
 	mov cx,*RECEIVE		| receive(src, ptr)
-	jmp L0
+	int SYSVEC		| trap to the kernel
+	ret
 
 _sendrec:
+	pop dx
+	pop ax
+	pop bx
+	sub sp,*4
+	push dx
 	mov cx,*BOTH		| sendrec(srcdest, ptr)
-	jmp L0
-
-  L0:	push bp			| save bp
-	mov bp,sp		| can't index off sp
-	mov ax,4(bp)		| ax = dest-src
-	mov bx,6(bp)		| bx = message pointer
 	int SYSVEC		| trap to the kernel
-	pop bp			| restore bp
-	ret			| return
-
+	ret

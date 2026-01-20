@@ -1,16 +1,17 @@
-.globl _main, _stackpt, begtext, begdata, begbss, _data_org, _exit, .fat, .trp
+.extern _main
+.globl begtext, begdata, begbss
+.globl crtso, _data_org, _exit
 .text
 begtext:
-	jmp L0
+crtso:
+	j .0
 	.zerow 13		| stack for inital IRET when common I&D
 				| also padding to make INIT_SP same as
 				| for separate I&D
-L0:	mov sp,_stackpt
+.0:	mov sp,_stackpt
 	call _main
-_exit:				| dummy for library functions - never executed
-.fat:				| dummy
-.trp:				| dummy
-L1:	jmp L1			| this should never be executed either
+.1:	jmp .1			| this will never be executed
+_exit:	jmp _exit		| this will never be executed either
 .data
 begdata:
 _data_org:			| fs needs to know where build stuffed table
@@ -26,3 +27,4 @@ _data_org:			| fs needs to know where build stuffed table
 				| so INIT_SP in const.h must be 0x1C
 .bss
 begbss:
+.extern _stackpt

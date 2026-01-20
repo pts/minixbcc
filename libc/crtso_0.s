@@ -2,11 +2,14 @@
 | arguments as put on the stack by EXEC, and to parse them and set them up the
 | way _main expects them.
 
-.globl _main, _exit, crtso, _environ
-.globl begtext, begdata, begbss, endtext, enddata, endbss
 .text
+.extern _main, _exit
+.globl crtso, _environ
+.globl begtext, begdata, begbss
 begtext:
-crtso:		mov	bx,sp
+crtso:
+		sub	bp,bp	| clear for backtrace of core files
+		mov	bx,sp
 		mov	cx,(bx)
 		add	bx,*2
 		mov	ax,cx
@@ -24,6 +27,7 @@ crtso:		mov	bx,sp
 
 .data
 begdata:
+		.zerow 8	| food for null pointer bugs
 _environ:	.word 0
 .bss
 begbss:
