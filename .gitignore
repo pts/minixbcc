@@ -1,5 +1,13 @@
 *~
 *.o
+tags
+
+/hd.img
+/[03]/
+/[03]g/
+/mk.p/
+/p/
+
 /cpp/cpp
 /cpp/cpp.host
 /cpp/cpp.cross
@@ -18,7 +26,6 @@
 /sc/bcc3-cc1[a-z]
 /sc/bcc-cc1
 /sc/bcc-cc1[a-z]
-/sc/*.s
 /ld/ld
 /ld/ld.host
 /ld/ld.cross
@@ -51,3 +58,10 @@
 /cr/cr.m64
 /cr/cr.pts
 /cr/cr.exe
+
+# Cross-compiler executables built by build.sh.
+/as.cross
+/cpp.cross
+/cr.cross
+/ld.cross
+/sc.cross
