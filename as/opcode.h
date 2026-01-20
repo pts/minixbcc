@@ -127,6 +127,8 @@ enum
     SWAP,			/* TFR, EXG */
     USTAK,			/* U-stack (PSHU,PULU) */
 #endif /* MC6809 */
+
+    LASTENUMVAL2  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
 
 /* Special opcodes. */

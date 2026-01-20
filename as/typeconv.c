@@ -43,6 +43,9 @@ FORWARD void u4c4_ss P((char *buf, u4_t offset));
 FORWARD void u4c4_s0 P((char *buf, u4_t offset));
 FORWARD void u4c4_0s P((char *buf, u4_t offset));
 
+PRIVATE u2_pt c2u2_00 P((char *buf));
+PRIVATE u4_pt c4u4_00 P((char *buf));
+
 PRIVATE void (*pu2c2) P((char *buf, u2_pt offset)) = u2c2_00;
 PRIVATE void (*pu4c4) P((char *buf, u4_t offset)) = u4c4_00;
 

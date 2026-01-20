@@ -386,6 +386,7 @@ FORWARD void Eb P((struct ea_s *eap));
 FORWARD void Ew P((struct ea_s *eap));
 FORWARD void Ev P((struct ea_s *eap));
 FORWARD void Ex P((struct ea_s *eap));
+FORWARD void Gd P((struct ea_s *eap));
 FORWARD void Gw P((struct ea_s *eap));
 FORWARD void Gv P((struct ea_s *eap));
 FORWARD void Gx P((struct ea_s *eap));

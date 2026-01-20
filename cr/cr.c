@@ -15,12 +15,14 @@
 
 #if __STDC__
 #  define CONST const
+#  define P(x) x
 #else
 #  define CONST
+#  define P(x) ()
 #endif
 
 #ifdef OPEN00
-  extern int open00(/* _CONST char *pathname */);  /* flags and mode are both 0. */
+  extern int open00 P((_CONST char *pathname));  /* flags and mode are both 0. */
 #else
 #  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
 #endif
@@ -30,8 +32,9 @@
  * garbage. Returns nonzero on success. It produces a twos complement number
  * if the input has a minus sign.
  */
-int parse_u_arg(s, output)
-char *s;
+static int parse_u_arg P((CONST char *s, unsigned long *output));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static int parse_u_arg(s, output)
+CONST char *s;
 unsigned long *output;
 {
   register char c;
@@ -77,12 +80,14 @@ unsigned long *output;
   return 1;
 }
 
+static void write_err P((CONST char *msg));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static void write_err(msg)
 CONST char *msg;
 {
   if (*msg != '\0') (void)!write(2, msg, strlen(msg));
 }
 
+static void fatal2 P((CONST char *msg1, CONST char *msg2));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static void fatal2(msg1, msg2)
 CONST char *msg1;
 CONST char *msg2;
@@ -97,6 +102,7 @@ CONST char *msg2;
   exit(2);
 }
 
+static char *dump16le P((unsigned v, char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static char *dump16le(v, p)  /* Appends 16 bits in little-endian byte order. */
 unsigned v;
 char *p;
@@ -106,6 +112,8 @@ char *p;
   return p;
 }
 
+/* !! If sizeof(int) >= 4, then just use unsigned here instead of unsigned long. Fix it everywhere. */
+static char *dump32pdp11 P((unsigned long v, char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static char *dump32pdp11(v, p)  /* Appends 16 bits in PDP-11 middle-endian byte order. */
 unsigned long v;
 char *p;
@@ -116,6 +124,7 @@ char *p;
 
 static char iobuf[8192];
 
+int main P((int argc, char **argv));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 int main(argc, argv)
 int argc;
 char **argv;

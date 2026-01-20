@@ -19,6 +19,7 @@ PRIVATE char libtmp[sizeof libdir - 1 + sizeof lib386subdir - 1 + LIBNAME_MAX + 
 PRIVATE char libprefix[] = "lib";
 PRIVATE char libsuffix[] = ".a";
 
+PRIVATE char *appendstr P((char *dest, char *src));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 PRIVATE char *appendstr(dest, src)
 char *dest;
 char *src;

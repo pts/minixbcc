@@ -153,7 +153,11 @@ PUBLIC void initbin()
 }
 
 #ifdef ACKFIX0
-  typedef int myintptr;  /* Pacify ACK 3.1 warning on Minix 1.5.10 i86: conversion of long to pointer loses accuracy */
+#  if _EM_WSIZE < _EM_PSIZE  /* Macros defined by ACK ANSI C compiler on Minix. The condition is false. */
+    typedef long myintptr;
+#  else
+    typedef int myintptr;  /* Pacify ACK 3.1 warning on Minix 1.5.10 i86: conversion of pointer to long loses accuracy */
+#  endif
   typedef char assert_ptrsize[sizeof(myintptr) == sizeof(char*) ? 1 : -1];
 #else
   typedef offset_t myintptr;

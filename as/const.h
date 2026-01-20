@@ -135,6 +135,8 @@ enum
 
     NOREG,
 #endif /* MC6809 */
+
+    LASTENUMVAL1  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
 
 #ifdef I80386
@@ -149,7 +151,7 @@ enum
     PWORDOP,
     QWORDOP,
     TBYTEOP,
-    WORDOP,
+    WORDOP  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
 #endif /* I80386 */
 
@@ -197,7 +199,7 @@ enum
     SROP,
     STAR,			/* context-sensitive */
     STRINGCONST,
-    COLON,
+    COLON  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
 
 enum
@@ -304,7 +306,7 @@ enum
 
 /* Warnings. */
 #define MINWARN		SHORTB
-    SHORTB,
+    SHORTB  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
 
 /* symbol table entry */

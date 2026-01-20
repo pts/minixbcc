@@ -14,12 +14,19 @@ typedef unsigned size_t;
 typedef unsigned short mode_t;
 typedef long off_t;
 
+#ifdef SBRK
 extern char *brksize;  /* Defined in assembly. */
+#endif
 
 extern char * _PROTOTYPE(brk, (char *addr));
+extern char * _PROTOTYPE(sbrk, (int incr));
+extern void * _PROTOTYPE(malloc, (unsigned size));
+extern void * _PROTOTYPE(realloc, (void *oldfix, unsigned size));
+extern void * _PROTOTYPE(memcpy, (void *_t, const void *_s, unsigned _length));
 
 /* --- brk.c */
 
+#ifdef SBRK
 char *sbrk(incr)
 int incr;
 {
@@ -29,11 +36,12 @@ int incr;
   newsize = brksize + incr;
   if (incr > 0 && newsize < oldsize || incr < 0 && newsize > oldsize)
 	return((char *) -1);
-  if (brk(newsize) == 0)
+  if (brk(newsize) == 0)  /* This change brksize on success. */
 	return(oldsize);
   else
 	return((char *) -1);
 }
+#endif
 
 /* --- malloc.c */
 
@@ -131,7 +139,8 @@ unsigned size;
   register unsigned len, n;
   char *old = (char *) oldfix;
 
-  if (size > -2 * PTRSIZE) return(0);
+
+  if (size > ~(unsigned) (2 * PTRSIZE) + 1) return(0);
   len = Align(size, PTRSIZE) + PTRSIZE;
   next = NextSlot(old);
   n = (int) (next - old);	/* old length */

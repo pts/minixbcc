@@ -1,17 +1,20 @@
 #ifdef LIBCH
 #  include "libc.h"
 #else
-#  ifndef MINIXHEAP
+#  ifdef MINIXHEAP
+#    ifndef _MINIX  /* Make <unistd.h> declare brk(...) and sbrk(...) for ACK ANSI C compiler 1.202. */
+#      define _MINIX 1
+#    endif
+#    include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
+#    include <unistd.h>  /* For brk(...) and sbrk(...). */
+#  else
 #    include <stdlib.h>  /* For malloc(...). */
-#  endif
-#  ifdef DEBUG_MINIXHEAP
-#    include <sys/types.h>
-#    include <unistd.h>
 #  endif
 #endif
 #include "const.h"
 #include "type.h"
 #include "globvar.h"
+
 
 #ifndef MAXHEAP16  /* Configurable at compile time: -DMAXHEAP16=... */
 #  ifdef MINIXHEAP
@@ -26,13 +29,18 @@
 #ifdef MAXHEAP  /* Configurable at compile time: -DMAXHEAP=... */
 #  define MAXHEAPEXPR ((unsigned) (MAXHEAP))
 #else
+  /* The `& ~(unsigned) 0' pacifies the ACK 3.1 warning on Minix 1.5.10: overflow in unsigned constant expression */
 #  define MAXHEAPEXPR (sizeof(int) <= 2 ? (unsigned) (MAXHEAP16) : (unsigned) ((MAXHEAP32) & (unsigned) ~0))
 #endif
 
 #ifdef MINIXHEAP  /* Use brk(2) on Minix. It uses less code, and it wastes less data than malloc(3). */
-extern char *brksize;  /* Defined by libc. */
-extern char *brk();  /* Defined by libc. */
+#ifdef BRKSIZE
+  extern char *brksize;  /* Defined by libc. */
+#else
+#  define brksize sbrk(0)  /* Minix 2.0.4 libc doesn't have the global variable brksize (but it has _brksize), so we use sbrk(0) instead, which works everywhere. */
+#endif
 
+PRIVATE int trybrk P((char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 PRIVATE int trybrk(p) char *p; {
   /* brk(...) makes sure that a minimmum amount of stack space is still available above the heap. */
   return !brk(p) && brksize >= p;  /* brk(...) also changes brksize. */
@@ -90,7 +98,7 @@ PUBLIC void initheap()
 #ifdef DEBUG_MINIXHEAP
   (void)!write(2, ".\n", 2);
 #endif
-#else
+#else  /* #ifdef MINIXHEAP */
   char *p;
   unsigned size;
 
@@ -102,5 +110,5 @@ PUBLIC void initheap()
     }
   }
   heapend = (heapstart = heapptr = p) + size;
-#endif
+#endif  /* #else #ifdef MINIXHEAP */
 }

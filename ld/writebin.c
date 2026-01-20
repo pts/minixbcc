@@ -143,6 +143,7 @@ bool_pt argreloc_output;
     while (needlink);
 }
 
+PRIVATE void checksize P((void));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 PRIVATE void checksize() {
     if (!bits32) {
 	if (etextoffset > 0xff00L) fatalerror("a_text too large");  /* This is the actual limit for a_text in Minix 1.5.10 i86. */
@@ -150,6 +151,7 @@ PRIVATE void checksize() {
     }
 }
 
+PRIVATE void namecpy P((char *p, char *pend, char *src));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 PRIVATE void namecpy(p, pend, src)
 char *p;
 char *pend;
@@ -162,6 +164,7 @@ char *src;
 }
 
 #ifdef ACKFIX  /* Helper function used below. */
+PRIVATE offset_t *addcomseg P((struct symstruct *symptr));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 PRIVATE offset_t *addcomseg(symptr)
 struct symstruct *symptr;
 {
