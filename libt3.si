@@ -1,0 +1,672 @@
+|
+| libt3.si: part of the Minix libc implemented in 8086 (i386) assembly, As86 (non-asld) syntax
+| based on libt3.si, which is based on Minix 1.5.10 libc and Minix 1.5.10 BCC libc source files
+| modified and size-optimized by pts@fazekas.hu at Sat Jan 17 02:13:52 CET 2026
+|
+| The Minix 1.5.10 i386 calling convention is the following:
+|
+| * Upon each function entry and exit: ES == DS == SS.
+| * Upon each function entry and exit: DF == 0. (This is only the convention of this libc. The default Minix libc doesn't have it.)
+| * Please note that the callee must restore EBX, in addition to the usual EAX, ECX and EDX in cdecl. (In the i86 calling convention, the caller can use BX as a scratch register.)
+| * The following assumes that all function arguments and return values are 1 byte (char, unsigned char), 2 bytes (e.g short, unsigned short) or 4 bytes (e.g. int, unsigned, pointer).
+| * The caller pushes arguments starting with the last (sign-extended or zero-extended if needed first), one word a at a time, does a `call', and then pops the arguments.
+| * The callee can use EAX, EBX, ECX, EDX and EFLAGS as scratch registers (but must set DF := 0). It must restore all other registers (including ESI, EDI, EBP, DS, ES).
+| * The callee returns the value in EAX (sign-extended or zero-extended if needed).
+|
+
+.data
+.zerow 2*2  | food for null pointer bugs
+.extern _end
+.globl _brksize
+_brksize: .long _end
+.bss
+|.extern __M
+.comm __M, 36  | message _M;
+.text
+
+| See <minix/com.h> for C definitions
+|SEND = 1
+|RECEIVE = 2
+BOTH = 3
+SYSVEC = 33  | int 21h | int $21  | $20 would also work.
+
+| --- Startup and syscalls.
+
+| This is the C run-time start-off routine.  It's job is to take the
+| arguments as put on the stack by EXEC, and to parse them and set them up the
+| way _main expects them.
+.globl crtso
+.extern _main
+crtso:
+	cld
+	|sub ebp, ebp  | clear for backtrace of core files
+	pop ecx  | ECX := argc.
+	mov ebx, esp  | EBX := argv.
+	|push eax  | push environ
+	push ebx  | push argv
+	push ecx  | push argc
+	call _main
+	|add esp, *12  | Not needed, we are exiting soon anyway.
+	push eax  | push exit status
+	push eax  | Fake return address for _exit.
+	| Fall through to _exit.
+
+| void exit(int exit_code)
+.globl _exit
+_exit:
+| PUBLIC void exit(exit_code)
+| int exit_code;
+| {
+|   *(char*)&_M.m_type = EXIT;
+|   _M.m1_i1 = exit_code;
+|   callx();
+| }
+	pop eax  | Return address. Won't be used.
+	pop [__M+2*4]  | exit_code.
+	movb [__M+2*2], *1  | *(char*)&_M.m_type = EXIT;
+	| Fall through to _callx.
+
+| Send a message and get the response.  The '_M.m_type' field of the
+| reply contains a value (>=0) or an error code (<0).
+.globl _callx
+_callx:
+| PRIVATE int callx()
+| {
+|   int k;
+| #ifdef DEBUG_MALLOC  /* Always false. */
+|   k = _M.m_type;  /* syscall number. */
+|   k = (k >= READ && k <= CREAT) || k == IOCTL;  /* MM (== 0) or FS (== 1). */
+| #else
+|   k = (_M.m_type & 17) != 1;  /* _M.m_type is syscall number. */  /* MM (== 0) or FS (== 1). */  /* This works for EXIT (MM), READ, WRITE, OPEN, CLOSE, CREAT, BRK (MM) and IOCTL. */
+| #endif
+|   k = sendrec(k, &_M);
+|   if (k != 0) return(k);  /* send itself failed */
+|   if (_M.m_type < 0) {
+| #ifdef ERRNO  /* Always false. */
+|     errno = -_M.m_type;
+| #endif
+|     return(-1);
+|   }
+|   return(_M.m_type);
+| }
+.data
+.text
+	mov eax, [__M+2*2]  | syscall number.
+	andb al, *15
+	dec eax
+	jz callxmmfs  | Keep EAX == MM (== 0).
+	movb al, *1  | AX := FS (== 1).
+callxmmfs:
+	| Now EAX is either MM (== 0) or FS (== 1), depending on the syscall number.
+	push ebx  | Save for calling convention.
+	mov ebx, #__M
+	mov ecx, #BOTH  | sendrec(srcdest, ptr)
+	int SYSVEC  | trap to the kernel; ruins AX, BX and CX, keeps DX.
+	pop ebx  | Restore for calling convention.
+	test eax, eax
+	jnz callxret  | sendrec(...) itself has failed.
+	or eax, [__M+2*2]  | Syscall result or -errno.
+	and [__M+2*2], #0  | Set next syscall to 0, so subsequent calls can set only 1 byte.
+	jns callxret
+	| Here, if ERRNO is defined, we should set:
+	|neg eax
+	|mov [_errno], eax
+	xor eax, eax
+	dec eax  | Return value -1 to indicate syscall error.
+callxret:
+	ret
+
+| int read(int fd, char *buffer, unsigned nbytes);
+.globl _read
+_read:
+	movb [__M+2*2], *3  | *(char*)&_M.m_type = READ;
+readwrite:
+	mov eax, [esp+2*2]  | Argument fd.
+	mov [__M+2*4], eax  | _M.m1_i1.
+	mov eax, [esp+2*4]  | Argument buffer.
+	mov [__M+2*10], eax  | _M.m1_p1.
+	mov eax, [esp+2*6]  | Argument nbytes.
+	mov [__M+2*6], eax  | _M.m1_i2.
+	j _callx
+
+| int write(int fd, const char *buffer, unsigned nbytes);
+.globl _write
+_write:
+	movb [__M+2*2], *4  | *(char*)&_M.m_type = WRITE;
+	j readwrite
+
+| int close(int fd);
+.globl _close
+_close:
+	movb [__M+2*2], *6  | *(char*)&_M.m_type = CLOSE;
+	| Argument fd will be copied to _M.m1_i1.
+callxarg1:
+	mov eax, [esp+2*2]  | Argument 1.
+	mov [__M+2*4], eax  | _M.m1_i1.
+j_callx:
+	j _callx
+
+if F_UMASK
+| mode_t umask(mode_t complmode);
+.globl _umask
+_umask:
+| PUBLIC mode_t umask(complmode) mode_t complmode {
+|   return((mode_t)callm1(FS, UMASK, (int)complmode, 0, 0, NIL_PTR, NIL_PTR, NIL_PTR));
+| }
+	movb [__M+2*2], *60  | *(char*)&_M.m_type = UMASK;
+	j callxarg1  | Argument complmode will be copied to _M.m1_i1.
+endif
+
+if F_FSTAT
+| int fstat(int fd, struct stat *buffer);
+.globl _fstat
+_fstat:
+| PUBLIC int fstat(fd, buffer)
+| int fd;
+| struct stat *buffer;
+| {
+|   return(callm1(FS, FSTAT, fd, 0, 0, (char *)buffer, NIL_PTR, NIL_PTR));
+| }
+	movb [__M+2*2], *28  | *(char*)&_M.m_type = FSTAT;
+	mov eax, [esp+2*4]  | Argument buffer.
+	mov [__M+2*10], eax  | _M.m1_p1.
+	j callxarg1  | Argument fd will be copied to _M.m1_i1.
+endif
+
+| int open00(const char *name);
+.globl _open00
+_open00:
+	movb [__M+2*2], *5  | *(char*)&_M.m_type = OPEN;
+	xor eax, eax  | AX (flags) := 0. Will be saved to _M.m3_i2.
+	| _M.m3_i2 := flags.  | Fall through to callm3ax.
+
+callm3ax:
+	mov [__M+2*6], ax  | _M.m3_i2 = mode;
+	| Fall through to callm3.
+
+| int callm3(const char *name);
+|
+| This form of system call is used for those calls that contain at most
+| one integer parameter along with a string.  If the string fits in the
+| message, it is copied there.  If not, a pointer to it is passed.
+callm3:
+| PUBLIC int callm3(name) _CONST char *name; {
+|   register unsigned k;
+|   register char *rp;
+|   k = strlen(name) + 1;
+|   _M.m3_i1 = k;
+|   _M.m3_p1 = (char *) name;
+|   rp = &_M.m3_ca1[0];
+|   if (k <= M3_STRING) {  /* 14. */
+|     while (k--) { *rp++ = *name++; }
+|   }
+|   return callx();
+| }
+	push esi  | Save.
+	mov esi, esp
+	mov esi, [esi+2*4]  | Argument name.
+	mov [__M+2*8], esi  | _M.m3_p1 = (char *) name;
+	push esi  | Argument name.
+	call _strlen
+	pop ecx  | Clean up argument of _strlean above.
+	inc eax  | k := strlen(name) + 1.
+	mov [__M+2*4], eax  | _M.m3_i1 = k;
+	cmp eax, *14  | if (k <= M3_STRING)
+	ja callm3skip
+	xchg ecx, eax  | CX := AX (k); AX := junk.
+	xchg edi, eax  | Save DI to AX.
+	mov edi, #__M+2*10  | rp = &_M.m3_ca1[0];
+	rep
+	movsb  | sc v0 would generate incorrect code for `movb' here.
+	xchg edi, eax  | Restore DI from AX. AX := junk.
+callm3skip:
+	pop esi  | Restore.
+	j j_callx
+
+| int creat(const char *name, mode_t mode);
+.globl _creat
+_creat:
+	movb [__M+2*2], *8  | *(char*)&_M.m_type = CREAT;
+callm3arg2:
+	mov eax, [esp+2*4]  | Argument mode.
+	j callm3ax  | _M.m3_i2 = mode.
+
+if F_CHMOD
+| int chmod(const char *name, mode_t mode);
+.globl _chmod
+_chmod:
+| PUBLIC int chmod(name, mode)
+| _CONST char *name;
+| mode_t mode;
+| {
+|   return(callm3(FS, CHMOD, mode, name));
+| }
+	movb [__M+2*2], *15  | *(char*)&_M.m_type = CHMOD;
+	j callm3arg2
+endif
+
+if F_ISATTY
+| int isatty(int fd);
+.globl _isatty
+_isatty:
+| int isatty(fd) int fd; {  /* Minix 1.5--1.7.2. */
+|   _M.TTY_REQUEST = 0x7408;  /* TIOCGETP == 0x7408 on Minix 1.5.10. */  /* #define TTY_REQUEST m2_i3 */
+|   _M.TTY_LINE = fd;  /* #define TTY_LINE m2_i1 */
+|   return(callx(FS, IOCTL) >= 0);  /* FS == 1; IOCTL == 54. */
+| }
+| int isatty(fd) int fd; {  /* Minix 1.7.4--2.0.4--3.2.0, merged isatty(...), tcgetattr(...) and ioctl(...) */
+|  struct termios dummy;  /* sizeof(struct termios) == 36 == 0x24 on i386, == 32 == 0x20 on i86. */
+|  m.TTY_REQUEST = (unsigned) (0x80245408L & ~(unsigned) 0);  /* TCGETS == (int) 0x80245408L on Minix 2.0.4 */  /* #define TTY_REQUEST COUNT */  /* #define COUNT m2_i3 */
+|  m.TTY_LINE = fd;  /* #define TTY_LINE DEVICE */  /* #define DEVICE m2_i1 */
+|  m.ADDRESS = (char *) &dummy;  /* #define ADDRESS m2_p1 */ 
+|  return((callx(FS, IOCTL) >= 0);  /* FS == 1; IOCTL == 54. */  /* Actually, Minix does (...) == 0. */
+| }
+| int isatty(fd) int fd; {  /* Our implementation below, compatible with Minix 1.5--2.0.4--3.2.0. */
+|   char dummy[sizeof(int) == 2 ? 32 : 36];  /* struct termios dummy; */  /* For compatibility with Minix 1.7.4--2.0.4--3.2.0. */
+|   _M.TTY_REQUEST = 0x7408;  /* TIOCGETP; */
+|   _M.TTY_LINE = fd;
+|   if (callx(FS, IOCTL) >= 0) goto found_tty;  /* Minix 1.5--1.7.2. */
+|   _M.TTY_REQUEST = (unsigned) (0x80245408L & ~(unsigned) 0);  /* TCGETS. */
+|   _M.TTY_LINE = fd;
+|   _M.ADDRESS = dummy;
+|   if (callx(FS, IOCTL) < 0) return 0;  /* Minix 1.7.4--2.0.4--3.2.0. */
+|  found_tty:
+|   return(1);
+| }
+	| First try: Minix 1.5--1.7.2.
+	movb [__M+2*2], *54  | *(char*)&_M.m_type = IOCTL;
+	mov [__M+4*4], #$7408  | _M.TTY_REQUEST = Minix_1_5_TIOCGETP;
+	mov eax, [esp+2*2]  | Argument fd.
+	mov [__M+4*2], eax  | _M.TTY_LINE = fd;
+	call _callx  | if (callx() >= 0) goto isattydone;
+	test eax, eax
+	jns isattydone  | Jump iff found a TTY.
+	| Not found a TTY for the first try. Second try: Minix 1.7.4--2.0.4--3.2.0.
+	mov [__M+4*4], #$80245408  | _M.TTY_REQUEST = Minix_1_7_2_TIOCGETP;
+	mov eax, [esp+2*2]  | Argument fd.
+	mov [__M+4*2], eax  | _M.TTY_LINE = fd;
+	sub esp, *36  | struct termios &dummy;
+	mov [__M+4*7], esp  | _M.ADDRESS = &dummy.  | m2_p1.
+	call _callx  | if (callx() >= 0) goto isattydone;
+	add esp, *36  | Pop the dummy.
+isattydone:  | return callx() >= 0;
+	| This would be 3 bytes longer.
+	|test eax, eax
+	|mov eax, #1
+	|jns isattyret
+	|dec eax  | EAX := 0.
+	rol eax, *1
+	not eax
+	and eax, *1
+|isattyret:
+	ret
+endif
+
+if F_LSEEK
+| off_t lseek(int fd, off_t offset, int whence);
+.globl _lseek
+_lseek:
+| PUBLIC off_t lseek(fd, offset, whence)
+| int fd;
+| off_t offset;
+| int whence;
+| {
+|   int k;
+|   *(char*)&_M.m_type = LSEEK;
+|   _M.m2_i1 = fd;
+|   _M.m2_l1 = offset;
+|   _M.m2_i2 = whence;
+|   if ((k = callx()) != 0) return((off_t) k);
+|   return((off_t) _M.m2_l1);
+| }
+	mov ecx, esi  | Save ESI to ECX.
+	mov esi, esp
+	lodsd  | SI += 2; AX := junk.  | sc v0 would generate incorrect code for `lods' here.
+	movb [__M+2*2], *19  | *(char*)&_M.m_type = LSEEK;
+	lodsd  | Argument fd.  | sc v0 would generate incorrect code for `lods' here.
+	mov [__M+2*4], eax
+	lodsd  | Argument offset.  | sc v0 would generate incorrect code for `lods' here.
+	mov [__M+2*10], eax
+	lodsd  | Argument whence.  | sc v0 would generate incorrect code for `lods' here.
+	mov esi, ecx  | Restore ESI from ECX.
+	mov [__M+2*6], eax
+	call _callx
+	test eax, eax  | if ((k = callx()) != 0)
+	jz lseekcopyofs
+	j lseekret
+lseekcopyofs:
+	mov eax, [__M+2*10]  | return((off_t) _M.m2_l1);
+lseekret:
+	ret  | Return result in EAX.
+endif
+
+| char *brk(char *addr);
+.globl _brk
+_brk:
+| PUBLIC char *brk(addr) char *addr; {
+|   *(char*)&_M.m_type = BRK;
+|   _M.m1_p1 = addr;
+|   if (callx() == 0) {
+|     brksize = _M.m2_p1;
+|     return((char*) 0);
+|   } else {
+|     return((char *) -1);
+|   }
+| }
+	movb [__M+2*2], *17  | *(char*)&_M.m_type = BRK;
+	mov ecx, [esp+2*2]  | Argument addr.
+	mov [__M+4*5], ecx  | _M.m1_p1 = addr;
+	call _callx
+	test eax, eax
+	jnz brkerror
+	mov ecx, [__M+4*7]  | _M.m2_p1.
+	mov [_brksize], ecx  | brksize = _M.m2_p1;
+	j brkret
+brkerror:
+	xor eax, eax
+	dec eax  | return((char *) -1);
+brkret:
+	ret
+
+| --- C compiler integer operation helpers.
+
+| !! Omit the unused int and long operations below.
+
+| idiv_ doesn't preserve edx (returns remainder in it)
+.globl idiv_
+idiv_:
+	cdq
+	idiv ebx
+	ret
+
+| idiv_u doesn't preserve edx (returns remainder in it)
+.globl idiv_u
+idiv_u:
+	xor edx, edx
+	div ebx
+	ret
+
+| imod doesn't preserve edx (returns quotient in it)
+.globl imod
+imod:
+	cdq
+	idiv ebx
+	mov eax, edx  | instruction queue full so xchg slower
+	ret
+
+| imodu doesn't preserve edx (returns quotient in it)
+.globl imodu
+imodu:
+	xor edx, edx
+	div ebx
+	mov eax, edx  | instruction queue full so xchg slower
+	ret
+
+| isl, islu don't preserve cl
+.globl isl
+isl:
+.globl islu
+islu:
+	mov cl, bl
+	shl eax, cl
+	ret
+
+| isr doesn't preserve cl
+.globl isr
+isr:
+	mov cl, bl
+	sar eax, cl
+	ret
+
+.globl isru
+| isru doesn't preserve cl
+isru:
+	mov cl, bl
+	shr eax, cl
+	ret
+
+| imul_, imul_u don't preserve edx
+.globl imul_
+imul_:
+.globl imul_u
+imul_u:
+	imul ebx
+	ret
+
+| --- C library string functions (str...(3) and mem...(3)).
+
+if F_MEMCPY
+| void *memcpy(void *s1, const void *s2, size_t n);
+|
+| Copies n characters from the object pointed to by s2 into the
+| object pointed to by s1.  Copying takes place as if the n
+| characters pointed to by s2 are first copied to a temporary
+| area and then copied to the object pointed to by s1.
+| Returns s1.
+|
+| Per X3J11, memcpy may have undefined results if the objects
+| overlap; since the performance penalty is insignificant, we
+| use the safe memmove code for it as well.
+.globl _memcpy
+_memcpy:
+	push esi  | Save.
+	mov edx, edi  | Save EDI to EDX.
+	mov edi, esp
+	mov ecx, [edi+4*4]  | Argument n.
+	mov esi, [edi+4*3]  | Argument s2.
+	mov edi, [edi+4*2]  | Argument s1.
+	mov eax, edi  | Save a copy of s1, for returning.
+	rep
+	movsb  | sc v0 would generate incorrect code for `movb' here.
+	mov edi, edx  | Restore EDI. EDX := junk.
+	pop esi  | Restore.
+	ret
+endif
+
+if F_MEMSET
+| void *memset(void *s, int c, size_t n);
+|
+| Copies the value of c (converted to unsigned char) into the
+| first n locations of the object pointed to by s.
+| Returns s.
+.globl _memset
+_memset:
+	mov edx, edi  | Save EDI to EDX.
+	mov edi, esp
+	mov ecx, [edi+2*6]  | Argument n.
+	movb al, [edi+2*4]  | Argument c.
+	mov edi, [edi+2*2]  | Argument s.
+	push edi  | Save a copy of s, for returning.
+	rep
+	stob
+	pop eax  | Return value.
+	mov edi, edx  | Restore EDI. EDX is now junk.
+	ret
+endif
+
+| int strcmp(const char *s1, const char *s2);
+|
+| Compares the strings pointed to by s1 and s2.  Returns zero if
+| strings are identical, a positive number if s1 greater than s2,
+| and a negative number otherwise.
+.globl _strcmp
+_strcmp:
+	mov ecx, esi  | Save ESI to ECX.
+	mov edx, edi  | Save EDI to EDX.
+	mov esi, esp
+	mov edi, [esi+2*4]  | Argument s2.
+	mov esi, [esi+2*2]  | Argument s1.
+strcmpnext:
+	lodb
+	scab
+	jne strcmpdiff
+	cmp al, *0
+	jne strcmpnext
+	xor eax, eax
+	j strcmpdone
+strcmpdiff:
+	sbb eax, eax
+	orb al, *1
+strcmpdone:
+	mov edi, edx  | Restore EDI. EDX := junk.
+	mov esi, ecx  | Restore ESI. ECX := junk.
+	ret
+
+| char *strcpy(char *s1, const char *s2);
+|
+| Copy the string pointed to by s2, including the terminating null
+| character, into the array pointed to by s1.  Returns s1.
+.globl _strcpy
+_strcpy:
+if F_STRCAT
+	call strcpysetup
+else
+	xchg eax, esi  | Save ESI to EAX; ESI := junk.
+	mov edx, edi  | Save EDI to EDX.
+	mov esi, [esp+4*2]  | Argument s2.
+	mov edi, [esp+4*1]  | Argument s1.
+	mov ecx, edi  | Save a copy of s1, for returning.
+endif
+	push eax  | Save saved ESI.
+strcpynext:
+	lodb
+	stob
+	testb al, al
+	jnz strcpynext
+	pop esi | Restore ESI.
+	xchg eax, ecx  | EAX := s1; ECX := junk.
+	mov edi, edx  | Restore EDI. EDX := junk.
+	ret
+if F_STRCAT
+strcpysetup:  | Code shared by _strcpy and _strcat.
+	xchg eax, esi  | Save ESI to EAX; ESI := junk.
+	mov edx, edi  | Save EDI to EDX.
+	mov esi, [esp+4*3]  | Argument s2.
+	mov edi, [esp+4*2]  | Argument s1.
+	mov ecx, edi  | Save a copy of s1, for returning.
+	ret
+endif
+
+if F_STRCAT
+| char *strcat(char *s1, const char *s2)
+|
+| Concatenates the string pointed to by s2 onto the end of the
+| string pointed to by s1.  Returns s1.
+.globl _strcat
+_strcat:
+	call strcpysetup
+	push eax  | Save saved ESI.
+	movb al, *0
+strcatnext:
+	scab
+	jne strcatnext
+	dec edi  | Undo the skipping over the last NUL.
+	j strcpynext
+endif
+
+| size_t strlen(const char *s);
+|
+| Returns the length of the string pointed to by s.
+.globl _strlen
+_strlen:
+	mov edx, edi  | Save EDI.
+	mov edi, [esp+2*2]  | Argument s.
+	xor ecx, ecx
+	dec ecx  | ECX := -1.
+	xorb al, al  | Also sets ZF := 1, which is needed below for the emptry string.
+	repne
+	scab
+	not ecx  | Silly trick gives length (including the NUL byte).
+	dec ecx  | Forget about the NUL byte.
+	xchg eax, ecx  | EAX := result; ECX := junk.
+	mov edi, edx  | Restore EDI. EDX is now junk.
+	ret
+
+if F_STRRCHR
+| char *strrchr(const char *s, int c);
+|
+| Locates final occurrence of c (as unsigned char) in string s.
+.globl _strrchr
+_strrchr:
+	mov ecx, esi  | Save ESI.
+	mov esi, esp
+	mov ah, [esi+2*4]  | Argument c.
+	mov esi, [esi+2*2]  | Argument s.
+	xor edx, edx  | Initial return value of NULL.
+strrchrnext:
+	lodsb
+	cmp al, ah
+	jne strrchrdiff
+	mov edx, esi
+	dec edx  | Make DX point to the last occurrence c, not after it.
+strrchrdiff:
+	testb al, al
+	jnz strrchrnext
+	xchg eax, edx  | EAX := pointer to last match; EDX := junk.
+	mov esi, ecx  | Restore ESI. ECX is now junk.
+	ret
+endif
+
+if F_STRNCMP
+| int strncmp(const char *s1, const char *s2, size_t n);
+|
+| Compares up to n characters from the strings pointed to by s1
+| and s2.  Returns zero if the (possibly null terminated) arrays
+| are identical, a positive number if s1 is greater than s2, and
+| a negative number otherwise.
+.globl _strncmp
+_strncmp:
+	push esi  | Save ESI.
+	mov edx, edi  | Save EDI to EDX.
+	mov esi, esp
+	mov ecx, [esi+2*8]  | Argument n.
+	jcxz strncmpequal
+	mov edi, [esi+2*6]  | Argument s2.
+	mov esi, [esi+2*4]  | Argument s1.
+strncmpnext:
+	lodsb
+	scasb
+	je strncmpsame
+	sbb eax, eax
+	sbb eax, *-1  | With the previous instruction: EAX := (CF ? -1 : 1).
+	j strncmpret
+strncmpsame:
+	testb al, al
+	jz strncmpequal
+	loop strncmpnext
+strncmpequal:
+	xor eax, eax
+strncmpret:
+	mov edi, edx  | Restore EDI. EDX := junk.
+	pop esi  | Restore ESI.
+	ret
+endif
+
+if F_MEMCMP
+| int memcmp(const void *s1, const void *s2, size_t n)
+|
+| Compares the first n characters of the objects pointed to by
+| s1 and s2.  Returns zero if all characters are identical, a
+| positive number if s1 greater than s2, a negative number otherwise.
+.globl _memcmp
+_memcmp:
+	push esi  | Save ESI.
+	mov edx, edi  | Save EDI to EDX.
+	mov esi, esp
+	mov ecx, [esi+2*8]  | Argument n.
+	mov edi, [esi+2*6]  | Argument s2.
+	mov esi, [esi+2*4]  | Argument s1.
+	xor eax, eax  | Also sets ZF := 1, which is needed below for the emptry string.
+	rep
+	cmpsb  | sc v0 would generate incorrect code for `cmpb' here.
+	je memcmpret
+	inc eax
+	jnc memcmpret
+	neg eax
+memcmpret:
+	mov edi, edx  | Restore EDI. EDX := junk.
+	pop esi  | Restore ESI.
+	ret
+endif
+
+| __END__

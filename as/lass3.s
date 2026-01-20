@@ -1,0 +1,14 @@
+F_CHMOD = 0
+F_FSTAT = 0
+F_ISATTY = 0
+F_ISRU = 0
+F_LDIVMOD = 1
+F_LSEEK = 1
+F_MEMCMP = 1
+F_MEMCPY = 0
+F_MEMSET = 1
+F_STRCAT = 0
+F_STRNCMP = 1
+F_STRRCHR = 1
+F_UMASK = 0
+include "libt3.si"
