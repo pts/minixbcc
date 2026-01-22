@@ -146,19 +146,17 @@ char **argv;
     unsigned errcount = 0;
     char ext;
     char *f_out = "a.out";
-    bool_t float_emulation = FALSE;
     int length;
     unsigned ncsfiles = 0;
     unsigned nfilters;
     unsigned nifiles = 0;
     unsigned nofiles = 0;
     char *o_out;
-    bool_t optimize = FALSE;
-    bool_t profile = FALSE;
     bool_t prep_debug = FALSE;
     bool_t prep_only = FALSE;
     char *s_out;
     int status = 0;
+    char *argval;
 
     path_tool.libdir[sizeof(path_tool.libdir) - 1] =
         path_crtso.libdir[sizeof(path_crtso.libdir) - 1] =
@@ -195,7 +193,7 @@ char **argv;
 		unsupported(arg, "preprocess");
 		break;
 	    case 'O':
-		optimize = TRUE;	/* unsupported( arg, "optimize" ); */
+		/* unsupported( arg, "optimize" ); */  /* Ignore, BCC doesn't support optimizatoin. */
 		break;
 	    case 'S':
 		cc_only = TRUE;
@@ -207,7 +205,6 @@ char **argv;
 		as_only = TRUE;
 		break;
 	    case 'f':
-		float_emulation = TRUE;
 		++errcount;
 		unsupported(arg, "float emulation");
 		break;
@@ -228,50 +225,92 @@ char **argv;
 		}
 		break;
 	    case 'p':
-		profile = TRUE;
 		++errcount;
 		unsupported(arg, "profile");
 		break;
 	    case 'v':
 		verbose = TRUE;
 		break;
+	    case 'M':		/* ld: print symbols linked */
+	    case 'i':		/* ld: separate I & D output */
+	    case 'm':		/* ld: print modules linked */
+	    case 's':		/* ld: strip symbols */
+	    case 'z':		/* ld: unmapped zero page */
+		addarg(&ldargs, arg);
+		break;
+	    case 'D':
+	    case 'U':
+	    case 'I':
+	    missing_parameter:
+		++errcount;
+		show_who("missing value for ");
+		writen(arg);
+		break;
+	    case 'A':
+	    case 'B':
+	    case 'C':
+	    case 'L':
+	    case 't':
+	    case 'T':
+	    case 'h':
+		if (argc == 1) goto missing_parameter;
+		--argc;
+		argval = *++argv;
+		*++argdone = TRUE;
+		goto handle_argval;
 	    default:
 		*argdone = FALSE;
 		break;
 	    }
 	else if (arg[0] == '-')
+	{
+	    if (arg[1] == 0)
+	    {
+		++errcount;
+		show_who("stdin (-) not supported\n");
+		continue;
+	    }
+	    argval = arg + 2;
+	  handle_argval:
 	    switch (arg[1])
 	    {
-	    /* !! Add support for -l and -L, expand -l and -L, path absolute library name to ld */
 	    case 'A':
-		addarg(&asargs, arg + 2);
+		addarg(&asargs, argval);
 		break;
 	    case 'B':
 		++errcount;
 		unsupported(arg, "substituted cc");
 		break;
 	    case 'C':
-		addarg(&ccargs, arg + 2);
+		addarg(&ccargs, argval);
 		break;
 	    case 'D':
+	    case 'U':
 	    case 'I':
-		addarg(&ccargs, arg);
+		addarg(&ccargs, arg);  /* !! Rename to scargs. */
 		break;
 	    case 'L':
-		addarg(&ldargs, arg + 2);
-		break;
-	    case 'U':  /* !! Now sc supports this, add to &ccargs. */
-		++errcount;
-		unsupported(arg, "undef");
+		/*addarg(&ldargs, argval);*/  /* !! Implement this in this file. */  /* !! Add support for -l and -L, expand -l and -L, path absolute library name to ld */
+		unsupported(arg, "library path");
 		break;
 	    case 't':
 		++errcount;
 		unsupported(arg, "pass number");
 		break;
+	    case 'T':		/* ld: text base address; default: 0 */
+		addarg(&ldargs, "-T");
+	    add_ldarg:
+		addarg(&ldargs, argval);
+		break;
+	    case 'h':		/* ld: dynamic memory size (including heap, stack, argv and environ); the default of 0 means automatic */
+		addarg(&ldargs, "-h");
+		goto add_ldarg;
 	    default:
-		*argdone = FALSE;
+		++errcount;
+		unsupported(arg, "unknown flag");
 		break;
 	    }
+	}
 	else
 	{
 	    ++nifiles;
@@ -396,7 +435,7 @@ char **argv;
 		}
 	    }
 	    else
-		addarg(&ldargs, arg);
+		addarg(&ldargs, arg);  /* arg is now typically *.o or *.a */
 	}
     }
 
