@@ -67,7 +67,7 @@ fi
 set -x  # Echo all commands run.
 h=  # Host system unnown so far. We also use `test "$h"' below to check if we've recognized "$1".
 
-for a03 in 0 3; do
+for a03 in 0 3 bin; do
   if test -d "$a03"; then :; else
     mkdir "$a03" || exit "$?"
     test -d "$a03" || exit "$?"
@@ -539,7 +539,17 @@ for a03 in 0 3; do
   "$ld" -"$a03" -i -h "$chmemval" -o "$a03"/cpp "$a03"/crtso.o "$a03"/cppcpp1.o "$a03"/cppcpp2.o "$a03"/cppcpp3.o "$a03"/cppcpp4.o "$a03"/cppcpp5.o "$a03"/cppcpp6.o "$a03"/libc.a || exit "$?"
   ls -l "$a03"/cpp >&2 || exit "$?"
   "$cmp" "$a03"/cpp "$a03"g/cpp.d || exit "$?"
+
+  # !! Add "$cmp" for cc.
+  for b in cc; do
+    "$sc" -"$a03" -Iinclude   -o "$a03"/cc"$b".s cc/cc.c || exit "$?"
+    "$as" -"$a03" -u -w       -o "$a03"/cc"$b".o "$a03"/cc"$b".s || exit "$?"
+  done
+  "$ld" -"$a03" -i -h 10000   -o "$a03"/cc "$a03"/crtso.o "$a03"/cc"$b".o "$a03"/libc.a || exit "$?"  # No BSS. -h 10000 leaves >=9 KiB for the command-line arguments and environment.
 done
+
+rm -f bin/cc
+case "$h" in [0-9]) cp "$h"/cc bin/bbcc ;; esac  # !! Preserve mtime when copying with `cp -p'. The Minix 1.5.10 `cp' tool doesn't support `-p'. Build our own cp if needed, or use tar?
 
 # --- Remove temporary ?/*.[os] files.
 

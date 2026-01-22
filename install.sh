@@ -9,13 +9,13 @@
 
 set -x
 
-bcc -O -i -o bbcc.host bbcc/bbcc.c || exit "$?" # !! move this to build.sh, don't use bcc yet. !! Build for all targets.
-# !! Preserve mtime with tar.
-cp bbcc.host /usr/bin/bbcc || exit "$?"
+cp bin/bbcc /usr/bin/bbcc || exit "$?"  # !! Preserve mtime, everywhere. Preserve mtime when copying with `cp -p'. The Minix 1.5.10 `cp' tool doesn't support `-p'. Build our own cp if needed, or use tar?
+
 libdir=/usr/minixbcc
 test -d "$libdir" || mkdir "$libdir" || exit "$?"
+# !! Does it succeed when running twice on Minix?
 tar cf include.tar include || exit "$?"
-(cd "$libdir" && tar xf -) <include.tar || exit "$?"  # !! Does it properly copy mtime?
+(cd "$libdir" && tar xf -) <include.tar || exit "$?"  # !! Does it properly preserve mtime?
 rm -f include.tar
 for a03 in 0 3; do
   test -d "$libdir/$a03" || mkdir "$libdir/$a03" || exit "$?"
@@ -30,9 +30,9 @@ done
 
 # Quick test.
 echo '#include <stdio.h>' >h.c || exit "$?"
-echo 'int main() { printf("Hello, World!\n"); return 0; }' >>h.c || exit "$?"
+echo 'int main() { PRINT_F("Hello, World!\n"); return 0; }' >>h.c || exit "$?"
 rm -f h
-/usr/bin/bbcc -v -O -o h h.c || exit "$?"
+/usr/bin/bbcc -v -O -UBLAH -DPRINT_F=printf -h9999 -h 8888 -o h h.c || exit "$?"
 ./h || exit "$?"
 
 : "$0" OK.
