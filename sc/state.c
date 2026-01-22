@@ -446,7 +446,8 @@ PRIVATE void doif()
     lparen();
     etmark = etptr;
     exprmark = exprptr;
-    jumpfalse(expression(), elselab = getlabel());
+    elselab = getlabel();  /* Do it separately to avoid C unspecified argument evaluation order of jumpfalse(...) below. Without this, getlabel(...) would generating local labels in the .s file in nondeterministic order. */
+    jumpfalse(expression(), elselab);
     etptr = etmark;
     exprptr = exprmark;
     rparen();

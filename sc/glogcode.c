@@ -291,8 +291,9 @@ struct nodestruct *exp;
     struct nodestruct *truenode;
     struct symstruct *truesym;
 
+    falselab = getlabel();  /* Do it separately to avoid C unspecified argument evaluation order of jumpcond(...) below. Without this, getlabel(...) would generating local labels in the .s file in nondeterministic order. */
     jumpcond(exp->left.nodeptr, truelab = getlabel(),
-	     falselab = getlabel(), ~0);
+	     falselab, ~0);
     deflabel(truelab);
     makeleaf(truenode = exp->right->left.nodeptr);
     loadany(truesym = truenode->left.symptr);
@@ -412,7 +413,8 @@ struct nodestruct *exp;
     struct symstruct *target;
     label_t truelab;
 
-    jumpcond(exp, truelab = getlabel(), falselab = getlabel(), ~0);
+    falselab = getlabel();  /* Do it separately to avoid C unspecified argument evaluation order of jumpcond(...) below. Without this, getlabel(...) would generating local labels in the .s file in nondeterministic order. */
+    jumpcond(exp, truelab = getlabel(), falselab, ~0);
     deflabel(truelab);
     target = constsym((value_t) 0);	/* anything, loadlogical makes B reg */
     target->type = ctype;
