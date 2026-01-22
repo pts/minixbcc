@@ -55,10 +55,8 @@ struct code_listing_s
     char postb[2];
     char sib[2];
     char padopcode[1];
-#if SIZEOF_OFFSET_T > 2
     char displ4[2];
     char displ3[2];
-#endif
     char displ2[2];
     char displ1[2];
     char reldispl[1];
@@ -231,11 +229,9 @@ PRIVATE void listcode()
 	build_2hex_number((u16_t) lc, listptr->lc);
     if (popflags & POPLO)
     {
-#if SIZEOF_OFFSET_T > 2
 	if (popflags & POPLONG)
 	    build_2hex_number((u16_t) (lastexp.offset >> 16),
 			      listptr->displ4);
-#endif
 	if (popflags & POPHI)
 	    build_2hex_number((u16_t) lastexp.offset, listptr->displ2);
 	else
@@ -287,7 +283,6 @@ PRIVATE void listcode()
 	if (count > 1)
 	    build_1hex_number((opcode_pt) lastexp.offset >> 0x8,
 			      listptr->displ2);
-#if SIZEOF_OFFSET_T > 2
 	if (count > 2)
 	{
 	    build_1hex_number((opcode_pt) (lastexp.offset >> 0x10),
@@ -295,7 +290,6 @@ PRIVATE void listcode()
 	    build_1hex_number((opcode_pt) (lastexp.offset >> 0x18),
 			      listptr->displ4);
 	}
-#endif
 	if (immcount > 0)
 	{
 	    build_1hex_number((opcode_pt) immadr.offset, listptr->imm1);
@@ -403,11 +397,7 @@ offset_t offset;
 {
     char buf[sizeof offset];
 
-#if SIZEOF_OFFSET_T > 2
     u4c4(buf, offset);
-#else
-    u2c2(buf, offset);
-#endif
     (void)!write(innum, buf, sizeof buf);
 }
 

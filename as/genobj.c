@@ -98,14 +98,12 @@ PRIVATE void flushrmb()
 
     if (rmbcount != 0)
     {
-#if SIZEOF_OFFSET_T > 2
 	if (isge4byteoffset(rmbcount))
 	{
 	    putobj1(OBJ_SKIP_4);
 	    size = 4;
 	}
 	else
-#endif
 	if (isge2byteoffset(rmbcount))
 	{
 	    putobj1(OBJ_SKIP_2);
@@ -154,7 +152,6 @@ PUBLIC void genobj()
 		    genobjadr(adrptr++, 2);
 		while ((remaining -= 2) != 0);
 	    }
-#if SIZEOF_OFFSET_T > 2
 	    if (fqflag)
 	    {
 		adrptr = databuf.fqbuf;
@@ -163,7 +160,6 @@ PUBLIC void genobj()
 		    genobjadr(adrptr++, 4);
 		while ((remaining -= 4) != 0);
 	    }
-#endif
 	}
 	else
 	{
@@ -225,11 +221,7 @@ smallcount_t size;
 
 	char buf[sizeof(offset_t)];
 
-#if SIZEOF_OFFSET_T > 2
 	u4cn(buf, adrptr->offset, size);
-#else
-	u2cn(buf, adrptr->offset, size);
-#endif
 	putabs(buf[0]);
 	if (size > 1)
 	    putabs(buf[1]);
@@ -264,14 +256,12 @@ smallcount_t size;
 	    byte = OBJ_SYMBOL_REL;
 	    if (isge2byteoffset(symnum))
 		byte = OBJ_SYMBOL_REL | OBJ_S_MASK;
-#if SIZEOF_OFFSET_T > 2
 	    if (isge4byteoffset(adrptr->offset))
 	    {
 		byte |= 0x03;	/* 4 byte offset */
 		size = 4;
 	    }
 	    else
-#endif
 	    if (isge2byteoffset(adrptr->offset))
 	    {
 		byte |= 0x02;	/* 2 byte offset */
@@ -372,13 +362,11 @@ PUBLIC void objheader()
 		    }
 		    *copyptr++ = symptr;
 		    strsiz += symptr->length + 1;
-#if SIZEOF_OFFSET_T > 2
 		    if (isge4byteoffset(symptr->value_reg_or_op.value))
 			size = 4 + 4;
 			/* 4 is size of offset into string table and flags */
 			/* 2nd 4 is for 4 byte offset */
 		    else
-#endif
 		    if (isge2byteoffset(symptr->value_reg_or_op.value))
 			size = 4 + 2;
 		    else if (symptr->value_reg_or_op.value != 0)
@@ -400,11 +388,9 @@ PUBLIC void objheader()
 	if (lcp->lc != 0)
 	{
 	    textlength += lcp->lc;	/* assuming text starts at 0 */
-#if SIZEOF_OFFSET_T > 2
 	    if (isge4byteoffset(lcp->lc))
 		segsizebytes += 4;
 	    else
-#endif
 		segsizebytes += 2;	/* use 2 byte size if possible */
 	}
     while (++lcp < lctabtop);
@@ -461,10 +447,8 @@ PUBLIC void objheader()
 	if (lcp->lc != 0)
 	{
 	    byte |= sizebits;
-#if SIZEOF_OFFSET_T > 2
 	    if (isge4byteoffset(lcp->lc))
 		byte |= sizebits >> 1;	/* XXX - convert size 2 to size 4 */
-#endif
 	}
 	if ((sizebits >>= 2) == 0)
 	{
@@ -479,11 +463,9 @@ PUBLIC void objheader()
     do				/* lcp starts at lctab */
 	if (lcp->lc != 0)
 	{
-#if SIZEOF_OFFSET_T > 2
 	    if (isge4byteoffset(lcp->lc))
 		putobj4(lcp->lc);
 	    else
-#endif
 		putobjword((unsigned) lcp->lc);
 	}
     while (++lcp < lctabtop);
@@ -500,14 +482,12 @@ PUBLIC void objheader()
 	putobjword(offset);
 	symptr = *copyptr++;
 	byte = symptr->type & OBJ_N_MASK;
-#if SIZEOF_OFFSET_T > 2
 	if (isge4byteoffset(symptr->value_reg_or_op.value))
 	{
 	    byte |= OBJ_SZ_FOUR;
 	    size = 4;
 	}
 	else
-#endif
 	if (isge2byteoffset(symptr->value_reg_or_op.value))
 	{
 	    byte |= OBJ_SZ_TWO;
@@ -618,11 +598,7 @@ count_t size;
 {
     char buf[sizeof offset];
 
-#if SIZEOF_OFFSET_T > 2
     u4cn(buf, offset, size);
-#else
-    u2cn(buf, offset, size);
-#endif
     putobj1(buf[0]);
     if (size > 1)
 	putobj1(buf[1]);

@@ -169,10 +169,7 @@ PRIVATE void asline()
 	sprefix = oprefix = aprefix =
 	immcount = lastexp.data = lcjump = 0;
     sib = NO_SIB;
-#if SIZEOF_OFFSET_T > 2
-    fqflag =
-#endif
-	fdflag = fcflag = FALSE;
+    fqflag = fdflag = fcflag = FALSE;
     readline();
     getsym();
     if (sym != IDENT)		/* expect label, mnemonic or macro */

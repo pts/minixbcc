@@ -79,7 +79,6 @@ PUBLIC void genbin()
 		}
 		while ((remaining -= 0x2) != 0x0);
 	    }
-#if SIZEOF_OFFSET_T > 0x2
 	    if (fqflag)
 	    {
 		adrptr = databuf.fqbuf;
@@ -91,7 +90,6 @@ PUBLIC void genbin()
 		}
 		while ((remaining -= 0x4) != 0x0);
 	    }
-#endif
 	}
 	else
 	{
@@ -210,11 +208,7 @@ count_t size;
 {
     char buf[sizeof offset];
 
-#if SIZEOF_OFFSET_T > 0x2
     u4cn(buf, offset, size);
-#else
-    u2cn(buf, offset, size);
-#endif
     putbin(buf[0]);
     if (size > 0x1)
 	putbin(buf[1]);

@@ -664,8 +664,6 @@ PUBLIC void pfdb()
     fdflag = TRUE;
 }
 
-#if SIZEOF_OFFSET_T > 2
-
 /* FQB pseudo-op */
 
 PUBLIC void pfqb()
@@ -691,8 +689,6 @@ PUBLIC void pfqb()
     popflags = POPLONG | POPHI | POPLO | POPLC;
     fqflag = TRUE;
 }
-
-#endif /* SIZEOF_OFFSET_T > 2 */
 
 /* .GLOBL pseudo-op */
 

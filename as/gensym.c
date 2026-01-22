@@ -146,10 +146,8 @@ unsigned column;
 	listptr->cein[0] = 'E';
     else if (symptr->data & IMPBIT)
 	listptr->cein[0] = 'I';
-#if SIZEOF_OFFSET_T > 2
     build_2hex_number((unsigned) (symptr->value_reg_or_op.value >> 16),
 		      listptr->value);
-#endif
     build_2hex_number((unsigned) symptr->value_reg_or_op.value,
 		      listptr->value);
     writes((char *) listptr);

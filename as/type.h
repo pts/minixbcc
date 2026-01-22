@@ -30,7 +30,6 @@ typedef int fd_t;
 typedef unsigned char indcount_t;
 typedef unsigned long offset_t;
 typedef long soffset_t;
-#define SIZEOF_OFFSET_T 4	/* non-portable !! porting */
 typedef unsigned opcode_pt;
 typedef unsigned char opcode_t;
 typedef unsigned opsize_pt;
