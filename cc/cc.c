@@ -1,4 +1,4 @@
-/* bcc.c - driver for Bruce's C compiler */
+/* cc.c - driver for minixbcc (v3) BCC (Bruce's C compiler) */
 
 #define _POSIX_SOURCE
 
@@ -27,18 +27,15 @@
 
 typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
 
-#ifdef MC6809
-#define AS	"/local/bin/as09"
-#define CC1	"/local/bin/sc09"
-#define LD	"/local/bin/ld09"
-#else
-#define AS	"/local/bin/as"
-#define CC1	"/local/bin/sc"
-#define LD	"/local/bin/ld"
-#endif
+#define LIBDIR "/usr/minixbcc"
 
-#define CRTSO	"/usr/local/lib/i86/crtso.o"
-#define CRTSO3	"/usr/local/lib/i386/crtso.o"
+#define SC	"sc"
+#define AS	"as"
+#define LD	"ld"
+
+#define CRTSO	"crtso.o"
+#define LIBCA	"libc.a"
+
 #define TMPNAME	"/tmp/bccYYYYXXXX"
 
 #define ALLOC_UNIT	16	/* allocation unit for arg arrays */
@@ -57,6 +54,35 @@ PRIVATE struct arg_s ldargs;	/* = NULL */
 PRIVATE char *progname;
 PRIVATE struct arg_s tmpargs;	/* = NULL */
 PRIVATE bool_t verbose;		/* = FALSE */
+
+#define IS_HOST_BITS32 (sizeof(char *) >= 4)
+
+PRIVATE struct
+{
+    char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
+    char host;  /* '0' or '3' */
+    char slash;  /* '/' */
+    char tool[3];
+} path_tool = { LIBDIR, IS_HOST_BITS32 ? '3' : '0', '/', "??" };
+typedef char assert_path_tool_size[sizeof(path_tool.tool) >= sizeof(SC) && sizeof(path_tool.tool) >= sizeof(AS) && sizeof(path_tool.tool) >= sizeof(LD) ? 1 : -1];
+
+PRIVATE struct
+{
+    char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
+    char target;  /* '?'. Will be replaced with '0' or '3' */
+    char slash;  /* '/' */
+    char crtso[sizeof(CRTSO)];
+} path_crtso = { LIBDIR, '?', '/', CRTSO };
+
+PRIVATE struct
+{
+    char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
+    char target;  /* '?'. Will be replaced with '0' or '3' */
+    char slash;  /* '/' */
+    char crtso[sizeof(LIBCA)];
+} path_libca = { LIBDIR, '?', '/', LIBCA };
+
+PRIVATE char bits32_arg[3] = "-?";  /*The '?' will be replaced with '0' or '3'. */
 
 /* Who can say if the standard headers declared these? */
 int chmod P((const char *name, int mode));
@@ -102,12 +128,8 @@ char **argv;
     bool_t *argdone = my_malloc((unsigned) argc * sizeof *argdone, "argdone");
     bool_t as_only = FALSE;
     char *basename;
-#ifndef MC6809
-    bool_t bits32 = sizeof(char *) >= 4;
-    char *bits32_arg;
-#endif
+    bool_t bits32 = IS_HOST_BITS32;
     bool_t cc_only = FALSE;
-    char *crtso;
     bool_t debug = FALSE;
     bool_t echo = FALSE;
     unsigned errcount = 0;
@@ -127,6 +149,8 @@ char **argv;
     char *s_out;
     int status = 0;
 
+    path_tool.libdir[sizeof(path_tool.libdir) - 1] = path_crtso.libdir[sizeof(path_crtso.libdir) - 1] = path_libca.libdir[sizeof(path_libca.libdir) - 1] = '/';
+
     progname = argv[0];
     addarg(&asargs, "-u");
     addarg(&asargs, "-w");
@@ -140,14 +164,12 @@ char **argv;
 	if (arg[0] == '-' && arg[1] != 0 && arg[2] == 0)
 	    switch (arg[1])
 	    {
-#ifndef MC6809
 	    case '0':
 		bits32 = FALSE;
 		break;
 	    case '3':
 		bits32 = TRUE;
 		break;
-#endif
 	    case 'E':
 		prep_debug = TRUE;
 		++errcount;
@@ -206,6 +228,7 @@ char **argv;
 	else if (arg[0] == '-')
 	    switch (arg[1])
 	    {
+	    /* !! Add support for -l and -L, expand -l and -L, path absolute library name to ld */
 	    case 'A':
 		addarg(&asargs, arg + 2);
 		break;
@@ -262,27 +285,16 @@ char **argv;
     if (nifiles == 0)
     {
 	++errcount;
-	show_who("no input files");
+	show_who("no input files\n");
     }
     if (errcount != 0)
 	exit(1);
 
-#ifndef MC6809
-    if (bits32)
-    {
-	bits32_arg = "-3";
-	crtso = CRTSO3;
-    }
-    else
-    {
-	bits32_arg = "-0";
-	crtso = CRTSO;
-    }
+    path_crtso.target = path_libca.target = bits32_arg[1] = bits32 ? '3' : '0';
     addarg(&ccargs, bits32_arg);
     addarg(&asargs, bits32_arg);
     addarg(&ldargs, bits32_arg);
-    addarg(&ldargs, crtso);
-#endif
+    addarg(&ldargs, path_crtso.libdir);
     addarg(&asargs, "-n");
     if (ncsfiles < 2)
 	echo = FALSE;
@@ -325,7 +337,8 @@ char **argv;
 		    else
 			s_out = my_mktemp();
 		    addarg(&ccargs, arg);
-		    if (run(CC1, "-o", s_out, &ccargs) != 0)
+		    /* !! addarg(&ccargs, "-I...")); as last */
+		    if (run((strcpy(path_tool.tool, SC), path_tool.libdir), "-o", s_out, &ccargs) != 0)
 		    {
 			--ccargs.argc;
 			status = 1;
@@ -355,7 +368,7 @@ char **argv;
 		    arg[length - 1] = 's';
 		    addarg(&asargs, arg);
 		    addarg(&asargs, s_out);
-		    if (run(AS, "-o", o_out, &asargs) != 0)
+		    if (run((strcpy(path_tool.tool, AS), path_tool.libdir), "-o", o_out, &asargs) != 0)
 			status = 1;
 		    asargs.argc -= 2;
 		    if (ext == 'c')
@@ -375,8 +388,8 @@ char **argv;
 
     if (!cc_only && !as_only && status == 0)
     {
-	addarg(&ldargs, "-lc");
-	status = run(LD, "-o", f_out, &ldargs) != 0;
+	addarg(&ldargs, path_libca.libdir);
+	status = run((strcpy(path_tool.tool, LD), path_tool.libdir), "-o", f_out, &ldargs) != 0;
     }
     killtemps();
     return status;
