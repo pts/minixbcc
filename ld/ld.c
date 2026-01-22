@@ -9,23 +9,7 @@
 #include "type.h"
 #include "globvar.h"
 
-#define LIBNAME_MAX 32  /* Number of bytes without the directory name, the lib prefix and the .a suffix and the trailing NUL. */
-
 PRIVATE bool_t flag[128];  /* !! Use a smaller array on an ANSI system. */
-PRIVATE char libdir[] = "/usr/local/lib/";
-PRIVATE char lib86subdir[] = "i86/";
-PRIVATE char lib386subdir[] = "i386/";
-PRIVATE char libtmp[sizeof libdir - 1 + sizeof lib386subdir - 1 + LIBNAME_MAX + 1];
-PRIVATE char libprefix[] = "lib";
-PRIVATE char libsuffix[] = ".a";
-
-PRIVATE char *appendstr P((char *dest, char *src));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-PRIVATE char *appendstr(dest, src)
-char *dest;
-char *src;
-{
-	return strcpy(dest, src) + strlen(src);
-}
 
 PUBLIC int main(argc, argv)
 int argc;
@@ -77,20 +61,6 @@ char **argv;
 		    usage();
 		if (!parse_nonneg_lenient(argv[argn], 0  /* base */, &dynam_size))
 		    fatalerror("invalid dynamic memory size");
-		break;
-	    case 'l':		/* library name */
-		if (strlen(arg) > LIBNAME_MAX + 1) {
-		    refer();
-		    putstr("library name too long ");
-		    errexit(arg);
-		}
-		appendstr(appendstr(appendstr(appendstr(appendstr(libtmp,
-		    libdir),
-		    flag['3'] ? lib386subdir : lib86subdir),
-		    libprefix),
-		    arg + 2),
-		    libsuffix);
-		readsyms(libtmp);
 		break;
 	    case 'o':		/* output file name */
 		if (arg[2] != 0 || ++argn >= argc || outfilename != (char*) 0)
