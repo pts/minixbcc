@@ -218,7 +218,7 @@ void u2c2 P((char *buf, u16_pt offset));
 void u4c4 P((char *buf, u32_t offset));
 void u2cn P((char *buf, u16_pt offset, unsigned count));
 void u4cn P((char *buf, u32_t offset, unsigned count));
-bool_pt typeconv_init P((bool_pt big_endian, bool_pt long_big_endian));
+bool_pt typeconv_init P((bool_pt big_endian));
 
 #if 0
 /* library - fcntl.h */
