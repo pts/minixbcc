@@ -63,7 +63,7 @@ PRIVATE struct
     char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
     char host;  /* '0' or '3' */
     char slash;  /* '/' */
-    char tool[3];
+    char tool[15];  /* 4 would be enough for cpp, but being generous with 15 for custom tools. */
 } path_tool = { LIBDIR, IS_HOST_BITS32 ? '3' : '0', '/', "??" };
 typedef char assert_path_tool_size[sizeof(path_tool.tool) >= sizeof(SC) && sizeof(path_tool.tool) >= sizeof(AS) && sizeof(path_tool.tool) >= sizeof(LD) ? 1 : -1];
 
@@ -113,12 +113,14 @@ int wait P((int *status));
 int write P((int fd, char *buf, unsigned int nbytes));
 
 FORWARD void addarg P((register struct arg_s *argp, char *arg));
-FORWARD void fatal P((char *message));
+FORWARD void fatal P((void));
 FORWARD void killtemps P((void));
 FORWARD void *my_malloc P((unsigned size, char *where));
 FORWARD char *my_mktemp P((void));
 FORWARD void my_unlink P((char *name));
 FORWARD void outofmemory P((char *where));
+FORWARD int execute P((char **argv));
+FORWARD void printargvn P((char **argv));
 FORWARD int run P((char *prog, char *arg1, char *arg2, struct arg_s *argp));
 FORWARD void set_trap P((void));
 FORWARD void show_who P((char *message));
@@ -129,6 +131,7 @@ FORWARD void unsupported P((char *option, char *message));
 FORWARD void writen P((void));
 FORWARD void writes P((char *s));
 FORWARD void writesn P((char *s));
+FORWARD bool_t is_tool P((char *s));
 
 PUBLIC int main(argc, argv)
 int argc;
@@ -162,8 +165,28 @@ char **argv;
         path_crtso.libdir[sizeof(path_crtso.libdir) - 1] =
         path_libca.libdir[sizeof(path_libca.libdir) - 1] =
         path_include.libdir[sizeof(path_include.libdir) - 1] = '/';
-
     progname = argv[0];
+
+    if (is_tool(arg = argv[1]))  /* Example: bbcc ld -3 -o foo.o foo.s */
+    { runtool:
+	if (strlen(arg) > sizeof(path_tool.tool) - 1)
+	{
+		show_who("tool name too long: ");
+		writesn(arg);
+		fatal();
+	}
+	strcpy(path_tool.tool, arg);
+	*++argv = path_tool.libdir;
+	status = execute(argv);
+	return WIFEXITED(status) ? WEXITSTATUS(status) : 126;
+    }
+    if (arg[0] == '-' && arg[1] == 'v' && arg[2] == 0 && is_tool(arg = argv[2]))  /* Example: bbcc -v ld -3 -o foo.o foo.s */
+    {
+	++argv;
+	verbose = TRUE;
+	goto runtool;
+    }
+
     addarg(&asargs, "-u");
     addarg(&asargs, "-w");
     addarg(&ldargs, "-i");
@@ -469,8 +492,7 @@ char *arg;
     argp->argv[argp->argc] = NULL;
 }
 
-PRIVATE void fatal(message)
-char *message;
+PRIVATE void fatal()
 {
     killtemps();
     exit(1);
@@ -543,8 +565,46 @@ PRIVATE void outofmemory(where)
 char *where;
 {
     show_who("out of memory in ");
-    fatal(where);
+    writesn(where);
+    fatal();
 }
+
+PRIVATE int execute(argv)
+char **argv;
+{
+    int status;
+    register char **argvi;
+
+    if (verbose) {
+	for (argvi = argv; *argvi; ++argvi)
+	{
+	    writes(*argvi);
+	    writes(" ");
+	}
+	writen();
+    }
+    switch (fork())
+    {
+    case -1:
+	show_who("fork failed\n");
+	fatal();
+    case 0:
+	execv(argv[0], argv);
+	show_who("exec of ");
+	writes(argv[0]);
+	writes(" failed\n");
+	fatal();
+    default:
+	wait(&status);
+	return status;
+    }
+}
+
+PRIVATE void printargvn(argv)
+char **argv;
+{
+}
+
 
 PRIVATE int run(prog, arg1, arg2, argp)
 char *prog;
@@ -553,36 +613,13 @@ char *arg2;
 register struct arg_s *argp;
 {
     int i;
-    int status;
 
     if (argp->size == 0)
 	startarg(argp);
     argp->argv[0] = prog;
     argp->argv[1] = arg1;
     argp->argv[2] = arg2;
-    if (verbose)
-    {
-	for (i = 0; i < argp->argc; ++i)
-	{
-	    writes(argp->argv[i]);
-	    writes(" ");
-	}
-	writen();
-    }
-    switch (fork())
-    {
-    case -1:
-	show_who("fork failed");
-	fatal("");
-    case 0:
-	execv(prog, argp->argv);
-	show_who("exec of ");
-	writes(prog);
-	fatal(" failed");
-    default:
-	wait(&status);
-	return status;
-    }
+    return execute(argp->argv);
 }
 
 PRIVATE void set_trap()
@@ -622,8 +659,8 @@ int signum;
 {
     signal(signum, SIG_IGN);
     if (verbose)
-	show_who("caught signal");
-    fatal("");
+	show_who("caught signal\n");
+    fatal();
 }
 
 PRIVATE void unsupported(option, message)
@@ -653,4 +690,14 @@ char *s;
 {
     writes(s);
     writen();
+}
+
+PRIVATE bool_t is_tool(s)
+register char *s;
+{
+    if (!s || *s == '-' || *s == '\0') return FALSE;
+    for (; *s != '\0'; ++s) {
+	if (*s == '/' || *s == '.') return FALSE;
+    }
+    return TRUE;
 }
