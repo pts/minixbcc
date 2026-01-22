@@ -28,7 +28,7 @@ char **argv;
     ioinit(argv[0]);
     objinit();
     syminit();
-    typeconv_init(0  /* LD_BIG_ENDIAN */);  /* !! size optimization: Hardcode these 0s to typeconv.c. */
+    typeconv_init();
     bits32 = sizeof(char *) >= 4;
     outfilename = (char*) 0;
     for (argn = 1; argn < argc; ++argn)

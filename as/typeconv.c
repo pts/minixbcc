@@ -181,8 +181,7 @@ u4_t offset;
 
 /* initialise type conversion, return FALSE if it cannot be handled */
 
-PUBLIC bool_pt typeconv_init(big_endian)
-bool_pt big_endian;
+PUBLIC bool_pt typeconv_init()
 {
     u2_pt conv2;
     u4_pt conv4;
@@ -193,15 +192,7 @@ bool_pt big_endian;
 	/* dumb preprocessor's don't accept sizeof in #if expressions */
 	return FALSE;
 
-    if (big_endian)
-    {
-	conv2ptr = (conv4ptr = "\1\2\3\4") + 2;
-	conv4ptr = "\3\4\1\2";
-    }
-    else
-    {
-	conv2ptr = conv4ptr = "\4\3\2\1";
-    }
+    conv2ptr = conv4ptr = "\4\3\2\1";
     conv2 = c2u2_00(conv2ptr);
     conv4 = c4u4_00(conv4ptr);
     if (conv2 == 0x0304)

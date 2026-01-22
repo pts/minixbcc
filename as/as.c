@@ -48,7 +48,7 @@ char **argv;
     initbin();
     initobj();
     initsource();		/* only nec to init for unsupported mem file */
-    typeconv_init(0  /* AS_BIG_ENDIAN */);
+    typeconv_init();
     warn.global = TRUE;		/* constant */
     process_args(argc, argv);
     initscan();

@@ -158,7 +158,7 @@ void u2c2 P((char *buf, u2_pt offset));
 void u4c4 P((char *buf, u4_t offset));
 void u2cn P((char *buf, u2_pt offset, unsigned count));
 void u4cn P((char *buf, u4_t offset, unsigned count));
-bool_pt typeconv_init P((bool_pt big_endian));
+bool_pt typeconv_init P((void));
 
 /* writebin.c */
 void writebin P((char *outfilename, bool_pt argsepid, bool_pt argbits32,
