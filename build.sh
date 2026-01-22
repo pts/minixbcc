@@ -131,8 +131,7 @@ if test "$1" = dcc0 || test "$1" = dcc3; then  # On Minix i86 or i386, autodetec
     "$cc" -v -o t t.c 2>&1 | (while read acmd arest; do  # Use `-v' to see which commands cc runs.
       case "$acmd" in
        */asld) test "$1" = dcc0 && m=ack0 ;;
-       */ncpp) if test "$1" = dcc0; then m=acka0; else m=acka3; fi ;;  # In Minix 1.7.0 i386, the preprocessor is /usr/lib/em_cemcom.ansi.
-       *.ansi) if test "$1" = dcc0; then m=acka0; else m=acka3; fi ;;  # In Minix 1.7.0 i386, the preprocessor is /usr/lib/em_cemcom.ansi.
+       */ncpp | *.ansi) if test "$1" = dcc0; then m=acka0; else m=acka3; fi ;;  # In Minix 1.7.0 i386, the preprocessor is /usr/lib/em_cemcom.ansi.
        */sc | */bcc-*) if test "$1" = dcc0; then m=bcc0; else m=bcc3; fi ;;
       esac
     done; echo "$m" >t.out))
