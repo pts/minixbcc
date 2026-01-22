@@ -139,38 +139,30 @@ if test "$1" = dcc0 || test "$1" = dcc3; then  # On Minix i86 or i386, autodetec
   shift; set "$m" "$@"
 fi
 
-if test "$1" = cc; then  # For cross-compiling with cc (e.g. on Linux).
+if test "$1" = gcc || test "$1" = clang || test "$1" = cc; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), or a generic Unix C compiler (cc).
+  # Assumptions about the host system:
+  # * .text can be 75 KiB. This doesn't hold for ELKS and Minix i86.
+  # * There is 140 KiB of virtual memory for each process (total of: .text, .rodata, .data, .bss, stack). This doesn't hold for ELKS and Minix i86.
+  # * malloc(...) can allocate 192 KiB on top of that. This doesn't hold for ELKS and Minix i86.
+  # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used.
+  if test "$1" = cc; then
+    cc=cc
+    cflags="-O"
+  else
+    cc="$1"  # gcc or clang.
+    cflags="-m32 -s -O2 -Werror -Wall -W"  # !! Does it all work with -m64? What changes if sizeof(long) == 8? Shouldn't we use int instead?
+  fi
+
+  "$cc" $cflags -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+  "$cc" $cflags -DMINIX_SYNTAX -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+  "$cc" $cflags -DDEBUG_SIZE_NOPAD -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+  "$cc" $cflags -o cr.cross cr/cr.c || exit "$?"
+  "$cc" $cflags -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+
   sc=./sc.cross
   as=./as.cross
   ld=./ld.cross
   cr=./cr.cross
-
-  # !! Does it all work with -m64? What changes if sizeof(long) == 8? Shouldn't we use int instead?
-  # !! -DDEFAULT_INCLUDE_DIR='"include"' 
-  cc -O -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  cc -O -DMINIX_SYNTAX -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  cc -O -DDEBUG_SIZE_NOPAD -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  cc -O -o cr.cross cr/cr.c || exit "$?"
-  cc -O -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
-
-  h=cross  # Host system is a cross-compiler. Other values: h=0 means Minix i86; h=3 means Minix i386.
-fi
-
-if test "$1" = gcc || test "$1" = clang; then  # For cross-compiling with GCC (gcc) (e.g. on Linux, FreeBSD, macOS).
-  gcc="$1"  # gcc or clang.
-  sc=./sc.cross
-  as=./as.cross
-  ld=./ld.cross
-  cr=./cr.cross
-
-  # !! Does it all work with -m64? What changes if sizeof(long) == 8? Shouldn't we use int instead?
-  # !! -DDEFAULT_INCLUDE_DIR='"include"' 
-  "$gcc" -m32 -s -O2 -Werror -Wall -W -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  "$gcc" -m32 -s -O2 -Werror -Wall -W -DMINIX_SYNTAX -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  "$gcc" -m32 -s -O2 -Werror -Wall -W -DDEBUG_SIZE_NOPAD -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  "$gcc" -m32 -s -O2 -Werror -Wall -W -o cr.cross cr/cr.c || exit "$?"
-  "$gcc" -m32 -s -O2 -Werror -Wall -W -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
-
   h=cross  # Host system is a cross-compiler. Other values: h=0 means Minix i86; h=3 means Minix i386.
 fi
 
@@ -261,7 +253,7 @@ if test "$1" = acka0 || test "$1" = acka3; then  # Minix >=1.7.0 i86 ACK ANSI C 
   # /usr/lib/ncpp -D_EM_WSIZE=2 -D_EM_PSIZE=2 -D_EM_SSIZE=2 -D_EM_LSIZE=4 -D_EM_FSIZE=4 -D_EM_DSIZE=8 -D__ACK__ -D__minix -D__i86 hello.c >/tmp/cc230000.i
   smallmemflag=-DSMALLMEM
   test "$1" = acka3 && smallmemflag=
-  
+
   rm -f sc.mx
   (cd sc && cc -i -s -O -m $smallmemflag -DACKFIX -o ../sc.mx mxmalloc.c bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
   (cd as && cc -i -s -O -m -DMINIX_SYNTAX $smallmemflag -DMINIXHEAP -DACKFIX0 -o ../as.mx as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
@@ -497,7 +489,7 @@ for a03 in 0 3; do
     "$cmp" "$a03"/"$b".o "$a03"g/"$b".n || exit "$?"  # Compare object file (*.o) to the relavant v3 golden file (*.m).
     rm -f "$a03"/"$b".s || exit "$?"
   done
-  
+
   # ($earlstdiodir) Not compiling estdio.
   # ($localdir) No directory /usr/src/lib/local .
 
