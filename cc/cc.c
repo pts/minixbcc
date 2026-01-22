@@ -50,7 +50,7 @@ struct arg_s
 };
 
 PRIVATE struct arg_s asargs;	/* = NULL */
-PRIVATE struct arg_s ccargs;	/* = NULL */
+PRIVATE struct arg_s scargs;	/* = NULL */
 PRIVATE struct arg_s ldargs;	/* = NULL */
 PRIVATE char *progname;
 PRIVATE struct arg_s tmpargs;	/* = NULL */
@@ -140,7 +140,7 @@ char **argv;
     bool_t as_only = FALSE;
     char *basename;
     bool_t bits32 = IS_HOST_BITS32;
-    bool_t cc_only = FALSE;
+    bool_t sc_only = FALSE;
     bool_t debug = FALSE;
     bool_t echo = FALSE;
     unsigned errcount = 0;
@@ -196,7 +196,7 @@ char **argv;
 		/* unsupported( arg, "optimize" ); */  /* Ignore, BCC doesn't support optimizatoin. */
 		break;
 	    case 'S':
-		cc_only = TRUE;
+		sc_only = TRUE;
 		break;
 	    case 'V':
 		echo = TRUE;
@@ -279,15 +279,15 @@ char **argv;
 		break;
 	    case 'B':
 		++errcount;
-		unsupported(arg, "substituted cc");
+		unsupported(arg, "substituted sc");
 		break;
 	    case 'C':
-		addarg(&ccargs, argval);
+		addarg(&scargs, argval);
 		break;
 	    case 'D':
 	    case 'U':
 	    case 'I':
-		addarg(&ccargs, arg);  /* !! Rename to scargs. */
+		addarg(&scargs, arg);  /* !! Rename to scargs. */
 		break;
 	    case 'L':
 		/*addarg(&ldargs, argval);*/  /* !! Implement this in this file. */  /* !! Add support for -l and -L, expand -l and -L, path absolute library name to ld */
@@ -321,7 +321,7 @@ char **argv;
 		++ncsfiles;
 	}
     }
-    nfilters = prep_debug + prep_only + cc_only + as_only;
+    nfilters = prep_debug + prep_only + sc_only + as_only;
     if (nfilters != 0)
     {
 	if (nfilters > 1)
@@ -344,8 +344,8 @@ char **argv;
 	exit(1);
 
     path_crtso.target = path_libca.target = bits32_arg[1] = bits32 ? '3' : '0';
-    addarg(&ccargs, bits32_arg);
-    addarg(&ccargs, path_include.flag);  /* Add after -I... args above, so that it has lower priority. */
+    addarg(&scargs, bits32_arg);
+    addarg(&scargs, path_include.flag);  /* Add after -I... args above, so that it has lower priority. */
     addarg(&asargs, bits32_arg);
     addarg(&ldargs, bits32_arg);
     addarg(&ldargs, path_crtso.libdir);  /* !! Don't add if -nostdlib is specified. */
@@ -378,7 +378,7 @@ char **argv;
 		    s_out = stralloc(arg);
 		else
 		{
-		    if (cc_only)
+		    if (sc_only)
 		    {
 			if (nofiles != 0)
 			    s_out = f_out;
@@ -390,21 +390,21 @@ char **argv;
 		    }
 		    else
 			s_out = my_mktemp();
-		    addarg(&ccargs, arg);
-		    if (run((strcpy(path_tool.tool, SC), path_tool.libdir), "-o", s_out, &ccargs) != 0)
+		    addarg(&scargs, arg);
+		    if (run((strcpy(path_tool.tool, SC), path_tool.libdir), "-o", s_out, &scargs) != 0)
 		    {
-			--ccargs.argc;
+			--scargs.argc;
 			status = 1;
-			if (!cc_only)
+			if (!sc_only)
 			{
 			    --tmpargs.argc;
 			    my_unlink(s_out);
 			}
 			continue;
 		    }
-		    --ccargs.argc;
+		    --scargs.argc;
 		}
-		if (!cc_only)
+		if (!sc_only)
 		{
 		    if (as_only)
 		    {
@@ -439,7 +439,7 @@ char **argv;
 	}
     }
 
-    if (!cc_only && !as_only && status == 0)
+    if (!sc_only && !as_only && status == 0)
     {
 	addarg(&ldargs, path_libca.libdir);  /* !! Don't add if -nostdlib is specified. */
 	status = run((strcpy(path_tool.tool, LD), path_tool.libdir), "-o", f_out, &ldargs) != 0;
