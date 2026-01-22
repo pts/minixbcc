@@ -9,7 +9,11 @@
 #include "type.h"
 #include "globvar.h"
 
-PRIVATE bool_t flag[128];  /* !! Use a smaller array on an ANSI system. */
+#if 'z' - 'a' != 26 - 1
+#  error ASCII system expected for flag_ary.
+#endif
+PRIVATE bool_t flag_ary[26];  /* Zero-initialized. */
+#define FLAG(c) (flag_ary[(c) - 'a'])
 
 PUBLIC int main(argc, argv)
 int argc;
@@ -18,12 +22,14 @@ char **argv;
     register char *arg;
     int argn;
     char *outfilename;
+    char c;
+    bool_t bits32;
 
     ioinit(argv[0]);
     objinit();
     syminit();
     typeconv_init(0  /* LD_BIG_ENDIAN */, 0  /* LONG_BIG_ENDIAN */);  /* !! size optimization: Hardcode these 0s to typeconv.c. */
-    flag['3'] = sizeof(char *) >= 4;
+    bits32 = sizeof(char *) >= 4;
     outfilename = (char*) 0;
     for (argn = 1; argn < argc; ++argn)
     {
@@ -31,23 +37,30 @@ char **argv;
 	if (*arg != '-')
 	    readsyms(arg);
 	else
-	    switch (arg[1])
+	    switch (c = arg[1])
 	    {
 	    case '0':		/* use 16-bit libraries */
+		bits32 = 0;
+		goto check_noparam;
+		break;
 	    case '3':		/* use 32-bit libraries */
+		bits32 = 1;
+	    check_noparam:
+		if (arg[2] != 0) usage();
+		break;
 	    case 'M':		/* print symbols linked */
+		c = 'a';
+		/* Fallthrough. */
 	    case 'i':		/* separate I & D output */
 	    case 'm':		/* print modules linked */
 	    case 's':		/* strip symbols */
 	    case 'z':		/* unmapped zero page */
 		if (arg[2] == 0)
-		    flag[(unsigned char)arg[1]] = TRUE;
+		    FLAG((unsigned char)c) = TRUE;
 		else if (arg[2] == '-' && arg[3] == 0)
-		    flag[(unsigned char)arg[1]] = FALSE;
+		    FLAG((unsigned char)c) = FALSE;
 		else
 		    usage();
-		if (arg[1] == '0')	/* flag 0 is negative logic flag 3 */
-		    flag['3'] = !flag['0'];
 		break;
 	    case 'T':		/* text base address; default: 0 */
 		if (arg[2] != 0 || ++argn >= argc)
@@ -71,13 +84,13 @@ char **argv;
 		usage();
 	    }
     }
-    linksyms(flag['r']);
+    linksyms(FLAG('r'));
     if (outfilename == (char*) 0)
 	outfilename = "a.out";
-    writebin(outfilename, flag['i'], flag['3'], flag['s'], flag['z']);
-    if (flag['m'])
+    writebin(outfilename, FLAG('i'), bits32, FLAG('s'), FLAG('z'));
+    if (FLAG('m'))
 	dumpmods();
-    if (flag['M'])
+    if (FLAG('a')  /* 'M' */)
 	dumpsyms();
     flusherr();
     return errcount ? 1 : 0;
