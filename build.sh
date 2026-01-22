@@ -46,7 +46,7 @@ test "$ZSH_VERSION" && set -y 2>/dev/null  # SH_WORD_SPLIT for zsh(1). It's an i
 # test "$0" = "${0%/*}" || cd "${0%/*}" || exit "$?"
 
 if test x"$1" = x--overwrite-golden; then
-  cmp=cp; diff=cp; tcmp="$cmp"; tdiff="$diff"; shift  # Overwrite golden files *.m, *.n, *.d, *.d0, *.r0, *.n0. This is dangerous.
+  cmp=cp; diff=cp; tcmp="$cmp"; tdiff="$diff"; shift  # Overwrite golden files (*r, *.n, *.d). This is dangerous.
   exit 5  # !! Dangerous.
 elif test x"$1" = x--nocmp; then
   cmp=true; diff=true; tcmp="$cmp"; tdiff="$diff"; shift  # Ignore golden files.
@@ -54,6 +54,9 @@ elif test x"$1" = x--notoolscmp; then
   cmp=cmp; diff=diff; tcmp=true; tdiff=true; shift  # Ignore golden files for tools, compare generated files to non-tools golden files.
 elif test x"$1" = x--toolsecho; then  # This works with Linux /bin/sh, but not with Minix /bin/sh.
   cmp=true; diff=true; tcmp=tcmp; tdiff=tdiff; shift  # Compare generated files to non-tools golden files.
+  : >tools.diff || exit "$?"
+elif test x"$1" = x--toolscp; then  # This works with Linux /bin/sh, but not with Minix /bin/sh.
+  cmp=true; diff=true; tcmp=cp; tdiff=cp; shift  # Compare generated files to non-tools golden files. Overwrite golden files (*.r, *.n, *.d) for tools, which is dangerous.
   : >tools.diff || exit "$?"
 elif test x"$1" = x--cmp; then
   cmp=cmp; diff=diff; tcmp="$cmp"; tdiff="$diff"; shift  # Compare generated files to golden files.
