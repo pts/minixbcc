@@ -65,11 +65,6 @@ PRIVATE struct inclist incfirst;
 				/* at next in list for <> */
 				/* -I directories are put in list */
 				/* between first and last */
-PRIVATE struct inclist inclast =
-{
-    DEFAULT_INCLUDE_DIR,
-    (struct inclist*) 0,
-};
 PRIVATE fastin_t inclevel;	/* nest level of include files */
 				/* depends on zero init */
 PRIVATE struct fbufstruct *inputbuf;	/* current input file buffer */
@@ -201,7 +196,7 @@ PUBLIC void errorloc()
 	}
     }
     infbuf->fcb.includer = input.includer;
-    while ((infbuf = infbuf->fcb.includer) != (struct fbufstruct*)0)
+    while ((infbuf = infbuf->fcb.includer) != (struct fbufstruct*) 0)
     {
 	outstr(" (from ");
 	outstr(infbuf->fname);
@@ -462,7 +457,7 @@ char *argv[];
     memset(flag, 0, sizeof flag);
     flag['3'] = sizeof (int) >= 4;
     fname = "stdin";
-    (incptr = &incfirst)->incnext = &inclast;
+    incptr = &incfirst;  /* (incptr = &incfirst)->incnext = (struct inclist*) 0; */  /* incfirst->incnext is already (struct inclist*) 0, because of zero-initialization */
     initout();
     for (argn = 1; argn < argc; ++argn)
     {
