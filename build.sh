@@ -3,15 +3,13 @@
 # build.sh: build the BCC compiler tools, libc and extr tools
 # by pts@fazekas.hu at Thu Jan  8 15:51:45 CET 2026
 #
+# !! add driver tool command-line
+# !! add driver flag -E to invoke CPP
 # !! test isatty implementations, espacially the assembly implementation in sc
-# !! fix Minix >=1.7.4 compatibility of isatty.c for cpp.
 # !! for some systems, set S_ALIGNMENT=1 in ld/config.h
 # !! doc: Minix 1.7.0 has the ANSI C compiler (ncc) as /usr/bin/cc  ; make it work
 # !! (after porting to ack) Remove the `t' symbols from `nm as.mx' etc. added by the assembler; use symbols starting with . instead?
-# !! Fix all the ACK C compiler warnings in as, ld and cpp.
-# !! Fix all the ACK C compiler warnings in sc.
 # !! Make the `bcc -i` and `ld -i` (separate I&D) default independent of the BCC driver version.
-# !! Don't use cpp in c.sh, convert .x files.
 # !! Port to -m64.
 # !! Port to big-endian architecture.
 # !! Port to sizeof(long) == 8.
@@ -19,7 +17,7 @@
 # !! Convert .x to .s, no need for preprocessor.
 # !! Is the `j' jump output of bcc3 compatible with as0? (as0 expects jmp as short jump.)
 # !! Port isatty.c to Minix 2.0.4 (from Minix 1.5.10).
-# !! Add the remaining matches to cpp.
+# !! Add the remaining patches to cpp.
 # !! strtol -1 / 2 sign incompatibility with the i86 /local/bin/sc (== -1); the other one returns 0.
 # !! replace divisions with right shifts (BCC is not smart enough to optimize it, it also means something different)
 # !! fix sar code generation bug in bcc3 for div2(...), div4(...) etc. in bcc3

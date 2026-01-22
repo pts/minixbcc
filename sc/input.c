@@ -448,7 +448,8 @@ char *argv[];
     char *fname;
     struct inclist *incnew;
     struct inclist *incptr;
-    bool_t flag[128];
+    bool_t flag[128];  /* !! Make this smaller. It's only used for a few flags. */
+    void (*argfunc)();
 
 #if 0
     lineptr = "\n";		/* empty line in case error message */
@@ -502,25 +503,27 @@ char *argv[];
 		    flag['3'] = TRUE + FALSE - flag['0'];
 		break;
 	    case 'D':
-		definestring(arg + 2);
+		argfunc = definestring;
+	    do_argfunc:
+		if (arg[2] == 0) { if (++argn >= argc) usage(); arg = argv[argn]; } else { arg += 2; }
+		(*argfunc)(arg);
 		break;
+	    case 'U':
+		argfunc = undefinestring;
+		goto do_argfunc;
+	    case 'o':
+		argfunc = openout;
+		goto do_argfunc;
 	    case 'I':
+		if (arg[2] == 0) { if (++argn >= argc) usage(); arg = argv[argn]; } else { arg += 2; }
 		(incnew = (struct inclist *) ourmalloc(sizeof *incnew))
-			  ->incdirname = arg + 2;
+			  ->incdirname = arg;
 #ifdef TS
 ++ts_n_includelist;
 ts_s_includelist += sizeof *incnew;
 #endif
 		incnew->incnext = incptr->incnext;
 		incptr = incptr->incnext = incnew;
-		break;
-	    case 'U':
-		undefinestring(arg + 2);
-		break;
-	    case 'o':
-		if (arg[2] != 0 || ++argn >= argc)
-		    usage();
-		openout(argv[argn]);
 		break;
 	    default:
 		usage();

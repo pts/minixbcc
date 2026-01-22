@@ -241,10 +241,17 @@ char **argv;
 	    case 'D':
 	    case 'U':
 	    case 'I':
-	    missing_parameter:
-		++errcount;
-		show_who("missing value for ");
-		writen(arg);
+		if (argc == 1)
+		{ missing_parameter:
+		    ++errcount;
+		    show_who("missing value for ");
+		    writen(arg);
+		    break;
+		}
+		addarg(&scargs, arg);
+		--argc;
+		addarg(&scargs, *++argv);  /* sc supports receiving these flags (and also -o) as 1 or 2 arguments. Here we can only send as 2. */
+		*++argdone = TRUE;
 		break;
 	    case 'A':
 	    case 'B':
@@ -287,7 +294,7 @@ char **argv;
 	    case 'D':
 	    case 'U':
 	    case 'I':
-		addarg(&scargs, arg);  /* !! Rename to scargs. */
+		addarg(&scargs, arg);
 		break;
 	    case 'L':
 		/*addarg(&ldargs, argval);*/  /* !! Implement this in this file. */  /* !! Add support for -l and -L, expand -l and -L, path absolute library name to ld */
