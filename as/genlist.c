@@ -279,9 +279,6 @@ PRIVATE void listcode()
 	{
 	    --count;
 	    build_1hex_number(postb,
-#ifdef MC6809
-			      count == 0 ? listptr->displ1 :
-#endif
 			      listptr->postb);
 	}
 #ifdef I80386

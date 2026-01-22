@@ -17,10 +17,6 @@
 # define outlbranch() outop3str( "b")
 # define outsbranch() outop2str( "j")
 #endif
-#ifdef MC6809
-# define outlbranch() outop3str( "LB")
-# define outsbranch() outop2str( "B")
-#endif
 
 #define MAXVISLAB 32
 
@@ -44,15 +40,6 @@ PRIVATE char scondnames[][2] =	/* names of short condition codes */
     { 'e', ' ', }, { 'n', 'e', }, { ' ', ' ', }, { 'n', 0, },
     { 'l', ' ', }, { 'g', 'e', }, { 'l', 'e', }, { 'g', ' ', },
     { 'b', ' ', }, { 'a', 'e', }, { 'b', 'e', }, { 'a', ' ', }, 
-};
-#endif
-
-#ifdef MC6809
-PRIVATE char condnames[][2] =	/* names of condition codes */
-{
-    { 'E', 'Q', }, { 'N', 'E', }, { 'R', 'A', }, { 'R', 'N', },
-    { 'L', 'T', }, { 'G', 'E', }, { 'L', 'E', }, { 'G', 'T', },
-    { 'L', 'O', }, { 'H', 'S', }, { 'L', 'S', }, { 'H', 'I', },
 };
 #endif
 
@@ -203,27 +190,8 @@ label_t label;
 			*(labpatch + 1) =
 			    *(cnameptr = scondnames[(int) labptr->labcond]);
 #endif
-#ifdef MC6809
-# ifdef NEW_MC6809 /* patch JMP\t> or LBCC\t to BCC \t */
-			*labpatch = 'B';
-			*(labpatch + 4) = '\t';	/* redundant unless JMP */
-			*(labpatch + 1) =
-			    *(cnameptr = condnames[(int) labptr->labcond]);
-# else
-			if (labptr->labcond == RA)
-			    memcpy(labpatch, "BRA\t\t", 5);
-			else
-			    *labpatch = '\t';
-			goto over;
-# endif
-#endif
 			*(labpatch + 2) = *(cnameptr + 1);
 			*(labpatch + 3) = ' ';
-#ifdef MC6809
-# ifndef NEW_MC6809 /* patch JMP\t> or LBCC\t to BCC \t */
-		over: ;		/* temp regression test kludge */
-# endif
-#endif
 			nlonger = jcclonger;
 			if (labptr->labcond == RA)
 			    nlonger = jmplonger;
@@ -328,10 +296,6 @@ label_t label;
 	if (i386_32)
 	    bumplc();
 #endif
-#ifdef MC6809
-	outcond(cond);
-	bumplc();
-#endif
     }
     outlabel(label);
     outnl();
@@ -364,22 +328,6 @@ PUBLIC struct symstruct *namedlabel()
     }
     return symptr;
 }
-
-#ifdef MC6809
-
-/* print condition code name */
-
-PUBLIC void outcond(cond)
-ccode_pt cond;
-{
-    char *cnameptr;
-
-    outbyte(*(cnameptr = condnames[(ccode_t) cond]));
-    outbyte(*(cnameptr + 1));
-    outtab();
-}
-
-#endif
 
 /* print label */
 
@@ -421,12 +369,6 @@ label_t label;
 	outlabel(label);
 	outnl();
     }
-#endif
-#ifdef MC6809
-    outsbranch();
-    outcond(cond);
-    outlabel(label);
-    outnl();
 #endif
 }
 

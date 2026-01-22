@@ -11,8 +11,3 @@
 # define AS_BIG_ENDIAN 0
 # define LONG_BIG_ENDIAN 0
 #endif
-
-#ifdef MC6809
-# define AS_BIG_ENDIAN 1	/* byte order in words is high-low */
-# define LONG_BIG_ENDIAN 1	/* byte order in longs is high-low */
-#endif

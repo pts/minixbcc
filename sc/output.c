@@ -40,11 +40,6 @@ PRIVATE fastin_t outstage;	/* depends on zero init */
 
 FORWARD void errorsummary P((void));
 FORWARD void errsum1 P((void));
-#ifdef MC6809
-#ifdef DEBUG
-FORWARD void outvaldigs P((uvalue_t num));
-#endif
-#endif
 
 PUBLIC void bugerror(message)
 char *message;
@@ -534,58 +529,6 @@ unsigned num;
     str[sizeof str - 1] = 0;
     outstr(pushudec(str + sizeof str - 1, num));
 }
-
-#ifdef MC6809
-#ifdef DEBUG
-
-/* print unsigned value, hex format (like outhex except value_t is larger) */
-
-PUBLIC void outuvalue(num)
-uvalue_t num;
-{
-#ifdef HEXSTARTCHAR
-    if (num >= 10)
-	outbyte(HEXSTARTCHAR);
-#endif
-    outvaldigs(num);
-#ifdef HEXENDCHAR
-    if (num >= 10)
-	outbyte(HEXENDCHAR);
-#endif
-}
-
-/* print unsigned value, hex format with digits only (no hex designator) */
-
-PRIVATE void outvaldigs(num)
-register uvalue_t num;
-{
-    if (num >= 0x10)
-    {
-	outvaldigs(num / 0x10);
-	num %= 0x10;
-    }
-    outbyte(hexdigits[(fastin_t) num]);
-}
-
-/* print signed value, hex format (like outshex except value_t is larger) */
-
-PUBLIC void outvalue(num)
-register value_t num;
-{
-    if (num < 0)
-    {
-	outminus();
-#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */
-	num = ~num + 1;  /* It works with any C compiler doing 2s complement arithmetic. */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
-#else
-	num = -num;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
-#endif
-    }
-    outuvalue((uoffset_t) num);
-}
-
-#endif /* DEBUG */
-#endif /* MC6809 */
 
 /* push decimal digits of an unsigned onto a stack of chars */
 

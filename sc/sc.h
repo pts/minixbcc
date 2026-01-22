@@ -2,9 +2,6 @@
 
 /* Copyright (C) 1992 Bruce Evans */
 
-#ifdef MC6809
-#define DIRECTPAGE  0x01	/* modifier on global to show in dpseg */
-#endif
 #define EXTERNAL    0x02	/* external */
 #define STATIC      0x04
 

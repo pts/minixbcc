@@ -166,10 +166,6 @@ PRIVATE smalin_t regoffset[] = {0, 0, 0, 1, 2, 3, 0, 0, 0, 4, 5};
  /* CONSTANT, BREG, ax = DREG, bx = INDREG0, si = INDREG1, di = INDREG2 */
  /* LOCAL, GLOBAL, STACKREG, cx = DATREG1, dx = DATREG2 */
 #endif
-#ifdef MC6809
-PRIVATE smalin_t regoffset[] = {0, 0, 0, 1, 3, 2};
- /* CONSTANT, BREG, DREG, XREG = INDREG0, UREG = INDREG1, YREG = INDREG2 */
-#endif
 
 PUBLIC void savereturn(savelist, saveoffset)
 store_pt savelist;
@@ -181,10 +177,6 @@ offset_t saveoffset;
 
     if (savelist == 0)
 	return;
-#ifdef MC6809 /* must check this */
-    if (savelist == XREG || savelist == INDREG1)
-	saveoffset -= accregsize;	/* patch for DREG/YREG not saved */
-#endif
     for (reg = 1, regoffptr = regoffset; reg != 0; ++regoffptr, reg <<= 1)
 	if (reg & savelist)
 	{
@@ -202,14 +194,6 @@ offset_t saveoffset;
 	    outindstackreg();
 # endif
 	    outncregname(reg);
-#endif
-#ifdef MC6809
-	    if (reg == YREG)
-		bumplc();
-	    outregname(reg);
-	    outtab();
-	    outoffset(spoffset - sp);
-	    outncspregname();
 #endif
 	}
 }

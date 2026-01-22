@@ -31,12 +31,7 @@ typedef unsigned char indcount_t;
 #ifdef I80386
 typedef unsigned long offset_t;
 typedef long soffset_t;
-# define SIZEOF_OFFSET_T 4	/* non-portable */
-#endif
-#ifdef MC6809
-typedef unsigned offset_t;
-typedef int soffset_t;
-# define SIZEOF_OFFSET_T 2	/* but sizeof (offset_t) often breaks cpp */
+# define SIZEOF_OFFSET_T 4	/* non-portable !! porting */
 #endif
 typedef unsigned opcode_pt;
 typedef unsigned char opcode_t;

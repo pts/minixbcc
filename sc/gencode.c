@@ -74,33 +74,6 @@ PUBLIC char *localregstr = "sp";
 PUBLIC char *stackregstr = "sp";
 #endif
 
-#ifdef MC6809
-PUBLIC store_pt allregs = BREG | DREG | INDREG0 | INDREG1 | INDREG2;
-PUBLIC store_pt allindregs = INDREG0 | INDREG1 | INDREG2;
-PUBLIC uoffset_t alignmask = ~(uoffset_t) 0x0000;
-PUBLIC bool_t arg1inreg = TRUE;
-PUBLIC store_pt calleemask = INDREG1 | INDREG2;
-PUBLIC bool_t callersaves = TRUE;
-PUBLIC char *callstring = "JSR\t>";
-PUBLIC store_pt doubleargregs = DREG | INDREG0 | INDREG1 | INDREG2;
-PUBLIC store_pt doubleregs = DREG | INDREG0 | INDREG1 | INDREG2;
-PUBLIC store_pt doublreturnregs = DREG | INDREG0 | INDREG1 | INDREG2;
-PUBLIC offset_t jcclonger = 2;
-PUBLIC offset_t jmplonger = 1;
-PUBLIC char *jumpstring = "JMP\t>";
-PUBLIC char *regpulllist = "CC1B1D2X2U2Y2DP1PC2";
-PUBLIC char *regpushlist = "PC2DP1Y2U2X2D2B1CC1";
-PUBLIC store_pt regregs = INDREG1 | INDREG2;
-
-PUBLIC char *acclostr = "B";
-PUBLIC char *accumstr = "D";
-PUBLIC char *badregstr = "Q";
-PUBLIC char *ireg0str = "X";
-PUBLIC char *ireg1str = "U";
-PUBLIC char *ireg2str = "Y";
-PUBLIC char *localregstr = "S";
-#endif
-
 PUBLIC uoffset_t accregsize = 2;
 #ifdef FRAMEPOINTER
 PUBLIC uoffset_t frameregsize = 2;
@@ -110,7 +83,6 @@ PUBLIC uoffset_t opregsize = 2;
 PUBLIC uoffset_t pshregsize = 2;
 PUBLIC uoffset_t returnadrsize = 2;
 
-#ifndef MC6809
 PUBLIC uvalue_t intmaskto = 0xFFFFL;
 PUBLIC uvalue_t maxintto = 0x7FFFL;
 PUBLIC uvalue_t maxlongto = 0x7FFFFFFFL;
@@ -119,7 +91,6 @@ PUBLIC uvalue_t maxshortto = 0x7FFFL;
 PUBLIC uvalue_t maxuintto = 0xFFFFL;
 PUBLIC uvalue_t maxushortto = 0xFFFFL;
 PUBLIC uvalue_t shortmaskto = 0xFFFFL;
-#endif
 
 PRIVATE store_pt callermask;
 PRIVATE offset_t lastargsp;
@@ -429,15 +400,6 @@ PUBLIC void codeinit()
 	maxintto = 0x7FFFFFFFL;
 	maxoffsetto = 0x7FFFFFFFL;
 	maxuintto = (unsigned long) 0xFFFFFFFFL;
-    }
-#endif
-#ifdef POSINDEPENDENT
-    if (posindependent)
-    {
-# ifdef MC6809
-	callstring = "LBSR\t";
-	jumpstring = "LBRA\t";
-# endif
     }
 #endif
     if (callersaves)

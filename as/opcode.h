@@ -115,19 +115,6 @@ enum
     XCHG,            /* mxchg */
 #endif /* I80386 */
 
-#ifdef MC6809
-    ALL,			/* all address modes allowed, like LDA */
-    ALTER,			/* all but immediate, like STA */
-    IMMED,			/* immediate only (ANDCC, ORCC) */
-    INDEXD,			/* indexed (LEA's) */
-    INHER,			/* inherent, like CLC or CLRA */
-    LONG,			/* long branches */
-    SHORT,			/* short branches */
-    SSTAK,			/* S-stack (PSHS, PULS) */
-    SWAP,			/* TFR, EXG */
-    USTAK,			/* U-stack (PSHU,PULU) */
-#endif /* MC6809 */
-
     LASTENUMVAL2  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
 
@@ -148,11 +135,4 @@ enum
 # define POP_OPCODE 		0x8F
 # define PUSH_OPCODE 		0xFF
 # define WAIT_OPCODE		0x9B
-#endif
-
-#ifdef MC6809
-# define JMP_OPCODE		0x7E
-# define JSR_OPCODE		0xBD
-# define PAGE1_OPCODE		0x10
-# define PAGE2_OPCODE		0x11
 #endif

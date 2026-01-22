@@ -488,9 +488,6 @@ char *argv[];
 	    case 'l':		/* long big-endian */
 #endif
 	    case 'P':		/* if acting as cpp, suppress line numbers */
-#ifdef POSINDEPENDENT
-	    case 'p':		/* generate almost-position-independent code */
-#endif
 	    case 't':		/* print source code in asm output */
 	    case 'w':		/* watch location counter */
 		if (arg[2] == 0)
@@ -539,9 +536,6 @@ ts_s_includelist += sizeof *incnew;
     else
 	definestring("__AS386_16__");
 #endif
-#ifdef MC6809
-    definestring("__AS09__");
-#endif
     if (flag['c'])
     {
 	callersaves = TRUE;
@@ -557,9 +551,6 @@ ts_s_includelist += sizeof *incnew;
 #ifdef I8088
 	definestring("__FIRST_ARG_IN_AX__");
 #endif
-#ifdef MC6808
-	definestring("__FIRST_ARG_IN_X__");
-#endif
     }
     arg1op = arg1inreg ? ROOTLISTOP : LISTOP;
 #ifdef DYNAMIC_LONG_ORDER
@@ -570,13 +561,6 @@ ts_s_includelist += sizeof *incnew;
     }
 #endif
     suppress_line_numbers = flag['P'];
-#ifdef POSINDEPENDENT
-    if (flag['p'])
-    {
-	posindependent = TRUE;
-	definestring("__POS_INDEPENDENT__");
-    }
-#endif
     ctext = flag['t'];
     watchlc = flag['w'];
     setoutbufs();
@@ -754,10 +738,5 @@ more:
 
 PRIVATE void usage()
 {
-    fatalerror(
-#ifdef MC6809
-"usage: cc1 [-cdfptw[-]] [-Ddefine] [-Iincdir] [-Uundef] [-o outfile] [infile]");
-#else
-"usage: cc1 [-03cdfltw[-]] [-Ddefine] [-Iincdir] [-Uundef] [-o outfile] [infile]");
-#endif
+    fatalerror("usage: cc1 [-03cdfltw[-]] [-Ddefine] [-Iincdir] [-Uundef] [-o outfile] [infile]");
 }

@@ -83,11 +83,7 @@ struct symstruct *source;
 #ifdef STACKREG
     regtransfer(STACKREG, DREG);
 #else
-#ifdef MC6809 /* XXX ? */
-    regtransfer(LOCAL, DREG);
-#else
 #include "need STACKREG and stackregstr"
-#endif
 #endif
     push(length);
     push(source);
@@ -155,9 +151,6 @@ PUBLIC void indexadr(source, target)
 struct symstruct *source;
 struct symstruct *target;
 {
-#ifdef MC6809
-    bool_t canABX;
-#endif
     uoffset_t size;
     store_pt sourcereg;
     struct typestruct *targtype;
@@ -196,22 +189,6 @@ struct symstruct *target;
 #ifdef I8088
     softop(MULOP, constsym((value_t) size), source);
 #endif
-#ifdef MC6809
-
-/*-----------------------------------------------------------------------------
-	do some calculations in advance to decide if index can be done with ABX
------------------------------------------------------------------------------*/
-
-    if ((store_t) targreg == XREG && source->type->scalar & CHAR &&
-	size < CANABXCUTOFF)
-	canABX = TRUE;
-    else
-    {
-	canABX = FALSE;
-	softop(MULOP, constsym((value_t) size), source);
-    }
-
-#endif
 
 /*-----------------------------------------------------------------------------
 	deal with constant target - constant becomes offset, result in DREG
@@ -245,25 +222,6 @@ struct symstruct *target;
 	return;
     }
 #endif
-#ifdef MC6809
-    if (canABX || (store_t) sourcereg == GLOBAL)
-    {
-	load(target, targreg);
-	sourcereg = targreg;
-    }
-    else if (target->indcount != 0)
-    {
-	targtype = target->type;
-	target->type = itype;
-	add(source, target);
-	target->type = targtype;
-	return;
-    }
-    if (canABX)
-	while (size--)
-	    outABX();
-    else
-#endif
     {
 #ifdef I8088
 	if ((store_t) targreg != (store_t) sourcereg)
@@ -271,13 +229,6 @@ struct symstruct *target;
 	outadd();
 	outregname(targreg);
 	outncregname(DREG);
-#endif
-#ifdef MC6809
-	outlea();
-	outregname(targreg);
-	outtab();
-	outregname(DREG);
-	outncregname(sourcereg);
 #endif
     }
     if ((store_t) sourcereg == LOCAL)
@@ -396,16 +347,6 @@ store_pt targreg;
     {
 	if (source->storage == GLOBAL)
 	{
-#ifdef MC6809
-	    if (posindependent)
-	    {
-		pushreg(INDREG0);
-		loadreg(source, INDREG0);
-		transfer(source, DREG);
-		recovlist(INDREG0);
-	    }
-	    else
-#endif
 		loadreg(source, targreg);
 	}
 	if (source->storage == LOCAL)
@@ -544,17 +485,6 @@ store_pt targreg;
 		unbumplc();
 	}
 #endif
-#ifdef MC6809
-	if (source->indcount == 0 &&
-	    (source->storage != GLOBAL || posindependent))
-	    outlea();
-	else
-	{
-	    outload();
-	    if ((store_t) targreg == YREG)
-		bumplc();
-	}
-#endif
 	movereg(source, targreg);
     }
 }
@@ -674,14 +604,6 @@ struct symstruct *adr;
     if (adr->indcount >= MAXINDIRECT)
 	indflag = TRUE;
 #endif
-#ifdef MC6809
-    outtab();
-    if (adr->indcount >= MAXINDIRECT && (adr->indcount & 1) == 0)
-    {
-	indflag = TRUE;		/* indirection means double indirect */
-	outindleft();
-    }
-#endif
     switch (adr->storage)
     {
     case CONSTANT:
@@ -711,9 +633,7 @@ struct symstruct *adr;
     case INDREG2:
 	if (adr->level == OFFKLUDGELEVEL)
 	    outnamoffset(adr);
-#ifndef MC6809
 	else if (adr->offset.offi != 0)
-#endif
 	    outoffset(adr->offset.offi);
 #ifdef I8088
 	if (indflag)
@@ -723,11 +643,6 @@ struct symstruct *adr;
 	if (indflag)
 	    outindright();
 # endif
-#endif
-#ifdef MC6809
-	if (indflag && adr->offset.offi != 0 && is5bitoffset(adr->offset.offi))
-	    bumplc();
-	outcregname(adr->storage);
 #endif
 	break;
     case LOCAL:
@@ -768,26 +683,6 @@ struct symstruct *adr;
 	    outindright();
 # endif
 #endif /* I8088 */
-#ifdef MC6809
-	if (adr->flags == TEMP && adr->offset.offi == sp &&
-	    adr->indcount == 1)
-	{
-	    outcregname(LOCAL);
-	    outplus();
-	    ++sp;
-	    if (adr->type->typesize != 1)
-	    {
-		outplus();
-		++sp;
-	    }
-	    break;
-	}
-	outoffset(adr->offset.offi - sp);
-	if (indflag && adr->offset.offi != sp &&
-	    is5bitoffset(adr->offset.offi - sp))
-	    bumplc();
-	outcregname(LOCAL);
-#endif /* MC6809 */
 	break;
     case GLOBAL:
 #ifdef I8088
@@ -802,28 +697,6 @@ struct symstruct *adr;
 	    outindleft();
 # endif
 	    bumplc();
-	}
-#endif
-#ifdef MC6809
-	if (!posindependent)
-	{
-	    if (adr->indcount == 0)
-	    {
-		outimmed();
-		bumplc();
-	    }
-	    else if (indflag)
-	    {
-		outextended();
-		bumplc2();
-	    }
-	    else if (adr->flags & DIRECTPAGE)
-		outdirectpage();
-	    else
-	    {
-		outextended();
-		bumplc();
-	    }
 	}
 #endif
 	if (adr->flags & LABELLED)
@@ -841,13 +714,6 @@ struct symstruct *adr;
 		outplus();
 	    outshex(adr->offset.offi);
 	}
-#ifdef MC6809
-	if (posindependent)
-	{
-	    outcregname(GLOBAL);
-	    bumplc2();
-	}
-#endif
 	break;
     default:
 	outnl();
@@ -862,15 +728,6 @@ struct symstruct *adr;
 	outindright();
 # endif
     }
-#endif
-#ifdef MC6809
-    if (indflag)
-    {
-	outindright();
-	adr->indcount -= MAXINDIRECT;
-    }
-    else if (adr->indcount != 0)
-	--adr->indcount;
 #endif
 }
 
@@ -896,11 +753,6 @@ store_pt reg;
     case DREG:
 	outstr(accumstr);
 	break;
-#ifdef MC6809
-    case GLOBAL:
-	outstr("PC");
-	break;
-#endif
     case INDREG0:
 	outstr(ireg0str);
 	break;
@@ -1100,11 +952,6 @@ bool_pt pushflag;
     store_pt lastregbit;
     void (*ppfunc) P((void));
     char *regptr;
-
-#ifdef MC6809
-    int separator;		/* promoted char for output */
-
-#endif
     fastin_t bytespushed;
     store_pt regbit;
 
@@ -1130,15 +977,6 @@ bool_pt pushflag;
 	lastregbit = 1 << 7;
 #endif
     }
-#ifdef MC6809 /* temp use pull strings to keep old order */
-    regbit = 1;
-    regptr = regpulllist;
-    lastregbit = 1 << 7;
-#endif
-#ifdef MC6809
-    separator = OPSEPARATOR;
-    (*ppfunc) ();
-#endif
     bytespushed = 0;
     while (TRUE)
     {
@@ -1149,9 +987,6 @@ bool_pt pushflag;
 	    if (*regptr != FLAGSREGCHAR)
 		outtab();
 #endif
-#ifdef MC6809
-	    outbyte(separator);
-#endif
 	    do
 		outbyte(*regptr++);
 	    while (*regptr >= MINREGCHAR);
@@ -1159,26 +994,16 @@ bool_pt pushflag;
 #ifdef I8088
 	    outnl();
 #endif
-#ifdef MC6809
-	    separator = OPERANDSEPARATOR;
-#endif
 	}
 	else
 	    do {} while (*regptr++ >= MINREGCHAR);
 	if (regbit == lastregbit)
 	    break;
-#ifdef MC6809 /* temp use pull strings to keep old order */
-	regbit <<= 1;
-#else /* this should normally be unconditional */
 	if ((bool_t) pushflag)
 	    regbit >>= 1;
 	else
 	    regbit <<= 1;
-#endif
     }
-#ifdef MC6809
-    outnl();
-#endif
     return bytespushed;
 }
 
@@ -1226,12 +1051,6 @@ struct symstruct *target;
 	else
 #endif
 	    outnregname(sourcereg);
-#endif
-#ifdef MC6809
-	if ((store_t) sourcereg == YREG)
-	    bumplc();
-	outregname(sourcereg);
-	outadr(target);
 #endif
     }
 }

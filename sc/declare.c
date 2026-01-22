@@ -1067,10 +1067,6 @@ PRIVATE bool_pt regdecl()
     if (gvarsymptr->type->constructor != POINTER)
 	return FALSE;
 #endif
-#ifdef MC6809
-    if (gvarsymptr->type->constructor != POINTER)
-	return FALSE;
-#endif
     if (!(regavail = regregs & ~reguse))
 	return FALSE;
     gvarsymptr->flags = REGVAR;

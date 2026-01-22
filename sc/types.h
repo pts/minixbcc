@@ -18,11 +18,6 @@ typedef unsigned long uoffset_t;	/* target unsigned machine offset */
 #define outuvalue outhex
 #define outvalue outshex
 #endif
-#ifdef MC6809
-typedef int offset_t;
-typedef unsigned uoffset_t;
-#endif
-
 
 /*
   storage class type must hold all the flags defined elsewhere
@@ -33,15 +28,6 @@ typedef unsigned uoffset_t;
 typedef unsigned store_pt;	/* promoted store_t */
 typedef unsigned store_t;	/* storage class flags */
 #endif
-#ifdef MC6809
-# if __STDC__
-typedef int store_pt;
-# else
-typedef unsigned store_pt;
-# endif
-typedef unsigned char store_t;
-#endif
-
 
 /*
   types for library routines

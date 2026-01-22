@@ -6,7 +6,6 @@
 /* major switches */
 
 #define I80386			/* generate 80386 code */
-#undef MC6809			/* generate 6809 code */
 #define MNSIZE			/* allow byte size in mnemonic, e.g. "movb" */
 
 /* defaults */
@@ -122,25 +121,6 @@ enum
 
     NOREG,
 #endif /* I80386 */
-
-#ifdef MC6809
-
-/* Index regs must be first, then PC. */
-    SREG,
-    UREG,
-    XREG,
-    YREG,
-#define MAXINDREG	YREG
-
-    PCREG,
-    AREG,
-    BREG,
-    CCREG,
-    DPREG,
-    DREG,
-
-    NOREG,
-#endif /* MC6809 */
 
     LASTENUMVAL1  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };

@@ -151,9 +151,6 @@ struct symstruct *target;
 
 PUBLIC void outlongendian()
 {
-#ifdef MC6809
-    outbyte('_');
-#endif
 #if DYNAMIC_LONG_ORDER
     if (long_big_endian)
 #endif

@@ -31,17 +31,6 @@
 # define outbssseg() outop0str(".bss\n")
 #endif
 
-#ifdef MC6809
-# define CSEG 0
-# define outcseg() outop0str("LOC\t0\n")
-# define DPSEG 2
-# define outdpseg() outop0str("LOC\t2\n")
-# define DSEG 3
-# define outdseg() outop0str("LOC\t3\n")
-# define STRSEG 1
-# define outstrseg() outop0str("LOC\t1\n")
-#endif
-
 #ifdef I8088
 FORWARD void adjcarry P((void));
 #endif
@@ -50,16 +39,13 @@ FORWARD bool_pt lowregisDreg P((void));
 #ifdef I8088
 FORWARD void outand P((void));
 FORWARD void outequate P((void));
-# ifdef XENIX_AS
+# ifdef XENIX_AS  /* !! Remove. */
 FORWARD void outexport P((void));
 # endif
 FORWARD void outmovsx P((void));
 FORWARD void outmovzx P((void));
 FORWARD void tfrhilo P((void));
 FORWARD void tfrlohi P((void));
-#endif
-#ifdef MC6809
-FORWARD void negBsbcA P((void));
 #endif
 FORWARD void outaccum P((void));
 FORWARD void outstackreg P((void));
@@ -381,200 +367,6 @@ PUBLIC void ustoi()
 }
 #endif /* I8088 */
 
-#ifdef MC6809
-
-# define ACCHISTR "A"
-# define ANDSTRING "AND"
-# define DEFSTR_QUOTER '"'
-# define EORSTRING "EOR"
-# define MAX_INLINE_SHIFT 16
-# define ORSTRING "OR"
-# define addfactor(reg) outop2str("ADDD\t,S")
-# define defstorage() outop0str("RMB\t")
-# define extBnegD() (ctoi(), negBsbcA())
-# define finishfactor() outnl()
-# define outadc() outop2str("ADC")
-# define outandhi() outop2str("ANDA")
-# define outandlo() outop2str("ANDB")
-# define outcommon() outop0str("\tCOMM\t")
-# define outdefstr() outop0str("FCC\t\"")
-# define outequate() outop0str("\tEQU\t")
-# define outexchange() outop2str("EXG\t")
-# define outexport() outop0str("EXPORT\t")
-# define outglobl() outop0str("GLOBL\t")
-# define outimport() outop0str("IMPORT\t")
-# define outjswitch() outnop2str("JMP\t[D,X]")
-# define outlcommon() outop0str("\tLCOMM\t")
-# define outlswitch() outop3str("LDX\t#")
-# define outpijswitch() outnop2str("JMP\tD,X")
-# define outpil1switch() outop3str("LEAX\t<")
-# define outpil2switch() outnop2str("LDD\tD,X")
-# define outrolhi() outnop1str("ROLA");
-# define outsbc() outop2str("SBC")
-# define outset() outstr ("\tSET\t")
-# define outsl() outop1str("LSL")
-# define outtransfer() outop2str("TFR\t")
-# define reclaimfactor() outnstr ("++")	/* discard factor from stack */
-# define savefactor(reg) outop2str("PSHS\tD")
-# define smiDreg() (clrBreg(), outnop1str("ROLA"), \
-		    outnop2str("SBCB\t#0"), sctoi())
-	/* this tricky sequence is twice as fast as TFR A,B; SEX; TFR A,B */
-	/* it gets the sign bit of A in the carry */
-	/* then subtracts it from 0 in D (effectively) */
-# define sr1() (outnop1str("ASRA"), outnop1str("RORB"))
-# define stackregstr "S"
-# define subfactor(reg) outop2str("SUBD\t,S")
-# define testhi() outnop1str("TSTA")
-# define tfrhilo() outnop2str("TFR\tA,B")
-# define tfrlohi() outnop2str("TFR\tB,A")
-# define usr1() (outnop1str("LSRA"), outnop1str("RORB"))
-PUBLIC void clrBreg()
-{
-    outnop1str("CLRB");
-}
-PUBLIC void comment()
-{
-    outstr("| ");
-}
-PUBLIC void defbyte()
-{
-    outop0str("FCB\t");
-}
-PUBLIC void defword()
-{
-    outop0str("FDB\t");
-}
-PUBLIC void negDreg()
-{
-    outnop1str("NEGA");
-    negBsbcA();
-}
-PRIVATE void negBsbcA()
-{
-    outnop1str("NEGB");
-    sbc0();
-}
-PUBLIC void comDreg()
-{
-    outnop1str("COMA");
-    outnop1str("COMB");
-}
-PUBLIC void outABX()
-{
-    outnop1str("ABX");
-}
-PUBLIC void outadd()
-{
-    outop2str("ADD");
-}
-PUBLIC void outaddsp()
-{
-    outleasp();
-    bumplc2();
-}
-PUBLIC void outcalladr()
-{
-    outop2str("JSR");
-}
-PUBLIC void outcmp()
-{
-    outop2str("CMP");
-}
-PUBLIC void outdec()
-{
-    outop1str("DEC");
-}
-PUBLIC void outdirectpage()
-{
-    outbyte('<');
-}
-PUBLIC void outextended()
-{
-    outbyte('>');
-}
-PUBLIC void outfail()
-{
-    outop0str("FAIL\t");
-}
-PUBLIC void outinc()
-{
-    outop1str("INC");
-}
-PUBLIC void outindleft()
-{
-    outbyte('[');
-}
-PUBLIC void outindright()
-{
-    outbyte(']');
-}
-PUBLIC void outldaccum()
-{
-    outload();
-    outaccum();
-}
-PUBLIC void outldmulreg()
-{
-    outop2str("LDA");
-}
-PUBLIC void outlea()
-{
-    outop2str("LEA");
-}
-PUBLIC void outleasp()
-{
-    outop2str("LEAS\t");
-}
-PUBLIC void outload()
-{
-    outop2str("LD");
-}
-PUBLIC void outmulmulreg()
-{
-    outnop1str("MUL");
-}
-PUBLIC void outncspregname()
-{
-    outcomma();
-    outstackreg();
-    outnl();
-}
-PUBLIC void outopsep()
-{
-}				/* is tab, but already done by outadr() */
-PUBLIC void outpshs()
-{
-    outop2str("PSHS");
-}
-PUBLIC void outpuls()
-{
-    outop2str("PULS");
-}
-PUBLIC void outreturn()
-{
-    outnop1str("RTS");
-}
-PUBLIC void outstore()
-{
-    outop2str("ST");
-}
-PUBLIC void outsub()
-{
-    outop2str("SUB");
-}
-PUBLIC void outtest()
-{
-    outop1str("TST");
-}
-PUBLIC void sctoi()
-{
-    outnop1str("SEX");
-}
-PUBLIC void ctoi()
-{
-    outnop1str("CLRA");
-}
-#endif /* MC6809 */
 #ifdef FRAMEREG
 PUBLIC void outindframereg()
 {
@@ -640,19 +432,6 @@ store_pt reg;
     }
     else
 #endif
-#ifdef MC6809
-    if (!(reg & ALLDATREGS))
-	lea(offset, reg, reg);
-    else if (reg == BREG && (offset == 1 || offset == -1))
-    {
-	if (offset < 0)
-	    outdec();
-	else
-	    outinc();
-	outnregname(reg);
-    }
-    else
-#endif
     {
 	outadd();
 	outimadj(offset, reg);
@@ -700,9 +479,6 @@ label_t label;
 	outplus();
 	outhex((uoffset_t) - sp);
     }
-#ifdef MC6809
-    outcregname(LOCAL);
-#endif
 #ifdef I8088
     if (i386_32)
 	bumplc2();
@@ -771,22 +547,6 @@ PUBLIC label_t casejump()
     if (i386_32)
 	bumplc2();
 #endif
-#ifdef MC6809
-    if (posindependent)
-    {
-	outpil1switch();
-	outlabel(jtablelab = getlabel());
-	outncregname(GLOBAL);
-	outpil2switch();
-	outpijswitch();
-    }
-    else
-    {
-	outlswitch();
-	outnlabel(jtablelab = getlabel());
-	outjswitch();
-    }
-#endif
     return jtablelab;
 }
 
@@ -807,10 +567,6 @@ char *name;
     outcommon();
     outccname(name);
     outcomma();
-#endif
-#ifdef MC6809
-    outccname(name);
-    outcommon();
 #endif
 }
 
@@ -894,15 +650,6 @@ bool_pt dataflag;
 #ifdef I8088
     dseg();
 #endif
-#ifdef MC6809
-    if (dataflag)
-	dseg();
-    else
-    {
-	segment = STRSEG;	/* could use dseg() */
-	outstrseg();		/* this brings strings together */
-    }
-#endif
     outnlabel(strlab = getlabel());
     byte = (unsigned char) *sptr++;
     while (sptr <= stop)
@@ -957,11 +704,6 @@ bool_pt dataflag;
 	bssseg();
 	break;
 #endif
-#ifdef MC6809
-    case DPSEG:
-	dpseg();
-	break;
-#endif
     }
     return strlab;
 }
@@ -997,21 +739,6 @@ bool_pt uflag;
     }
     return TRUE;
 }
-
-#ifdef MC6809
-
-/* set direct page segment */
-
-PUBLIC void dpseg()
-{
-    if (segment != DPSEG)
-    {
-	segment = DPSEG;
-	outdpseg();
-    }
-}
-
-#endif
 
 /* set data segment */
 
@@ -1114,24 +841,6 @@ char *name;
     outlcommon();
 }
 
-#ifdef MC6809
-
-/* load effective address */
-
-PUBLIC void lea(offset, sourcereg, targreg)
-offset_t offset;
-store_pt sourcereg;
-store_pt targreg;
-{
-    outlea();
-    outregname(targreg);
-    outtab();
-    outshex(offset);
-    outncregname(sourcereg);
-}
-
-#endif
-
 /* load constant into given register */
 
 PUBLIC void loadconst(offset, reg)
@@ -1147,19 +856,9 @@ store_pt reg;
     }
     else
 #endif
-#ifdef MC6809
-    if (offset == 0 && reg == BREG)
-	clrBreg();
-    else
-#endif
     {
 	outload();
 	outregname(reg);
-#ifdef MC6809
-	if (reg == YREG)
-	    bumplc2();
-	else
-#endif
 	if (reg != BREG)
 	{
 	    bumplc();
@@ -1497,9 +1196,6 @@ offset_t offset;
 #ifdef I8088
     outcomma();
 #endif
-#ifdef MC6809
-    outtab();
-#endif
     outimmadr(offset);
     outnl();
 }
@@ -1509,10 +1205,7 @@ offset_t offset;
 PUBLIC void outoffset(offset)
 offset_t offset;
 {
-#ifdef MC6809
-    if (!is5bitoffset(offset))
-#endif
-	adjlc(offset, INDREG0);
+    adjlc(offset, INDREG0);
     outshex(offset);
 }
 
@@ -1623,10 +1316,6 @@ store_pt reg;
     outregname(reg);
     outnc1();
 #endif
-#ifdef MC6809
-    outnregname(BREG);
-    outrolhi();
-#endif
 }
 
 /* shift left register by a constant (negative = infinity) */
@@ -1708,7 +1397,7 @@ bool_pt uflag;
 	if ((bool_t) uflag)
 	    clr(DREG);
 	else			/* make D == 0 if D >= 0, else D == -1 */
-	    smiDreg();		/* special case of 68020 Scc instruction */
+	    smiDreg();
     }
     else
     {
@@ -1781,22 +1470,6 @@ PRIVATE void opregadr()
     if (i386_32)
 	bumplc2();
 #endif
-#ifdef MC6809
-    outregname(OPREG);
-    outtab();
-    if (posindependent)
-    {
-	outccname(opregstr);
-	outncregname(GLOBAL);
-	bumplc();
-    }
-    else
-    {
-	outextended();
-	outnccname(opregstr);
-    }
-    bumplc();
-#endif
 }
 
 /*-----------------------------------------------------------------------------
@@ -1814,10 +1487,6 @@ PUBLIC void restoreopreg()
 	outopsep();
 	opregadr();
 	outnl();
-#endif
-#ifdef MC6809
-	outload();
-	opregadr();
 #endif
     }
 }
@@ -1841,14 +1510,6 @@ PUBLIC void saveopreg()
 	outstore();
 	opregadr();
 	outncregname(OPREG);
-#endif
-#ifdef MC6809
-	dseg();
-	common(opregstr);
-	outnhex(opregsize);
-	cseg();
-	outstore();
-	opregadr();
 #endif
     }
 }

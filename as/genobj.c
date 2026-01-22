@@ -323,11 +323,6 @@ PUBLIC void objheader()
 	1, 0,
 	(char) ((unsigned) (0xA3 + 0x86 + 1 + 0) & (unsigned) 0xff),
 #endif
-#ifdef MC6809
-	'S', '1',		/* 2 byte magic number */
-	0, 1,			/* 2 byte number of modules in file */
-	'S' + '1' + 0 + 1,	/* 1 byte checksum */
-#endif
     };
     static char seg_max_sizes[] =
     {

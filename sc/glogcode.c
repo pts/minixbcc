@@ -36,11 +36,6 @@ PRIVATE char unsigncc[] =	/* unsigned condition codes LT --> LO etc */
 
 FORWARD void cmplocal P((struct symstruct *source, struct symstruct *target,
 			  ccode_t *pcondtrue));
-#ifdef MC6809
-FORWARD void cmporsub P((struct symstruct *target));
-FORWARD bool_pt cmpsmallconst P((value_t intconst, struct symstruct *target,
-				  ccode_t *pcondtrue));
-#endif
 FORWARD void comparecond P((struct nodestruct *exp, label_t truelab,
 			     label_t falselab, bool_pt nojump));
 FORWARD void jumpcond P((struct nodestruct *exp, label_t truelab,
@@ -157,33 +152,19 @@ ccode_t *pcondtrue;
 	    test(target, pcondtrue);
 	    return;
 	}
-#ifdef MC6809
-	if (cmpsmallconst(source->offset.offv, target, pcondtrue))
-	    return;
-#endif
     }
     if (!(sscalar & CHAR) && tscalar & CHAR)
     {
 	loadpres(target, source);
 	extend(target);
     }
-#ifndef MC6809
-# define posindependent 0
-#endif
     if (source->indcount == 0 && source->storage != CONSTANT &&
-	(posindependent || source->storage != GLOBAL))
+	(0 || source->storage != GLOBAL))  /* !! remove `0 ||' */
     {
 	loadpres(source, target);
-#ifdef MC6809
-	push(source);
-#endif
     }
     loadpres(target, source);
-#ifdef MC6809
-    cmporsub(target);
-#else
     outcmp();
-#endif
 #ifdef I8088
     if (source->storage == GLOBAL && source->indcount == 0 &&
 	!(target->storage & (AXREG | ALREG)))
@@ -191,47 +172,6 @@ ccode_t *pcondtrue;
 #endif
     movereg(source, target->storage);
 }
-
-#ifdef MC6809
-
-PRIVATE void cmporsub(target)
-struct symstruct *target;
-{
-    if (target->storage & ALLDATREGS)
-	outsub();
-    else
-    {
-	outcmp();
-	if (target->storage != XREG)
-	    bumplc();
-    }
-}
-
-PRIVATE bool_pt cmpsmallconst(intconst, target, pcondtrue)
-value_t intconst;
-struct symstruct *target;
-ccode_t *pcondtrue;
-{
-    store_pt targreg;
-
-    if ((*pcondtrue == EQ || *pcondtrue == NE) &&
-	!(target->storage & ALLDATREGS) && !(target->type->scalar & CHAR) &&
-	isnegbyteoffset(intconst) &&
-	(reguse & (XREG | YREG)) != (XREG | YREG))
-    {
-	targreg = XREG;
-	if (reguse & XREG)
-	    targreg = YREG;
-	if (target->indcount != 0)
-	    load(target, targreg);
-	target->offset.offi -= (offset_t) intconst;
-	loadreg(target, targreg);
-	return TRUE;
-    }
-    return FALSE;
-}
-
-#endif
 
 PRIVATE void comparecond(exp, truelab, falselab, nojump)
 struct nodestruct *exp;
@@ -502,38 +442,6 @@ ccode_t *pcondtrue;
     }
     outcmp();
     outimadj(-target->offset.offi, targreg);
-#endif
-#ifdef MC6809
-    if (target->indcount != 0 ||
-	target->storage == LOCAL && target->offset.offi != sp)
-    {
-	load(target, DREG);
-	return;
-    }
-    if (cmpsmallconst(0, target, pcondtrue))
-	return;
-    if (target->storage == GLOBAL)
-	load(target, getindexreg());
-    if (target->type->scalar & CHAR)
-	load(target, DREG);
-    if (target->offset.offi != 0 && cc_signed(*pcondtrue))
-	load(target, target->storage);
-    if (target->type->scalar & CHAR)
-    {
-	if (target->offset.offi == 0)
-	{
-	    outtest();
-	    outnregname(BREG);
-	    return;
-	}
-	outcmp();
-	outimadj(-target->offset.offi, BREG);
-    }
-    else
-    {
-	cmporsub(target);
-	outimadj(-target->offset.offi, target->storage);
-    }
 #endif
 }
 

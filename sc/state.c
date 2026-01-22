@@ -330,9 +330,6 @@ PRIVATE void docont()
 	outshex(contloop->spmark);
 	outminus();
 	outswstacklab();
-#ifdef MC6809
-	outcregname(LOCAL);
-#endif
 #ifdef I8088
 	if (i386_32)
 	    bumplc2();
@@ -603,10 +600,6 @@ PRIVATE void jumptocases()
 	    lbranch(HI, zjtablelab = getlabel());
 	    if (charselector)
 		ctoi();
-#ifdef MC6809
-	    else
-		bumplc();	/* extra for CMPD */
-#endif
 	    slconst((value_t) (ptypesize / 2), DREG);
 					/* really log ptypesize */
 	    deflabel(jtablelab = casejump());
@@ -626,13 +619,6 @@ PRIVATE void jumptocases()
 		    outlabel(caseptr->caselabel);
 		    ++caseptr;
 		}
-#ifdef MC6809
-		if (posindependent)
-		{
-		    outminus();
-		    outlabel(jtablelab);
-		}
-#endif
 		bumplc2();
 #ifdef I8088
 		if (ptypesize > 2)

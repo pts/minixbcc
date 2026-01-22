@@ -17,10 +17,7 @@
 #endif
 
 /*#define DEBUG*/			/* generate compiler-debugging code */
-#ifndef MC6809
-#  define I8088			/* target processor is Intel 8088 thru 80386 */
-#endif
-/*#define MC6809*/		/* target processor is Motorola 6809 */
+#define I8088			/* target processor is Intel 8088 thru 80386 */
 #define SELFTYPECHECK		/* check calculated type = runtime type */
 
 #ifdef I8088
@@ -30,13 +27,7 @@
 				 * since assembler has only 1 data seg */
 #endif
 
-#ifdef MC6809
-# define DYNAMIC_LONG_ORDER 0	/* have to define it so it works in #if's */
-# define OP1			/* logical operators only use 1 byte */
-# define POSINDEPENDENT		/* position indep code can (also) be gen */
-#endif
-
-#define S_ALIGNMENT (sizeof(int))  /* source memory alignment, power of 2 */
+#define S_ALIGNMENT (sizeof(int))  /* source memory alignment, power of 2 !! porting */
 
 #define UNPORTABLE_ALIGNMENT  /* we would need portable alignment for large model on DOS */
 

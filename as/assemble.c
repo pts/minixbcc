@@ -120,19 +120,6 @@ PRIVATE pfv rout_table[] =
     mtest,
     mxchg,
 #endif /* I80386 */
-
-#ifdef MC6809
-    mall,			/* all address modes allowed, like LDA */
-    malter,			/* all but immediate, like STA */
-    mimmed,			/* immediate only (ANDCC, ORCC) */
-    mindex,			/* indexed (LEA's) */
-    minher,			/* inherent, like CLC or CLRA */
-    mlong,			/* long branches */
-    mshort,			/* short branches */
-    msstak,			/* S-stack	(PSHS, PULS) */
-    mswap,			/* TFR, EXG */
-    mustak,			/* U-stack	(PSHU,PULU) */
-#endif /* MC6809 */
 };
 
 FORWARD void asline P((void));
@@ -156,11 +143,8 @@ PUBLIC void assemble()
 	asline();
 	if (label != (struct sym_s*) 0)	/* must be confirmed if still set */
 	{			/* it is nulled by EQU,	COMM and SET */
-#ifndef MC6809
-#define NEEDENDLABEL ILLAB
 	    if (nocolonlabel)
-		error(NEEDENDLABEL);
-#endif
+		error(ILLAB  /* NEEDENDLABEL */);
 	    label->type |= LABIT;	/* confirm, perhaps redundant */
 	    if (label->type & REDBIT)
 	    {
@@ -231,12 +215,6 @@ PRIVATE void asline()
 	else if (checksegrel(symptr))
 	{
 	    symptr->type &= ~COMMBIT;	/* ignore COMM, PCOMM gives warning */
-#ifdef MC6809
-#if 0
-	    if (sym == COLON)
-		symptr->type |= EXPBIT;
-#endif
-#endif
 	    symptr->data = (symptr->data & FORBIT) | lcdata;
 				/* remember if forward referenced */
 	    symptr->value_reg_or_op.value = lc;

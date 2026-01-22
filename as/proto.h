@@ -140,18 +140,6 @@ void mtest P((void));
 void mxchg P((void));
 #endif				/* I80386 */
 
-#ifdef MC6809
-void mall P((void));
-void malter P((void));
-void mimmed P((void));
-void mindex P((void));
-void minher P((void));
-void mlong P((void));
-void msstak P((void));
-void mswap P((void));
-void mustak P((void));
-#endif				/* MC6809 */
-
 void getcomma P((void));
 void mshort P((void));
 

@@ -56,21 +56,6 @@ struct symstruct *target;
 	resultscalar |= sscalar;
 	uflag |= sscalar & UNSIGNED;
     }
-#ifdef MC6809
-    if ((op_t) op == MULOP && sscalar & CHAR && tscalar & CHAR &&
-	(source->storage != CONSTANT || (uvalue_t) source->offset.offv > 2))
-    {
-	if (source->storage & WORKDATREGS)
-	    push(source);
-	load(target, DREG);
-	outldmulreg();
-	outadr(source);
-	outmulmulreg();
-	target->storage = DREG;
-	target->type = iscalartotype(resultscalar);
-	return;
-    }
-#endif
     if (source->storage == CONSTANT)
     {
 	extend(target);
@@ -134,9 +119,6 @@ struct symstruct *target;
 	 target->storage == OPREG && target->indcount != 0) ||
 	(source->storage == OPREG &&
 	 target->storage == GLOBAL && target->indcount == 0
-#ifdef MC6809
-	 && posindependent
-#endif
 	)
 	)
     {
@@ -164,9 +146,6 @@ struct symstruct *target;
 	extend(source);
 	if (target->storage != OPREG &&
 	    (target->storage != GLOBAL || target->indcount != 0
-#ifdef MC6809
-	     || !posindependent
-#endif
 	    ))
 	    workreg = OPREG;
     }
@@ -180,11 +159,7 @@ struct symstruct *target;
 	    workreg = OPREG;
 	}
     }
-    if (target->storage == GLOBAL && target->indcount == 0
-#ifdef MC6809
-	&& posindependent
-#endif
-	)
+    if (target->storage == GLOBAL && target->indcount == 0)
 	load(target, workreg);
 
 /* source and target now in position to be loaded without any more registers */
