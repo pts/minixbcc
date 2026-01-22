@@ -59,11 +59,9 @@ struct symstruct *target;
     if (source->storage == CONSTANT)
     {
 	extend(target);
-#ifdef I8088
 	if (op == MULOP || op == SLOP)
 	    loadany(target);
 	else
-#endif
 	    load(target, DREG);
 	target->type = iscalartotype(resultscalar);
 	sourceval = source->offset.offv;
@@ -170,21 +168,13 @@ struct symstruct *target;
     switch ((op_t) op)
     {
     case DIVOP:
-#ifdef I8088
 	call("idiv_");
-#else
-	call("idiv");
-#endif
 	break;
     case MODOP:
 	call("imod");
 	break;
     case MULOP:
-#ifdef I8088
 	call("imul_");
-#else
-	call("imul");
-#endif
 	break;
     case SLOP:
 	call("isl");

@@ -33,14 +33,10 @@ bool_pt absflag;
 	if (framep == 0)
 	    bugerror("no frame pointer");
 #else
-# ifdef I8088
 	outleasp();
 	outoffset(newsp - sp);
 	outindstackreg();
 	outnl();
-# else
-	modstk(newsp);		/* this should preserve CC */
-# endif
 #endif /* FRAMEPOINTER */
     }
 }
@@ -85,13 +81,7 @@ offset_t newsp;
 	else
 	    regtransfer(FRAMEREG, STACKREG);
 #else
-# ifdef I8088
 	addconst(newsp - sp, STACKREG);
-# else
-	outleasp();
-	outoffset(newsp - sp);
-	outncspregname();
-# endif
 #endif
 	sp = newsp;
     }
@@ -161,11 +151,9 @@ store_pt reglist;
     reguse |= (store_t) reglist;
 }
 
-#ifdef I8088
 PRIVATE smalin_t regoffset[] = {0, 0, 0, 1, 2, 3, 0, 0, 0, 4, 5};
  /* CONSTANT, BREG, ax = DREG, bx = INDREG0, si = INDREG1, di = INDREG2 */
  /* LOCAL, GLOBAL, STACKREG, cx = DATREG1, dx = DATREG2 */
-#endif
 
 PUBLIC void savereturn(savelist, saveoffset)
 store_pt savelist;
@@ -182,18 +170,16 @@ offset_t saveoffset;
 	{
 	    outstore();
 	    spoffset = saveoffset + *regoffptr * maxregsize;
-#ifdef I8088
-# ifdef FRAMEPOINTER
+#ifdef FRAMEPOINTER
 	    if (switchnow != (struct switchstruct*) 0)
 		outswoffset(spoffset);
 	    else
 		outoffset(spoffset - framep);
 	    outindframereg();
-# else
+#else
 	    outoffset(spoffset - sp);
 	    outindstackreg();
-# endif
-	    outncregname(reg);
 #endif
+	    outncregname(reg);
 	}
 }

@@ -30,7 +30,6 @@
 			    (t)->type->constructor & FUNCTION))
 #endif
 
-#ifdef I8088
 #if NOTFINISHED
 PUBLIC store_pt allregs = BREG | DREG | DATREG1 | DATREG2
 				      | INDREG0 | INDREG1 | INDREG2;
@@ -72,7 +71,6 @@ PUBLIC char *localregstr = "bp";
 PUBLIC char *localregstr = "sp";
 #endif
 PUBLIC char *stackregstr = "sp";
-#endif
 
 PUBLIC uoffset_t accregsize = 2;
 #ifdef FRAMEPOINTER
@@ -350,7 +348,6 @@ register uvalue_t number;
 
 PUBLIC void codeinit()
 {
-#ifdef I8088
     if (i386_32)
     {
 	/* Need DATREG2 for doubles although handling of extra data regs is
@@ -401,7 +398,6 @@ PUBLIC void codeinit()
 	maxoffsetto = 0x7FFFFFFFL;
 	maxuintto = (unsigned long) 0xFFFFFFFFL;
     }
-#endif
     if (callersaves)
 	calleemask = 0;
     callermask = ~calleemask;

@@ -12,22 +12,18 @@ typedef unsigned char char_t;	/* target char */
 typedef long value_t;		/* target ints, longs and offsets */
 typedef unsigned long uvalue_t;	/* target unsigned ints, longs and offsets */
 
-#ifdef I8088
 typedef long offset_t;		/* target machine offset */
 typedef unsigned long uoffset_t;	/* target unsigned machine offset */
 #define outuvalue outhex
 #define outvalue outshex
-#endif
 
 /*
   storage class type must hold all the flags defined elsewhere
   it must have a few more bits than the target has registers
 */
 
-#ifdef I8088
 typedef unsigned store_pt;	/* promoted store_t */
 typedef unsigned store_t;	/* storage class flags */
-#endif
 
 /*
   types for library routines

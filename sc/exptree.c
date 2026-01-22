@@ -106,7 +106,6 @@ register struct nodestruct *nodeptr;
 		nodeptr->right = castnode(nodeptr->nodetype, right);
 	}
     }
-#ifdef I8088
     else if (i386_32 && bothscalar & SHORT)
     {
 	nodeptr->nodetype = itype;
@@ -118,7 +117,6 @@ register struct nodestruct *nodeptr;
 	if (rscalar & SHORT)
 	    nodeptr->right = castnode(nodeptr->nodetype, right);
     }
-#endif
     else if (bothscalar & UNSIGNED)
 	nodeptr->nodetype = uitype;
     else
@@ -1090,14 +1088,12 @@ struct nodestruct *nodeptr;
 		nodeptr->right = castnode(rscalar & UNSIGNED
 					  ? ultype : targtype, right);
 	}
-#ifdef I8088
 	else if (i386_32 && lscalar & INT)
 	{
 	    if (rscalar & SHORT)
 		nodeptr->right = castnode(rscalar & UNSIGNED
 					  ? uitype : targtype, right);
 	}
-#endif
 	break;
     case SLABOP:
     case SRABOP:

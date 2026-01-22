@@ -344,10 +344,8 @@ struct symstruct *target;
 	    }
 	    else
 		outregname(BREG);
-# ifdef I8088
 	    if (i386_32 && !(sscalar & CHAR))
 		bumplc2();
-# endif
 	    outncimmadr((offset_t) source->offset.offv);
 
 #endif /* OP1 */

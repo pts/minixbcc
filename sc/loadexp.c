@@ -102,10 +102,8 @@ struct typestruct *type;
 	    defbyte();
 	else if (type->typesize == 2)
 	    defword();
-#ifdef I8088
 	else if (!(type->scalar & DLONG))
 	    defdword();
-#endif
 	switch (symptr->storage)
 	{
 	case CONSTANT:

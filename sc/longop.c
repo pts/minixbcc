@@ -110,11 +110,9 @@ shiftdone:
 	load(target, getindexreg());
     if (reglist)
     {
-#ifdef I8088
 	if (op == EQOP)
 	    changesp(spmark, FALSE);
 	else
-#endif
 	    modstk(spmark);
 	poplist(reglist);
     }

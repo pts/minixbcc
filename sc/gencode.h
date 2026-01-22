@@ -23,10 +23,8 @@ EXTERN offset_t framep;		/* hardware relative frame ptr */
 EXTERN uoffset_t func1saveregsize;  /* choice of next two values */
 EXTERN uoffset_t funcdsaveregsize;  /* funcsaveregsize adjusted for doubles */
 EXTERN uoffset_t funcsaveregsize;  /* tot size of framelist/calleemask regs */
-#ifdef I8088
 EXTERN bool_t i386_32;		/* nonzero to generate 386 32 bit code */
 				/* depends on zero init */
-#endif
 EXTERN offset_t lowsp;		/* low water sp (collects locals in switch) */
 #ifndef NOFP
 EXTERN bool_t printf_fp;	/* nonzero if *printf called with FP arg  */
@@ -67,18 +65,14 @@ extern store_pt regregs;	/* mask (in) for regs which can be reg vars */
 extern char *acclostr;
 extern char *accumstr;
 extern char *badregstr;
-#ifdef I8088
 extern char *dreg1str;
 extern char *dreg1bstr;
 extern char *dreg2str;
-#endif
 extern char *ireg0str;
 extern char *ireg1str;
 extern char *ireg2str;
 extern char *localregstr;
-#ifdef I8088
 extern char *stackregstr;
-#endif
 
 /* register sizes */
 

@@ -16,15 +16,12 @@
 #  endif
 #endif
 
-/*#define DEBUG*/			/* generate compiler-debugging code */
-#define I8088			/* target processor is Intel 8088 thru 80386 */
+/*#define DEBUG*/		/* generate compiler-debugging code */
 #define SELFTYPECHECK		/* check calculated type = runtime type */
 
-#ifdef I8088
-# define FRAMEPOINTER		/* index locals off frame ptr, not stack ptr */
-# define HOLDSTRINGS		/* hold strings for dumping at end
+#define FRAMEPOINTER		/* index locals off frame ptr, not stack ptr */
+#define HOLDSTRINGS		/* hold strings for dumping at end
 				 * since assembler has only 1 data seg */
-#endif
 
 #define S_ALIGNMENT (sizeof(int))  /* source memory alignment, power of 2 !! porting */
 

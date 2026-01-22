@@ -59,7 +59,6 @@ ccode_t *pcondtrue;
 
     cmplocal(source, target, pcondtrue);
 #if 0
-#ifdef I8088
     if (i386_32)
     {
 	if (*pcondtrue == LO)
@@ -83,7 +82,6 @@ ccode_t *pcondtrue;
 	    return;
 	}
     }
-#endif
 #endif
     sbranch(oppcc[(int) *pcondtrue], falselab = getlabel());
     loadlogical(target, falselab);
@@ -165,11 +163,9 @@ ccode_t *pcondtrue;
     }
     loadpres(target, source);
     outcmp();
-#ifdef I8088
     if (source->storage == GLOBAL && source->indcount == 0 &&
 	!(target->storage & (AXREG | ALREG)))
 	bumplc();
-#endif
     movereg(source, target->storage);
 }
 
@@ -394,9 +390,7 @@ PRIVATE void test(target, pcondtrue)
 struct symstruct *target;
 ccode_t *pcondtrue;
 {
-#ifdef I8088
     store_t targreg;
-#endif
 
     *pcondtrue = testcc[(int) *pcondtrue];
     if (target->type->scalar & DLONG)
@@ -413,7 +407,6 @@ ccode_t *pcondtrue;
 #endif
 	return;
     }
-#ifdef I8088
     if (target->indcount != 0 ||
 	(target->storage == LOCAL && target->offset.offi != sp))
 	load(target, DREG);
@@ -442,7 +435,6 @@ ccode_t *pcondtrue;
     }
     outcmp();
     outimadj(-target->offset.offi, targreg);
-#endif
 }
 
 /* test expression and jump depending on NE/EQ */

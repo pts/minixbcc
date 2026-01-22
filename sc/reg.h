@@ -44,33 +44,27 @@
 #define LOCAL     0x040
 #define GLOBAL    0x080		/* offsets from storage name or 0 */
 #define CCREG     CONSTANT	/* arg to PSHS/PULS functions only */
-#ifdef I8088
-# ifdef FRAMEPOINTER
-#  define FRAMEREG LOCAL
-# endif
-# define STACKREG 0x100
-# define DATREG1  0x200
-# define DATREG2  0x400
-# define DATREG1B 0x800
+#ifdef FRAMEPOINTER
+# define FRAMEREG LOCAL
 #endif
+#define STACKREG 0x100
+#define DATREG1  0x200
+#define DATREG2  0x400
+#define DATREG1B 0x800
 
 /* data for pushing and pulling registers */
 
 #define MINREGCHAR 'A'
-#ifdef I8088
-# define FLAGSREGCHAR 'f'
-# define pushchar() pushlist(AXREG)
-#endif
+#define FLAGSREGCHAR 'f'
+#define pushchar() pushlist(AXREG)
 
 /* special registers */
 
-#ifdef I8088
-# define ALREG    BREG
-# define AXREG    DREG
-# define DXREG    DATREG2
-# define MULREG   DATREG1B
-# define SHIFTREG DATREG1B
-#endif
+#define ALREG    BREG
+#define AXREG    DREG
+#define DXREG    DATREG2
+#define MULREG   DATREG1B
+#define SHIFTREG DATREG1B
 
 /* groups of registers */
 
@@ -85,10 +79,8 @@
 #define LONGARGREGS LONGRETURNREGS	/* for long or float arg */
 #define LONGRETURNREGS (INDREG0|LONGREG2)
 #define LONGREG2 DREG
-#ifdef I8088
-# define LONGRETSPECIAL	/* LONGRETURNREGS!=RETURNREG && RETURNREG==LONGREG2 */
-# define RETURNREG DREG
-#endif
+#define LONGRETSPECIAL	/* LONGRETURNREGS!=RETURNREG && RETURNREG==LONGREG2 */
+#define RETURNREG DREG
 
 /* registers which can be pulled as a group with the program counter */
 /* to perform an efficient function return */
@@ -103,6 +95,4 @@
 
 /* maximum indirection count for 1 instruction */
 
-#ifdef I8088
-# define MAXINDIRECT 1
-#endif
+#define MAXINDIRECT 1

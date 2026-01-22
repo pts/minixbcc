@@ -184,7 +184,6 @@ struct typestruct *type;
 
 PUBLIC void typeinit()
 {
-#ifdef I8088
     if (i386_32)
     {
 #ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler in optimized mode (cc -O). */
@@ -208,7 +207,6 @@ PUBLIC void typeinit()
 	ltype->scalar = LONG;	/* not DLONG */
 	ultype->scalar = UNSIGNED | LONG;
     }
-#endif
     fitype = prefix(FUNCTION, ftypesize, itype);
     pctype = pointype(ctype);
     skey0 = 1;

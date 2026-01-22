@@ -320,7 +320,6 @@ struct symstruct *target;
 	    load(target, DREG);
 	    if (target->type == sctype)
 		sctoi();
-#ifdef I8088
 	    else if (tscalar & SHORT)
 	    {
 		if (tscalar & UNSIGNED)
@@ -328,7 +327,6 @@ struct symstruct *target;
 		else
 		    stoi();
 	    }
-#endif
 	    else
 		ctoi();
 	    target->storage = DREG;

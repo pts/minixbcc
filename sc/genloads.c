@@ -24,7 +24,6 @@ FORWARD fastin_pt pushpull P((store_pt reglist, bool_pt pushflag));
 PUBLIC void addoffset(source)
 struct symstruct *source;
 {
-#ifdef I8088
     if (source->level == OFFKLUDGELEVEL)
     {
 	outadd();
@@ -39,7 +38,6 @@ struct symstruct *source;
 	source->offset.offi = 0;
     }
     else
-#endif
     if (source->offset.offi != 0)
     {
 	addconst(source->offset.offi, source->storage);
@@ -120,7 +118,6 @@ PUBLIC store_pt getindexreg()
     if (!(reguse & INDREG2))
 	return INDREG2;
 #if NOTFINISHED
-#ifdef I8088
     if (i386_32)
     {
 	if (!(reguse & DATREG1))
@@ -128,7 +125,6 @@ PUBLIC store_pt getindexreg()
 	if (!(reguse & DATREG2))
 	    return DATREG2;
     }
-#endif
 #endif
     bugerror("out of index regs");
     return 0;
@@ -178,17 +174,13 @@ struct symstruct *target;
 	targreg = sourcereg;
     else
 	targreg = getindexreg();
-#ifdef I8088
     if ((store_t) sourcereg == GLOBAL && target->indcount == 0 &&
 	!(source->type->scalar & CHAR) && source->storage != DREG)
 	load(source, targreg);
     else
-#endif
 	load(source, DREG);
 
-#ifdef I8088
     softop(MULOP, constsym((value_t) size), source);
-#endif
 
 /*-----------------------------------------------------------------------------
 	deal with constant target - constant becomes offset, result in DREG
@@ -206,7 +198,6 @@ struct symstruct *target;
 	and the offset can be left after adding DREG
 -----------------------------------------------------------------------------*/
 
-#ifdef I8088
     if (target->indcount != 0)
     {
 	targtype = target->type;
@@ -221,15 +212,12 @@ struct symstruct *target;
 	target->level = OFFKLUDGELEVEL;
 	return;
     }
-#endif
     {
-#ifdef I8088
 	if ((store_t) targreg != (store_t) sourcereg)
 	    regtransfer(sourcereg, targreg);
 	outadd();
 	outregname(targreg);
 	outncregname(DREG);
-#endif
     }
     if ((store_t) sourcereg == LOCAL)
 #ifdef FRAMEPOINTER
@@ -352,10 +340,8 @@ store_pt targreg;
 #endif
 	if (source->type->scalar & CHAR)
 	    targreg = BREG;
-#ifdef I8088
 	if (source->storage == DREG)
 	    addoffset(source);
-#endif
 	if (source->storage != (store_t) targreg)
 	    transfer(source, targreg);
 	addoffset(source);
@@ -447,7 +433,6 @@ store_pt targreg;
     }
     else
     {
-#ifdef I8088
 	if (source->indcount == 0 && source->storage != GLOBAL &&
 	    (source->offset.offi != 0 || source->level == OFFKLUDGELEVEL))
 	{
@@ -466,7 +451,6 @@ store_pt targreg;
 		(store_t) targreg & (AXREG | ALREG))
 		unbumplc();
 	}
-#endif
 	movereg(source, targreg);
     }
 }
@@ -498,7 +482,6 @@ store_pt targreg;
 {
     if ((store_t) targreg & ALLDATREGS && source->type->scalar & CHAR)
 	targreg = BREG;
-#ifdef I8088
     if (i386_32 && source->type->scalar & SHORT &&
 	source->indcount <= 1)
     {
@@ -506,13 +489,10 @@ store_pt targreg;
 	bumplc();
     }
     else
-#endif
 	outregname(targreg);
     if (source->storage == CONSTANT)
 	adjlc((offset_t) source->offset.offv, targreg);
-#ifdef I8088
     outcomma();
-#endif
     outadr(source);
     source->storage = targreg;	/* in register for further use */
     source->flags = 0;
@@ -561,10 +541,8 @@ struct symstruct *adr;
 	outshex(adr->offset.offi);
     }
     bumplc2();
-#ifdef I8088
     if (i386_32)
 	bumplc2();
-#endif
 }
 
 /* print comma, then register name, then newline */
@@ -582,24 +560,19 @@ struct symstruct *adr;
     bool_t indflag;
 
     indflag = FALSE;
-#ifdef I8088
     if (adr->indcount >= MAXINDIRECT)
 	indflag = TRUE;
-#endif
     switch (adr->storage)
     {
     case CONSTANT:
 	outimmadr((offset_t) adr->offset.offv);
 	break;
-#ifdef I8088
     case DREG:
 	if (indflag || adr->offset.offi != 0 || adr->level == OFFKLUDGELEVEL)
 	    badaddress();
 	else
 	    outregname(DREG);
 	break;
-#endif
-#ifdef I8088
     case DATREG1:
     case DATREG2:
 	if (indflag && !i386_32)
@@ -608,7 +581,6 @@ struct symstruct *adr;
 	    badaddress();
 	    break;
 	}
-#endif
 	/* Fallthrough. */
     case INDREG0:
     case INDREG1:
@@ -617,18 +589,15 @@ struct symstruct *adr;
 	    outnamoffset(adr);
 	else if (adr->offset.offi != 0)
 	    outoffset(adr->offset.offi);
-#ifdef I8088
 	if (indflag)
 	    outindleft();
 	outregname(adr->storage);
-# ifdef XENIX_AS
+#ifdef XENIX_AS
 	if (indflag)
 	    outindright();
-# endif
 #endif
 	break;
     case LOCAL:
-#ifdef I8088
 # ifdef FRAMEPOINTER
 	if (framep == 0)
 	    bugerror("no frame pointer");
@@ -664,10 +633,8 @@ struct symstruct *adr;
 	if (indflag)
 	    outindright();
 # endif
-#endif /* I8088 */
 	break;
     case GLOBAL:
-#ifdef I8088
 	bumplc();
 	if (i386_32)
 	    bumplc2();
@@ -680,7 +647,6 @@ struct symstruct *adr;
 # endif
 	    bumplc();
 	}
-#endif
 	if (adr->flags & LABELLED)
 	    outlabel(adr->name.label);
 	else if (*adr->name.namep == 0)	/* constant address */
@@ -702,7 +668,6 @@ struct symstruct *adr;
 	badaddress();
 	break;
     }
-#ifdef I8088
     if (indflag)
     {
 	--adr->indcount;
@@ -710,7 +675,6 @@ struct symstruct *adr;
 	outindright();
 # endif
     }
-#endif
 }
 
 /* print register name, then newline */
@@ -773,7 +737,6 @@ store_pt reg;
     }
 }
 
-#ifdef I8088
 /* print register name for short type */
 
 PUBLIC void outshortregname(reg)
@@ -804,8 +767,6 @@ store_pt reg;
 	break;
     }
 }
-
-#endif
 
 /*-----------------------------------------------------------------------------
 	pointat(target leaf)
@@ -840,9 +801,7 @@ PUBLIC void push(source)
 struct symstruct *source;
 {
     store_t reg;
-#ifdef I8088
     uoffset_t size;
-#endif
     scalar_t sscalar;
 
     if (source->type->constructor & STRUCTU)
@@ -863,7 +822,6 @@ struct symstruct *source;
 	}
 #endif
     }
-#ifdef I8088
     else if ((source->indcount == 1 &&
 	      (sscalar & (SHORT | INT | LONG | FLOAT) ||
 	       source->type->constructor & POINTER)) ||
@@ -903,7 +861,6 @@ struct symstruct *source;
 	outadr(source);
 	sp -= size;
     }
-#endif
     else
     {
 	reg = source->storage;
@@ -940,11 +897,7 @@ bool_pt pushflag;
     if ((bool_t) pushflag)
     {
 	ppfunc = outpshs;
-#ifdef I8088
 	regbit = 1 << 10;
-#else
-	regbit = 1 << 7;
-#endif
 	regptr = regpushlist;
 	lastregbit = 1;
     }
@@ -953,29 +906,21 @@ bool_pt pushflag;
 	ppfunc = outpuls;
 	regbit = 1;
 	regptr = regpulllist;
-#ifdef I8088
 	lastregbit = 1 << 10;
-#else
-	lastregbit = 1 << 7;
-#endif
     }
     bytespushed = 0;
     while (TRUE)
     {
 	if (regbit & reglist)
 	{
-#ifdef I8088
 	    (*ppfunc)();
 	    if (*regptr != FLAGSREGCHAR)
 		outtab();
-#endif
 	    do
 		outbyte(*regptr++);
 	    while (*regptr >= MINREGCHAR);
 	    bytespushed += *regptr++ - '0';
-#ifdef I8088
 	    outnl();
-#endif
 	}
 	else
 	    do {} while (*regptr++ >= MINREGCHAR);
@@ -1018,12 +963,10 @@ struct symstruct *target;
     else
     {
 	outstore();
-#ifdef I8088
 	if (target->storage == GLOBAL && (store_t) sourcereg & (AXREG | ALREG))
 	    unbumplc();
 	outnnadr(target);
 	outcomma();
-#ifdef I8088
 	if (i386_32 && target->type->scalar & SHORT)
 	{
 	    outshortregname(sourcereg);
@@ -1031,9 +974,7 @@ struct symstruct *target;
 	    outnl();
 	}
 	else
-#endif
 	    outnregname(sourcereg);
-#endif
     }
 }
 

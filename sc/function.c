@@ -18,12 +18,10 @@
 #include "table.h"
 #include "type.h"
 
-#ifdef I8088
-# define ADJUSTLONGRETURN
-# define CANHANDLENOFRAME
-# undef CANHANDLENOFRAME
-# define STUPIDFRAME
-#endif
+#define ADJUSTLONGRETURN
+#define CANHANDLENOFRAME
+#undef  CANHANDLENOFRAME
+#define STUPIDFRAME
 
 FORWARD void out_callstring P((void));
 
@@ -207,10 +205,8 @@ struct symstruct *target;
 PRIVATE void out_callstring()
 {
     outop3str(callstring);
-#ifdef I8088
     if (i386_32)
 	bumplc2();
-#endif
 }
 
 #ifdef FRAMEPOINTER
@@ -278,18 +274,14 @@ PUBLIC void reslocals()
 	    pushlist(doubleargregs);
 	    break;
 	case 4:
-# ifdef I8088
 	    if (!i386_32)
-# endif
 	    {
 		pushlist(LONGARGREGS);
 		break;
 	    }
 	    /* Fallthrough. */
 	case 2:
-# ifdef I8088
 	    pushlist(ARGREG);
-# endif
 	}
 	arg1size = 0;		/* show 1st arg allocated */
     }

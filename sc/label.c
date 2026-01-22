@@ -13,10 +13,8 @@
 #include "sizes.h"
 #include "type.h"
 
-#ifdef I8088
-# define outlbranch() outop3str( "b")
-# define outsbranch() outop2str( "j")
-#endif
+#define outlbranch() outop3str( "b")
+#define outsbranch() outop2str( "j")
 
 #define MAXVISLAB 32
 
@@ -28,7 +26,6 @@ struct labdatstruct
     ccode_t labcond;		/* condition code for branch */
 };
 
-#ifdef I8088
 PRIVATE char lcondnames[][2] =	/* names of long condition codes */
 {
     { 'e', 'q', }, { 'n', 'e', }, { 'r', ' ', }, { 'r', 'n', },
@@ -41,7 +38,6 @@ PRIVATE char scondnames[][2] =	/* names of short condition codes */
     { 'l', ' ', }, { 'g', 'e', }, { 'l', 'e', }, { 'g', ' ', },
     { 'b', ' ', }, { 'a', 'e', }, { 'b', 'e', }, { 'a', ' ', }, 
 };
-#endif
 
 /* The `& ~(label_t) 0' pacifies the ACK 3.1 warning on Minix 1.5.10 i86: overflow in unsigned constant expression */
 /* !! Is it really OK to overflow lasthighlab to 0 here if sizeof(unsigned) == 2? */
@@ -185,11 +181,10 @@ label_t label;
 		    if ((labpatch = labptr->labpatch) != (char*) 0 &&
 			isshortbranch(lc - labptr->lablc))
 		    {
-#ifdef I8088 /* patch "bcc(c) to j(c)(c)( ) */
+			/* patch "bcc(c) to j(c)(c)( ) */
 			*labpatch = 'j';
 			*(labpatch + 1) =
 			    *(cnameptr = scondnames[(int) labptr->labcond]);
-#endif
 			*(labpatch + 2) = *(cnameptr + 1);
 			*(labpatch + 3) = ' ';
 			nlonger = jcclonger;
@@ -263,10 +258,8 @@ PUBLIC void lbranch(cond, label)
 ccode_pt cond;
 label_t label;
 {
-#ifdef I8088
     char *cnameptr;
 
-#endif
     struct labdatstruct *labptr;
     char *oldoutptr;
 
@@ -284,7 +277,6 @@ label_t label;
     else
     {
 	outlbranch();
-#ifdef I8088
 	outbyte(*(cnameptr = lcondnames[cond]));
 	outbyte(*(cnameptr + 1));
 	if ((ccode_t) cond == LS || (ccode_t) cond == HS)
@@ -295,7 +287,6 @@ label_t label;
 	bumplc2();
 	if (i386_32)
 	    bumplc();
-#endif
     }
     outlabel(label);
     outnl();
@@ -357,7 +348,6 @@ PUBLIC void sbranch(cond, label)
 ccode_pt cond;
 label_t label;
 {
-#ifdef I8088
     char *cnameptr;
 
     if ((ccode_t) cond != RN)
@@ -369,7 +359,6 @@ label_t label;
 	outlabel(label);
 	outnl();
     }
-#endif
 }
 
 /* reverse bump location counter */

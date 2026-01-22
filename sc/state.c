@@ -330,10 +330,8 @@ PRIVATE void docont()
 	outshex(contloop->spmark);
 	outminus();
 	outswstacklab();
-#ifdef I8088
 	if (i386_32)
 	    bumplc2();
-#endif
 	outnl();
     }
     jump(contloop->contlab);
@@ -606,11 +604,9 @@ PRIVATE void jumptocases()
 	    for (caseval = caseptr->casevalue; caseval <= case1ptr->casevalue;
 		 ++caseval)
 	    {
-#ifdef I8088
 		if (ptypesize > 2)
 		    defdword();
 		else
-#endif
 		    defword();
 		if (caseval != caseptr->casevalue)
 		    outlabel(dfaultlab);
@@ -620,10 +616,8 @@ PRIVATE void jumptocases()
 		    ++caseptr;
 		}
 		bumplc2();
-#ifdef I8088
 		if (ptypesize > 2)
 		    bumplc2();
-#endif
 		outnl();
 	    }
 	    deflabel(zjtablelab);
@@ -644,11 +638,9 @@ offset_t offset;
 #endif
     outplus();
     outswstacklab();
-#ifdef I8088
     bumplc();
     if (i386_32)
 	bumplc2();
-#endif
 }
 
 PUBLIC void outswstacklab()

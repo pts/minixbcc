@@ -474,10 +474,8 @@ char *argv[];
 	else
 	    switch (arg[1])
 	    {
-#ifdef I8088
 	    case '0':		/* generate 16-bit code */
 	    case '3':		/* generate 32-bit code */
-#endif
 	    case 'c':		/* caller saves */
 #ifdef DEBUG
 	    case 'd':		/* print debugging information in asm output */
@@ -524,7 +522,6 @@ ts_s_includelist += sizeof *incnew;
 		break;
 	    }
     }
-#ifdef I8088
     if (flag['3'])
     {
 	i386_32 = TRUE;
@@ -532,7 +529,6 @@ ts_s_includelist += sizeof *incnew;
     }
     else
 	definestring("__AS386_16__");
-#endif
     if (flag['c'])
     {
 	callersaves = TRUE;
@@ -545,9 +541,7 @@ ts_s_includelist += sizeof *incnew;
     if (flag['f'])
     {
 	arg1inreg = TRUE;
-#ifdef I8088
 	definestring("__FIRST_ARG_IN_AX__");
-#endif
     }
     arg1op = arg1inreg ? ROOTLISTOP : LISTOP;
     suppress_line_numbers = flag['P'];
