@@ -16,7 +16,6 @@
 #endif
 #include "const.h"
 #include "type.h"
-#include "byteord.h"
 #include "macro.h"
 #undef EXTERN
 #define EXTERN
@@ -49,7 +48,7 @@ char **argv;
     initbin();
     initobj();
     initsource();		/* only nec to init for unsupported mem file */
-    typeconv_init(AS_BIG_ENDIAN, LONG_BIG_ENDIAN);
+    typeconv_init(0  /* AS_BIG_ENDIAN */, 0  /* LONG_BIG_ENDIAN */);
     warn.global = TRUE;		/* constant */
     process_args(argc, argv);
     initscan();
