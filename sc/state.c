@@ -610,9 +610,6 @@ PRIVATE void jumptocases()
 	    slconst((value_t) (ptypesize / 2), DREG);
 					/* really log ptypesize */
 	    deflabel(jtablelab = casejump());
-#ifdef I8088
-	    jtablelab = jtablelab; 	/* not used, allocated for regress */
-#endif
 	    for (caseval = caseptr->casevalue; caseval <= case1ptr->casevalue;
 		 ++caseval)
 	    {
