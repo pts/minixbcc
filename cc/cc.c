@@ -28,6 +28,7 @@
 typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
 
 #define LIBDIR "/usr/minixbcc"
+#define INCLUDE "include"
 
 #define SC	"sc"
 #define AS	"as"
@@ -81,6 +82,16 @@ PRIVATE struct
     char slash;  /* '/' */
     char crtso[sizeof(LIBCA)];
 } path_libca = { LIBDIR, '?', '/', LIBCA };
+
+/* We need this workaround since many old C compilers, including BCC con't support string literal concatenation in:
+ * char path_include[] = "-I" LIBDIR INCLUDE;
+ */
+PRIVATE struct
+{
+    char flag[2];
+    char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
+    char include[sizeof(INCLUDE)];
+} path_include = { {'-', 'I'}, LIBDIR, INCLUDE };
 
 PRIVATE char bits32_arg[3] = "-?";  /*The '?' will be replaced with '0' or '3'. */
 
@@ -149,7 +160,10 @@ char **argv;
     char *s_out;
     int status = 0;
 
-    path_tool.libdir[sizeof(path_tool.libdir) - 1] = path_crtso.libdir[sizeof(path_crtso.libdir) - 1] = path_libca.libdir[sizeof(path_libca.libdir) - 1] = '/';
+    path_tool.libdir[sizeof(path_tool.libdir) - 1] =
+        path_crtso.libdir[sizeof(path_crtso.libdir) - 1] =
+        path_libca.libdir[sizeof(path_libca.libdir) - 1] =
+        path_include.libdir[sizeof(path_include.libdir) - 1] = '/';
 
     progname = argv[0];
     addarg(&asargs, "-u");
@@ -246,7 +260,7 @@ char **argv;
 	    case 'L':
 		addarg(&ldargs, arg + 2);
 		break;
-	    case 'U':
+	    case 'U':  /* !! Now sc supports this, add to &ccargs. */
 		++errcount;
 		unsupported(arg, "undef");
 		break;
@@ -292,9 +306,10 @@ char **argv;
 
     path_crtso.target = path_libca.target = bits32_arg[1] = bits32 ? '3' : '0';
     addarg(&ccargs, bits32_arg);
+    addarg(&ccargs, path_include.flag);  /* Add after -I... args above, so that it has lower priority. */
     addarg(&asargs, bits32_arg);
     addarg(&ldargs, bits32_arg);
-    addarg(&ldargs, path_crtso.libdir);
+    addarg(&ldargs, path_crtso.libdir);  /* !! Don't add if -nostdlib is specified. */
     addarg(&asargs, "-n");
     if (ncsfiles < 2)
 	echo = FALSE;
@@ -337,7 +352,6 @@ char **argv;
 		    else
 			s_out = my_mktemp();
 		    addarg(&ccargs, arg);
-		    /* !! addarg(&ccargs, "-I...")); as last */
 		    if (run((strcpy(path_tool.tool, SC), path_tool.libdir), "-o", s_out, &ccargs) != 0)
 		    {
 			--ccargs.argc;
@@ -388,7 +402,7 @@ char **argv;
 
     if (!cc_only && !as_only && status == 0)
     {
-	addarg(&ldargs, path_libca.libdir);
+	addarg(&ldargs, path_libca.libdir);  /* !! Don't add if -nostdlib is specified. */
 	status = run((strcpy(path_tool.tool, LD), path_tool.libdir), "-o", f_out, &ldargs) != 0;
     }
     killtemps();

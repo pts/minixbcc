@@ -14,6 +14,9 @@ bcc -O -i -o bbcc.host bbcc/bbcc.c || exit "$?" # !! move this to build.sh, don'
 cp bbcc.host /usr/bin/bbcc || exit "$?"
 libdir=/usr/minixbcc
 test -d "$libdir" || mkdir "$libdir" || exit "$?"
+tar cf include.tar include || exit "$?"
+(cd "$libdir" && tar xf -) <include.tar || exit "$?"  # !! Does it properly copy mtime?
+rm -f include.tar
 for a03 in 0 3; do
   test -d "$libdir/$a03" || mkdir "$libdir/$a03" || exit "$?"
   cp "$a03"/sc "$libdir"/"$a03"/ || exit "$?"
