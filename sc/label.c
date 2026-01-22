@@ -229,11 +229,18 @@ label_t label;
 			    nlonger = jmplonger;
 			lc -= nlonger;
 			labptrsave = labptr;
-			while (++labptr != labmid)
-			    if (labptr == labmax)
-				labptr = &vislab[-1];
-			    else
-				labptr->lablc -= nlonger;
+		    incr1:
+			++labptr;
+		    test1:
+			if (labptr == labmid) goto done1;
+			if (labptr == labmax)
+			{
+			    labptr = vislab;
+			    goto test1;
+			}
+			labptr->lablc -= nlonger;
+			goto incr1;
+		    done1:
 			labptr = labptrsave;
 		    }
 		}
