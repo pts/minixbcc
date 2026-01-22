@@ -250,26 +250,16 @@ struct symstruct *target;
 #if DYNAMIC_LONG_ORDER
 	    if (long_big_endian)
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
-# if SC_BIG_ENDIAN
-		target->offset.offi += oldsize - ctypesize;
-# else
+#if DYNAMIC_LONG_ORDER
 	    {
 		if (oldscalar & DLONG)
 		    target->offset.offi += itypesize;	/* discard msword */
 	    }
-# endif
 #endif
 #if DYNAMIC_LONG_ORDER
 	    else
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
-# if SC_BIG_ENDIAN
-	    target->offset.offi += ctypesize;
-# else
 	    {}
-# endif
-#endif
 	}
 	else if (target->storage != CONSTANT)
 	{
@@ -289,7 +279,7 @@ struct symstruct *target;
 #if DYNAMIC_LONG_ORDER
 	    if (long_big_endian)
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
+#if DYNAMIC_LONG_ORDER
 	    {
 		if (oldscalar & DLONG)
 		    target->offset.offi += itypesize;	/* discard msword */

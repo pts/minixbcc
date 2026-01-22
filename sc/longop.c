@@ -154,13 +154,11 @@ PUBLIC void outlongendian()
 #if DYNAMIC_LONG_ORDER
     if (long_big_endian)
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
+#if DYNAMIC_LONG_ORDER
 	outnbyte('b');
 #endif
 #if DYNAMIC_LONG_ORDER
     else
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
 	outnbyte('l');
-#endif
 }

@@ -63,7 +63,7 @@ struct symstruct *source;
 #  if DYNAMIC_LONG_ORDER
 	if (long_big_endian)
 #  endif
-#  if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
+#  if DYNAMIC_LONG_ORDER
 	{
 	    regexchange(LONGREG2, LONGRETURNREGS & ~LONGREG2);
 	    regexchange(LONGREG2, DXREG);
@@ -72,9 +72,7 @@ struct symstruct *source;
 #  if DYNAMIC_LONG_ORDER
 	else
 #  endif
-#  if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
 	    regtransfer(DXREG, LONGRETURNREGS & ~LONGREG2);
-#  endif
 # endif
 	source->storage = LONGRETURNREGS & ~LONGREG2;
     }
@@ -172,7 +170,7 @@ PUBLIC void loadretexpression()
 #  if DYNAMIC_LONG_ORDER
 	if (long_big_endian)
 #  endif
-#  if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
+#  if DYNAMIC_LONG_ORDER
 	{
 	    regexchange(LONGREG2, DXREG);
 	    regexchange(LONGREG2, LONGRETURNREGS & ~LONGREG2);
@@ -181,9 +179,7 @@ PUBLIC void loadretexpression()
 #  if DYNAMIC_LONG_ORDER
 	else
 #  endif
-#  if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
 	    regtransfer(LONGRETURNREGS & ~LONGREG2, DXREG);
-#  endif
 # endif
     }
     else

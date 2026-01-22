@@ -460,29 +460,16 @@ struct nodestruct *p2;
 #if DYNAMIC_LONG_ORDER
 	    if (long_big_endian)
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
-# if SC_BIG_ENDIAN
-		target->offset.offi += targszdelta;
-# else
+#if DYNAMIC_LONG_ORDER
 	    {
 		if (lscalar & DLONG)
 		    target->offset.offi += itypesize;	/* discard msword */
 	    }
-# endif
 #endif
 #if DYNAMIC_LONG_ORDER
 	    else
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
-# if SC_BIG_ENDIAN
-	    {
-		if (rscalar & CHAR)
-		    target->offset.offi += ctypesize;
-	    }
-# else
 	    {}
-# endif
-#endif
 	}
 	else
 	    goto node1;

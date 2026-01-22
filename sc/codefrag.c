@@ -601,18 +601,16 @@ uoffset_t value;
 #if DYNAMIC_LONG_ORDER
 	if (long_big_endian)
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
+#if DYNAMIC_LONG_ORDER
 	    outnhex(longhigh);
 #endif
 #if DYNAMIC_LONG_ORDER
 	else
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
 	{
 	    outnhex(longlow);
 	    longlow = longhigh;
 	}
-#endif
 	defword();
     }
     outnhex(longlow);
@@ -878,15 +876,13 @@ PRIVATE bool_pt lowregisDreg()
 #if DYNAMIC_LONG_ORDER
     if (long_big_endian)
 #endif
-# if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
+# if DYNAMIC_LONG_ORDER
 	return FALSE;
 #endif
 #if DYNAMIC_LONG_ORDER
     else
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
 	return TRUE;
-#endif
 }
 
 /* partially long shift left register by a constant (negative = infinity) */

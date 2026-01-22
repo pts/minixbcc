@@ -646,18 +646,11 @@ PRIVATE void declfunc()
 		arg1size = itypesize;
 	    argsp = softsp -= arg1size;
 	}
-#if SC_BIG_ENDIAN
-	if (argsize < itypesize)
-	    argsp += itypesize - argsize;
-	symptr->offset.offi = argsp;
-	argsp += argsize;
-#else
 	symptr->offset.offi = argsp;
 	if (argsize > itypesize)
 	    argsp += argsize;
 	else
 	    argsp += itypesize;
-#endif
 	if (arg1inreg && symptr == &locsyms[0])
 	    argsp = returnadrsize;	/* skip return adr after 1st arg */
     }

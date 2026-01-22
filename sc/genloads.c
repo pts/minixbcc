@@ -279,12 +279,10 @@ store_pt targreg;
 #if DYNAMIC_LONG_ORDER
 	    if (!long_big_endian)
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
 	    {
 		if ((store_t) targreg == DREG)
 		    source->storage = DREG;
 	    }
-#endif
 	    if (source->storage != (store_t) targreg)
 		transfer(source, targreg);
 	    if (source->offset.offi != 0)
@@ -445,18 +443,16 @@ store_pt targreg;
 #if DYNAMIC_LONG_ORDER
 		if (long_big_endian)
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN
+#if DYNAMIC_LONG_ORDER
 		    loadconst(longhigh, DREG);
 #endif
 #if DYNAMIC_LONG_ORDER
 		else
 #endif
-#if DYNAMIC_LONG_ORDER || LONG_BIG_ENDIAN == 0
 		{
 		    loadconst(longlow, DREG);
 		    longlow = longhigh;
 		}
-#endif
 	    }
 	}
 	loadconst(longlow, targreg);
