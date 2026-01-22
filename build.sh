@@ -156,7 +156,8 @@ if test "$1" = cc; then  # For cross-compiling with cc (e.g. on Linux).
   h=cross  # Host system is a cross-compiler. Other values: h=0 means Minix i86; h=3 means Minix i386.
 fi
 
-if test "$1" = gcc; then  # For cross-compiling with GCC (gcc) (e.g. on Linux, FreeBSD, macOS).
+if test "$1" = gcc || test "$1" = clang; then  # For cross-compiling with GCC (gcc) (e.g. on Linux, FreeBSD, macOS).
+  gcc="$1"  # gcc or clang.
   sc=./sc.cross
   as=./as.cross
   ld=./ld.cross
@@ -164,11 +165,11 @@ if test "$1" = gcc; then  # For cross-compiling with GCC (gcc) (e.g. on Linux, F
 
   # !! Does it all work with -m64? What changes if sizeof(long) == 8? Shouldn't we use int instead?
   # !! -DDEFAULT_INCLUDE_DIR='"include"' 
-  gcc -m32 -s -O2 -Werror -Wall -W -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  gcc -m32 -s -O2 -Werror -Wall -W -DMINIX_SYNTAX -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  gcc -m32 -s -O2 -Werror -Wall -W -DDEBUG_SIZE_NOPAD -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  gcc -m32 -s -O2 -Werror -Wall -W -o cr.cross cr/cr.c || exit "$?"
-  gcc -m32 -s -O2 -Werror -Wall -W -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  "$gcc" -m32 -s -O2 -Werror -Wall -W -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+  "$gcc" -m32 -s -O2 -Werror -Wall -W -DMINIX_SYNTAX -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+  "$gcc" -m32 -s -O2 -Werror -Wall -W -DDEBUG_SIZE_NOPAD -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+  "$gcc" -m32 -s -O2 -Werror -Wall -W -o cr.cross cr/cr.c || exit "$?"
+  "$gcc" -m32 -s -O2 -Werror -Wall -W -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
 
   h=cross  # Host system is a cross-compiler. Other values: h=0 means Minix i86; h=3 means Minix i386.
 fi
