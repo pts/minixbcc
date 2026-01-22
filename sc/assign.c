@@ -247,19 +247,6 @@ struct symstruct *target;
 	    fconvert(target, type);
 	else if (target->indcount == 1)
 	{
-#if DYNAMIC_LONG_ORDER
-	    if (long_big_endian)
-#endif
-#if DYNAMIC_LONG_ORDER
-	    {
-		if (oldscalar & DLONG)
-		    target->offset.offi += itypesize;	/* discard msword */
-	    }
-#endif
-#if DYNAMIC_LONG_ORDER
-	    else
-#endif
-	    {}
 	}
 	else if (target->storage != CONSTANT)
 	{
@@ -276,15 +263,6 @@ struct symstruct *target;
 	    extend(target);
 	else if (target->indcount == 1)
 	{
-#if DYNAMIC_LONG_ORDER
-	    if (long_big_endian)
-#endif
-#if DYNAMIC_LONG_ORDER
-	    {
-		if (oldscalar & DLONG)
-		    target->offset.offi += itypesize;	/* discard msword */
-	    }
-#endif
 	}
 	else
 	    load(target, DREG);

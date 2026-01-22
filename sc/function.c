@@ -60,19 +60,7 @@ struct symstruct *source;
     if (source->type->scalar & DLONG)
     {
 # ifdef ADJUSTLONGRETURN
-#  if DYNAMIC_LONG_ORDER
-	if (long_big_endian)
-#  endif
-#  if DYNAMIC_LONG_ORDER
-	{
-	    regexchange(LONGREG2, LONGRETURNREGS & ~LONGREG2);
-	    regexchange(LONGREG2, DXREG);
-	}
-#   endif
-#  if DYNAMIC_LONG_ORDER
-	else
-#  endif
-	    regtransfer(DXREG, LONGRETURNREGS & ~LONGREG2);
+	regtransfer(DXREG, LONGRETURNREGS & ~LONGREG2);
 # endif
 	source->storage = LONGRETURNREGS & ~LONGREG2;
     }
@@ -167,19 +155,7 @@ PUBLIC void loadretexpression()
     {
 	loadexpression(LONGRETURNREGS & ~LONGREG2, returntype);
 # ifdef ADJUSTLONGRETURN
-#  if DYNAMIC_LONG_ORDER
-	if (long_big_endian)
-#  endif
-#  if DYNAMIC_LONG_ORDER
-	{
-	    regexchange(LONGREG2, DXREG);
-	    regexchange(LONGREG2, LONGRETURNREGS & ~LONGREG2);
-	}
-#   endif
-#  if DYNAMIC_LONG_ORDER
-	else
-#  endif
-	    regtransfer(LONGRETURNREGS & ~LONGREG2, DXREG);
+	regtransfer(LONGRETURNREGS & ~LONGREG2, DXREG);
 # endif
     }
     else

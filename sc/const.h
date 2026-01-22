@@ -21,7 +21,6 @@
 #define SELFTYPECHECK		/* check calculated type = runtime type */
 
 #ifdef I8088
-# define DYNAMIC_LONG_ORDER 1	/* long word order spec. at compile time */
 # define FRAMEPOINTER		/* index locals off frame ptr, not stack ptr */
 # define HOLDSTRINGS		/* hold strings for dumping at end
 				 * since assembler has only 1 data seg */

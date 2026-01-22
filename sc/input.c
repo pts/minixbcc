@@ -484,9 +484,6 @@ char *argv[];
 #endif
 	    case 'E':		/* acting as cpp */
 	    case 'f':		/* pass first argument in register */
-#ifdef DYNAMIC_LONG_ORDER
-	    case 'l':		/* long big-endian */
-#endif
 	    case 'P':		/* if acting as cpp, suppress line numbers */
 	    case 't':		/* print source code in asm output */
 	    case 'w':		/* watch location counter */
@@ -553,13 +550,6 @@ ts_s_includelist += sizeof *incnew;
 #endif
     }
     arg1op = arg1inreg ? ROOTLISTOP : LISTOP;
-#ifdef DYNAMIC_LONG_ORDER
-    if (flag['l'])
-    {
-	long_big_endian = TRUE;
-	definestring("__LONG_BIG_ENDIAN__");
-    }
-#endif
     suppress_line_numbers = flag['P'];
     ctext = flag['t'];
     watchlc = flag['w'];

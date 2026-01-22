@@ -276,9 +276,6 @@ store_pt targreg;
 	    loadreg(source, targreg);
 	else if (source->indcount == 0)
 	{
-#if DYNAMIC_LONG_ORDER
-	    if (!long_big_endian)
-#endif
 	    {
 		if ((store_t) targreg == DREG)
 		    source->storage = DREG;
@@ -440,19 +437,8 @@ store_pt targreg;
 		       & (offset_t) intmaskto;
 	    if ((store_t) targreg != LONGREG2)	/* loading the whole long */
 	    {
-#if DYNAMIC_LONG_ORDER
-		if (long_big_endian)
-#endif
-#if DYNAMIC_LONG_ORDER
-		    loadconst(longhigh, DREG);
-#endif
-#if DYNAMIC_LONG_ORDER
-		else
-#endif
-		{
-		    loadconst(longlow, DREG);
-		    longlow = longhigh;
-		}
+		loadconst(longlow, DREG);
+		longlow = longhigh;
 	    }
 	}
 	loadconst(longlow, targreg);

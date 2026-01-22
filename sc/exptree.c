@@ -457,19 +457,6 @@ struct nodestruct *p2;
 	else if (target->indcount == 1 && targszdelta > 0 &&
 		 target->flags != REGVAR)
 	{
-#if DYNAMIC_LONG_ORDER
-	    if (long_big_endian)
-#endif
-#if DYNAMIC_LONG_ORDER
-	    {
-		if (lscalar & DLONG)
-		    target->offset.offi += itypesize;	/* discard msword */
-	    }
-#endif
-#if DYNAMIC_LONG_ORDER
-	    else
-#endif
-	    {}
 	}
 	else
 	    goto node1;

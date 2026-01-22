@@ -598,15 +598,6 @@ uoffset_t value;
     {
 	longhigh = (value >> INT16BITSTO) & (uoffset_t) intmaskto;
 	defword();
-#if DYNAMIC_LONG_ORDER
-	if (long_big_endian)
-#endif
-#if DYNAMIC_LONG_ORDER
-	    outnhex(longhigh);
-#endif
-#if DYNAMIC_LONG_ORDER
-	else
-#endif
 	{
 	    outnhex(longlow);
 	    longlow = longhigh;
@@ -871,17 +862,8 @@ store_pt reg;
 
 /* convert index half of long reg pair into low half of pair */
 
-PRIVATE bool_pt lowregisDreg()
+PRIVATE bool_pt lowregisDreg()  /* !! inline */
 {
-#if DYNAMIC_LONG_ORDER
-    if (long_big_endian)
-#endif
-# if DYNAMIC_LONG_ORDER
-	return FALSE;
-#endif
-#if DYNAMIC_LONG_ORDER
-    else
-#endif
 	return TRUE;
 }
 
@@ -901,20 +883,10 @@ store_pt reg;
 #ifdef I8088
     if (shift >= CHBITSTO)
     {
-	if (long_big_endian)
-	{
-	    tfrlohi();
-	    outnop2str("mov\tal,bh");
-	    outnop2str("mov\tbh,bl");
-	    outnop2str("sub\tbl,bl");
-	}
-	else
-	{
-	    outnop2str("mov\tbh,bl");
-	    outnop2str("mov\tbl,ah");
-	    tfrlohi();
-	    clrBreg();
-	}
+	outnop2str("mov\tbh,bl");
+	outnop2str("mov\tbl,ah");
+	tfrlohi();
+	clrBreg();
 	return (int) shift - CHBITSTO;
     }
 #endif
@@ -942,29 +914,16 @@ bool_pt uflag;
 #ifdef I8088
     if (shift >= CHBITSTO)
     {
-	if (long_big_endian)
-	{
-	    outnop2str("mov\tbl,bh");
-	    outnop2str("mov\tbh,al");
-	    tfrhilo();
-	    if ((bool_t) uflag)
-		ctoi();
-	    else
-		sctoi();
-	}
+	tfrhilo();
+	outnop2str("mov\tah,bl");
+	outnop2str("mov\tbl,bh");
+	if ((bool_t) uflag)
+	    outnop2str("sub\tbh,bh");
 	else
 	{
-	    tfrhilo();
-	    outnop2str("mov\tah,bl");
-	    outnop2str("mov\tbl,bh");
-	    if ((bool_t) uflag)
-		outnop2str("sub\tbh,bh");
-	    else
-	    {
-		regexchange(reg, DREG);
-		sctoi();
-		regexchange(reg, DREG);
-	    }
+	    regexchange(reg, DREG);
+	    sctoi();
+	    regexchange(reg, DREG);
 	}
 	return (int) shift - CHBITSTO;
     }

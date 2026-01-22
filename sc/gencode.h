@@ -27,10 +27,6 @@ EXTERN uoffset_t funcsaveregsize;  /* tot size of framelist/calleemask regs */
 EXTERN bool_t i386_32;		/* nonzero to generate 386 32 bit code */
 				/* depends on zero init */
 #endif
-#ifdef DYNAMIC_LONG_ORDER
-EXTERN bool_t long_big_endian;	/* nonzero if high long word is first */
-				/* depends on zero init */
-#endif
 EXTERN offset_t lowsp;		/* low water sp (collects locals in switch) */
 #ifndef NOFP
 EXTERN bool_t printf_fp;	/* nonzero if *printf called with FP arg  */

@@ -149,16 +149,7 @@ struct symstruct *target;
     }
 }
 
-PUBLIC void outlongendian()
+PUBLIC void outlongendian()  /* !! inline */
 {
-#if DYNAMIC_LONG_ORDER
-    if (long_big_endian)
-#endif
-#if DYNAMIC_LONG_ORDER
-	outnbyte('b');
-#endif
-#if DYNAMIC_LONG_ORDER
-    else
-#endif
 	outnbyte('l');
 }
