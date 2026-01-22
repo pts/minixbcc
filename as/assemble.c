@@ -55,14 +55,11 @@ PRIVATE pfv rout_table[] =
     pset,
     psetdp,
     ptext,
-#ifdef I80386
     puse16,
     puse32,
-#endif
     pwarn,
     /* end of pseudo-ops */
 
-#ifdef I80386
     mbcc,
     mbswap,
     mcall,
@@ -119,7 +116,6 @@ PRIVATE pfv rout_table[] =
     mshdouble,
     mtest,
     mxchg,
-#endif /* I80386 */
 };
 
 FORWARD void asline P((void));
@@ -161,11 +157,7 @@ PUBLIC void assemble()
 	listline();
 	genbin();
 	genobj();
-	binmbuf = lc += lcjump
-#ifdef I80386
-	    + immcount
-#endif
-	    ;
+	binmbuf = lc += lcjump + immcount;
     }
 }
 
@@ -174,13 +166,9 @@ PRIVATE void asline()
     register struct sym_s *symptr;
 
     postb = popflags = pcrflag =
-#ifdef I80386
 	sprefix = oprefix = aprefix =
-#endif
 	immcount = lastexp.data = lcjump = 0;
-#ifdef I80386
     sib = NO_SIB;
-#endif
 #if SIZEOF_OFFSET_T > 2
     fqflag =
 #endif
@@ -275,12 +263,10 @@ PRIVATE void asline()
     (*routine)();
     if (sym != EOLSYM)
 	error(JUNK_AFTER_OPERANDS);
-#ifdef I80386
     if (aprefix != 0)
 	++mcount;
     if (oprefix != 0)
 	++mcount;
     if (sprefix != 0)
 	++mcount;
-#endif
 }

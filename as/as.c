@@ -86,9 +86,7 @@ PUBLIC void finishup()
 
 PRIVATE void initp1()
 {
-#ifdef I80386
     idefsize = defsize = sizeof (char *) > 2 ? 4 : 2;
-#endif
     lctabtop = lctab + NLOC;
     lstfil = STDOUT;
     mapnum = 15;		/* default map number for symbol table */
@@ -153,7 +151,6 @@ char **argv;
 	    }
 	    switch (arg[1])
 	    {
-#ifdef I80386
 	    case '0':
 		idefsize = defsize = 0x2;
 		break;
@@ -163,7 +160,6 @@ char **argv;
 	    case 'a':
 		asld_compatible = TRUE;
 		break;
-#endif
 	    case 'b':
 		if (!isnextarg || binfil != 0)
 		    usage();
@@ -175,11 +171,9 @@ char **argv;
 	    case 'g':
 		globals_only_in_obj = TRUE;
 		break;
-#ifdef I80386
 	    case 'j':
 		jumps_long = TRUE;
 		break;
-#endif
 	    case 'l':
 		list.global = TRUE;
 		goto get_any_list_file;
@@ -263,10 +257,5 @@ unsigned num;
 
 PRIVATE void usage()
 {
-    as_abort(
-#ifdef I80386
-"usage: as [-03agjuw] [-b [bin]] [-lm [list]] [-n name] [-o obj] [-s sym] src");
-#else
-    "usage: as [-guw] [-b [bin]] [-lm [list]] [-n name] [-o obj] [-s sym] src");
-#endif
+    as_abort("usage: as [-03agjuw] [-b [bin]] [-lm [list]] [-n name] [-o obj] [-s sym] src");
 }

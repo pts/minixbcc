@@ -5,7 +5,6 @@
 
 /* major switches */
 
-#define I80386			/* generate 80386 code */
 #define MNSIZE			/* allow byte size in mnemonic, e.g. "movb" */
 
 /* defaults */
@@ -55,7 +54,6 @@
 enum
 {
 /* Register codes (internal to assembler). */
-#ifdef I80386
 
 /* Index regs must be first. */
     BPREG,
@@ -120,12 +118,10 @@ enum
     ST7REG,
 
     NOREG,
-#endif /* I80386 */
 
     LASTENUMVAL1  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
 
-#ifdef I80386
 enum
 {
 /* Type and size keywords. */
@@ -139,7 +135,6 @@ enum
     TBYTEOP,
     WORDOP  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
-#endif /* I80386 */
 
 /* special chars */
 
@@ -382,9 +377,7 @@ oops - ENTBIT misplaced
 				/* size of macro param buffer */
 #define MAXMAC		8	/* max nesting level of macro stack */
 #define NLOC		16	/* number of location counters */
-#ifdef I80386
 #define NO_SIB		0340	/* illegal sib (3 with 4) to mean no sib */
-#endif
 
 /* special segments */
 

@@ -96,7 +96,6 @@ PUBLIC void genbin()
 	else
 	{
 	    remaining = mcount - 0x1;	/* count opcode immediately */
-#ifdef I80386
 	    if (aprefix != 0x0)
 	    {
 		putbin(aprefix);
@@ -112,7 +111,6 @@ PUBLIC void genbin()
 		putbin(sprefix);
 		--remaining;
 	    }
-#endif
 	    if (page != 0x0)
 	    {
 		putbin(page);
@@ -126,20 +124,16 @@ PUBLIC void genbin()
 		    putbin(postb);
 		    --remaining;
 		}
-#ifdef I80386
 		if (sib != NO_SIB)
 		{
 		    putbin(sib);
 		    --remaining;
 		}
-#endif
 		if (remaining != 0x0)
 		    putbinoffset(lastexp.offset, remaining);
 	    }
-#ifdef I80386
 	    if (immcount != 0x0)
 		putbinoffset(immadr.offset, immcount);
-#endif
 	}
 	/* else no code for this instruction, or already generated */
     }

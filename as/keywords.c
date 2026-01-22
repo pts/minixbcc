@@ -27,7 +27,6 @@
 
 PUBLIC char regs[] =
 {
-#ifdef I80386
     2, 'B', 'P', BPREG, 0,
     2, 'B', 'X', BXREG, 0,
     2, 'D', 'I', DIREG, 0,
@@ -83,12 +82,9 @@ PUBLIC char regs[] =
 #ifdef KV1
     2, 'S', 'T', ST0REG, 0,
 #endif
-#endif /* I80386 */
 
     0				/* end of register list */
 };
-
-#ifdef I80386
 
 /* type sizes */
 /* the "opcode" field gives the type size */
@@ -106,8 +102,6 @@ PUBLIC char typesizes[] =
     4, 'W', 'O', 'R', 'D', WORDOP, 2,
     0				/* end of typesize list */
 };
-
-#endif
 
 /* ops */
 /* the routine number is given in 1 byte */
@@ -195,7 +189,6 @@ PUBLIC char ops[] =
     6, '.', 'Z', 'E', 'R', 'O', 'W', BLKWOP, 0,
 
     /* hardware ops. The opcode field is now used */
-#ifdef I80386
     3, 'A', 'A', 'A', INHER, 0x37,
     3, 'A', 'A', 'D', INHER_A, 0xD5,
     3, 'A', 'A', 'M', INHER_A, 0xD4,
@@ -498,14 +491,12 @@ PUBLIC char ops[] =
     5, 'F', 'Y', 'L', '2', 'X', F_INHER, 0x71,
     7, 'F', 'Y', 'L', '2', 'X', 'P', '1', F_INHER, 0x79,
 #endif
-#endif /* I80386 */
 
     0				/* end of ops */
 };
 
 PUBLIC char page1ops[] =
 {
-#ifdef I80386
     3, 'B', 'S', 'F', GvEv, 0xBC,
     3, 'B', 'S', 'R', GvEv, 0xBD,
 #ifdef KV1
@@ -576,7 +567,6 @@ PUBLIC char page1ops[] =
     6, 'W', 'B', 'I', 'N', 'V', 'D', INHER, 0x09,
     4, 'X', 'A', 'D', 'D', ExGx, 0xC0,
 #endif
-#endif /* I80386 */
 
     0				/* end of page 1 ops */
 };
@@ -587,8 +577,7 @@ PUBLIC char page2ops[] =  /* !! Remove this constant. */
     0				/* end of page 2 ops */
 };
 
-#ifdef I80386
-# ifdef MNSIZE
+#ifdef MNSIZE
 PUBLIC char bytesizeops[] =
 {
     4, 'A', 'D', 'C', 'B', GROUP1, 0x10,
@@ -626,5 +615,4 @@ PUBLIC char bytesizeops[] =
     4, 'X', 'O', 'R', 'B', GROUP1, 0x30,
     0				/* end of byte size ops */
 };
-# endif /* MNSIZE */
-#endif /* I80386 */
+#endif /* MNSIZE */

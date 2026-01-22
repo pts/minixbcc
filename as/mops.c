@@ -17,8 +17,6 @@ FORWARD void mshort2 P((void));
 FORWARD reg_pt regchk P((void));
 FORWARD void reldata P((void));
 
-#ifdef I80386
-
 #define iswordadr(offset) ((offset_t) (offset) < 0x10000L)
 #define iswordoffset(offset) ((offset_t) (offset) + 0x8000L < 0x10000L)
 #define iswordorswordoffset(offset) ((offset_t) (offset) + 0xFFFFL < 0x1FFFEL)
@@ -2277,8 +2275,6 @@ PRIVATE void yes_samesize()
 	kgerror(MISMATCHED_SIZE);
 }
 
-#endif /* I80386 */
-
 /* routines common to all processors */
 
 PUBLIC void getcomma()
@@ -2291,7 +2287,7 @@ PUBLIC void getcomma()
 
 /* inherent ops */
 
-/* for I80386 */
+/* for i386 */
 /* AAA, AAS, CLC, CLD, CLI, CLTS, CMC, CMPSB, DAA, DAS, HLT, INTO, INSB, */
 /* INVD, */
 /* LAHF, LEAVE, LOCK, LODSB, MOVSB, NOP, OUTSB, REP, REPE, REPNE, REPNZ, */
@@ -2339,10 +2335,8 @@ PRIVATE reg_pt regchk()
 	{
 	    if (symptr->data & REGBIT)
 	    {
-#ifdef I80386
 		if (symptr->value_reg_or_op.reg == ST0REG && !fpreg_allowed)
 		    error(FP_REG_NOT_ALLOWED);
-#endif
 		return symptr->value_reg_or_op.reg;
 	    }
 	}

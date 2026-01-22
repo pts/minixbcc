@@ -81,7 +81,6 @@ void entermac P((struct sym_s *symptr));
 void pmacro P((void));
 
 /* mops.c */
-#ifdef I80386
 void mbcc P((void));
 void mbswap P((void));
 void mcall P((void));
@@ -138,7 +137,6 @@ void msetcc P((void));
 void mshdouble P((void));
 void mtest P((void));
 void mxchg P((void));
-#endif				/* I80386 */
 
 void getcomma P((void));
 void mshort P((void));

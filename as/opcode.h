@@ -49,14 +49,11 @@ enum
     SETOP,           /* pset */
     SETDPOP,         /* psetdp */
     TEXTOP,          /* ptext */
-#ifdef I80386
     USE16OP,         /* puse16 */
     USE32OP,         /* puse32 */
-#endif
     WARNOP,          /* pwarn */
 
 /* Machine-op routine numbers. */
-#ifdef I80386
     BCC,             /* mbcc */
     BSWAP,           /* mbswap */
     CALL,            /* mcall */
@@ -113,26 +110,23 @@ enum
     SH_DOUBLE,       /* mshdouble */
     TEST,            /* mtest */
     XCHG,            /* mxchg */
-#endif /* I80386 */
 
     LASTENUMVAL2  /* Pacify ACK ANSI C compiler 1.202 warning: unexpected trailing comma in enumerator pack. */
 };
 
 /* Special opcodes. */
-#ifdef I80386
-# define CMP_OPCODE_BASE	0x38
-# define CMPSB_OPCODE		0xA6
-# define CMPSW_OPCODE		0xA7
-# define ESCAPE_OPCODE_BASE	0xD8
-# define FST_ENCODED		0x12
-# define FSTP_ENCODED		0x13
-# define JMP_OPCODE		0xE9
-# define JMP_SHORT_OPCODE	0xEB
-# define JSR_OPCODE		0xE8
-# define MOVSB_OPCODE		0xA4
-# define MOVSW_OPCODE		0xA5
-# define PAGE1_OPCODE		0x0F
-# define POP_OPCODE 		0x8F
-# define PUSH_OPCODE 		0xFF
-# define WAIT_OPCODE		0x9B
-#endif
+#define CMP_OPCODE_BASE		0x38
+#define CMPSB_OPCODE		0xA6
+#define CMPSW_OPCODE		0xA7
+#define ESCAPE_OPCODE_BASE	0xD8
+#define FST_ENCODED		0x12
+#define FSTP_ENCODED		0x13
+#define JMP_OPCODE		0xE9
+#define JMP_SHORT_OPCODE	0xEB
+#define JSR_OPCODE		0xE8
+#define MOVSB_OPCODE		0xA4
+#define MOVSW_OPCODE		0xA5
+#define PAGE1_OPCODE		0x0F
+#define POP_OPCODE 		0x8F
+#define PUSH_OPCODE 		0xFF
+#define WAIT_OPCODE		0x9B

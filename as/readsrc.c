@@ -201,9 +201,7 @@ PUBLIC void pproceof()
 	    totwarn = toterr = linum = macnum = 0;
 	initp1p2();		/* reset other varaiables */
 	binaryc = binaryg;
-#ifdef I80386
 	defsize = idefsize;
-#endif
 	list.current = list.global;
 	maclist.current = maclist.global;
 

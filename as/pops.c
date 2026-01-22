@@ -44,10 +44,9 @@ register struct flags_s *flagptr;
 		return;
 	}
 	newcount = (int) lastexp.offset;
-#ifdef I80386			/* really sizeof (offset_t) != sizeof (int) */
+	/* really sizeof (offset_t) != sizeof (int) */
 	if (newcount < 0 || (unsigned)newcount != lastexp.offset)
 	    datatoobig();
-#endif
 	newcount += flagptr->semaphore;
 	if ((int) lastexp.offset >= 0)
 	{
@@ -909,8 +908,6 @@ PUBLIC void pwarn()
     bumpsem(&warn);
 }
 
-#ifdef I80386
-
 /* USE16 pseudo-op */
 
 PUBLIC void puse16()
@@ -924,8 +921,6 @@ PUBLIC void puse32()
 {
     defsize = 4;
 }
-
-#endif
 
 /* show redefined label and error, and set REDBIT */
 

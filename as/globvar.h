@@ -77,8 +77,6 @@ EXTERN opcode_t opcode;
 EXTERN opcode_t postb;		/* postbyte, 0 if none */
 EXTERN unsigned char pcrflag;	/* OBJ_RMASK set if addressing is PC-relative */
 
-#ifdef I80386
-
 EXTERN opcode_t aprefix;	/* address size prefix or 0 */
 EXTERN bool_t asld_compatible;	/* asld compatibility flag */
 EXTERN opsize_t defsize;	/* current default size */
@@ -86,5 +84,3 @@ EXTERN opsize_t idefsize;	/* initial default size */
 EXTERN opcode_t oprefix;	/* operand size prefix or 0 */
 EXTERN opcode_t sprefix;	/* segment prefix or 0 */
 EXTERN opcode_t sib;		/* scale-index-base byte */
-
-#endif
