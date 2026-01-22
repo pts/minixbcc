@@ -539,9 +539,9 @@ for a03 in 0 3; do
   "$cmp" "$a03"/cpp "$a03"g/cpp.d || exit "$?"
 done
 
-# --- Remove temporary ?/*.o files.
+# --- Remove temporary ?/*.[os] files.
 
-if test "$cmp" = true || test "$cmp" = cmp; then
+if test "$cmp","$tcmp" = true,true || test "$cmp","$tcmp" = cmp,cmp ; then
   for a03 in 0 3; do
     mv "$a03"/crtso.o "$a03"/crtso.ok || exit "$?"  # Rename it so it will be kept.
     (rm -f "$a03"/[a-m]*.o) || exit "$?"  # Avoid the `argument list too long' error.
