@@ -3,9 +3,17 @@
 #define FALSE 0
 #define TRUE 1
 
-#define EXTERN extern
-#define FORWARD static
-#define PRIVATE static
-#define PUBLIC
+#ifndef EXTERN
+#  define EXTERN extern
+#endif
+#ifndef FORWARD
+#  define FORWARD static
+#endif
+#ifndef PRIVATE
+#  define PRIVATE static
+#endif
+#ifndef PUBLIC
+#  define PUBLIC
+#endif
 
 #include "config.h"

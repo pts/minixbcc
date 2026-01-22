@@ -35,10 +35,18 @@
 
 /* C tricks */
 
-#define EXTERN		extern
-#define FORWARD		static
-#define PRIVATE		static
-#define PUBLIC
+#ifndef EXTERN
+#  define EXTERN extern
+#endif
+#ifndef FORWARD
+#  define FORWARD static
+#endif
+#ifndef PRIVATE
+#  define PRIVATE static
+#endif
+#ifndef PUBLIC
+#  define PUBLIC
+#endif
 
 /* O/S constants */
 
