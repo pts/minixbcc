@@ -36,21 +36,9 @@
 # define POSINDEPENDENT		/* position indep code can (also) be gen */
 #endif
 
-/* switches for source and target operating system dependencies */
+#define S_ALIGNMENT (sizeof(int))  /* source memory alignment, power of 2 */
 
-/*#define SOS_EDOS*/		/* source O/S is EDOS */
-/*#define SOS_MSDOS*/		/* source O/S is MSDOS */
-/*#define TOS_EDOS*/		/* target O/S is EDOS */
-
-/* switches for source machine dependencies */
-
-#ifndef SOS_EDOS
-# define S_ALIGNMENT (sizeof(int))  /* source memory alignment, power of 2 */
-#endif
-
-#ifndef SOS_MSDOS /* need portable alignment for large model */
-# define UNPORTABLE_ALIGNMENT
-#endif
+#define UNPORTABLE_ALIGNMENT  /* we would need portable alignment for large model on DOS */
 
 /* local style */
 

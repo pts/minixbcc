@@ -408,7 +408,7 @@ char c;
 
 PUBLIC void writenl()
 {
-    writes(SOS_EOLSTR);
+    writes("\n");  /* writec('\n'); */
 }
 
 /* write 1 offset_t, order to suit target */

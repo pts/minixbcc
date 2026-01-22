@@ -8,7 +8,6 @@
 #define I80386			/* generate 80386 code */
 #undef MC6809			/* generate 6809 code */
 #define MNSIZE			/* allow byte size in mnemonic, e.g. "movb" */
-#undef SOS_EDOS			/* source OS is EDOS */
 
 /* defaults */
 
@@ -20,7 +19,6 @@
 #    define INBUFSIZE  8192
 #  endif
 #endif
-#define SOS_EOLSTR	"\012"
 
 /* defaults modified by switches */
 
