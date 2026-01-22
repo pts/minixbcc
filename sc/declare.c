@@ -10,7 +10,6 @@
 #include "const.h"
 #include "types.h"
 #include "align.h"
-#include "byteord.h"
 #include "gencode.h"
 #include "input.h"		/* just for orig_cppmode */
 #include "reg.h"

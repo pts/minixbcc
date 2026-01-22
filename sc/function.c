@@ -10,7 +10,6 @@
 #include "const.h"
 #include "types.h"
 #include "align.h"
-#include "byteord.h"
 #include "gencode.h"
 #include "parse.h"
 #include "reg.h"

@@ -4,7 +4,6 @@
 
 #include "const.h"
 #include "types.h"
-#include "byteord.h"
 #include "gencode.h"
 #include "reg.h"
 #include "scan.h"
