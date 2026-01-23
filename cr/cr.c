@@ -32,10 +32,10 @@
  * garbage. Returns nonzero on success. It produces a twos complement number
  * if the input has a minus sign.
  */
-static int parse_u_arg P((CONST char *s, unsigned long *output));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static int parse_u_arg P((CONST char *s, unsigned INT32T *output));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static int parse_u_arg(s, output)
 CONST char *s;
-unsigned long *output;
+unsigned INT32T *output;
 {
   register char c;
   unsigned base;
@@ -112,10 +112,9 @@ char *p;
   return p;
 }
 
-/* !! If sizeof(int) >= 4, then just use unsigned here instead of unsigned long. Fix it everywhere. */
-static char *dump32pdp11 P((unsigned long v, char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static char *dump32pdp11 P((unsigned INT32T v, char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static char *dump32pdp11(v, p)  /* Appends 16 bits in PDP-11 middle-endian byte order. */
-unsigned long v;
+unsigned INT32T v;
 char *p;
 {
   /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add these `(unsigned)' casts. */
@@ -133,10 +132,10 @@ char **argv;
   CONST char *p;
   char c;
   CONST char *afn;
-  unsigned long mtime;
-  unsigned long uid;
-  unsigned long gid;
-  unsigned long mode;
+  unsigned INT32T mtime;
+  unsigned INT32T uid;
+  unsigned INT32T gid;
+  unsigned INT32T mode;
   char hdrbuf[28];
   char *hdrp;
   char *hdrp0;
@@ -144,7 +143,7 @@ char **argv;
   int afd;
   int mfd;
   int got;
-  long size;
+  INT32T size;
 
   afn = (CONST char*)0;
   mtime = 1;
@@ -185,7 +184,7 @@ char **argv;
     if ((mfd = open00(arg)) < 0) fatal2("error opening member file", arg);
     /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add this `L' cast to long. */
     if ((size = lseek(mfd, 0L, 2)) == -1) fatal2("error getting member file size", arg);
-    if (size < 0 || (size >> 15 >> 15 >> 1) != 0) fatal2("member file too large", arg);
+    if ((INT32T) size < 0 || (size >> 15 >> 15 >> 1) != 0) fatal2("member file too large", arg);
     /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add this `L' cast to long. */
     if (lseek(mfd, 0L, 0) != 0) fatal2("error rewinding member file", arg);
     for (p = arg + strlen(arg); p != arg && p[-1] != '/'; --p) {}
