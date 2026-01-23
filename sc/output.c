@@ -252,7 +252,7 @@ char *oname;
 PUBLIC void outbyte(c)
 int c;
 {
-#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+#if C_CODE || __AS386_16__ + __AS386_32__ != 1
     register char *outp;
 
     outp = outbufptr;
@@ -486,7 +486,7 @@ offset_t num;
 PUBLIC void outstr(s)
 char *s;
 {
-#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+#if C_CODE || __AS386_16__ + __AS386_32__ != 1
     register char *outp;
     register char *rs;
 

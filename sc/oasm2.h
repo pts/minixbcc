@@ -1,33 +1,3 @@
-#if __AS09__
-# asm
-	LEAU	,X
-	LDX	_outbuftop,PC
-	PSHS	X
-	LDX	_outbufptr,PC
-	BRA	OUTSTR.NEXT
-
-CALL.FLUSHOUT
-	PSHS	U,B
-	STX	_outbufptr,PC
-	LBSR	_flushout
-	LDX	_outbufptr,PC
-	LDY	_outbuftop,PC
-	PULS	B,U,PC
-
-OUTSTR.LOOP
-	STB	,X+
-	CMPX	,S
-	BLO	OUTSTR.NEXT
-	BSR	CALL.FLUSHOUT
-	STY	,S
-OUTSTR.NEXT
-	LDB	,U+
-	BNE	OUTSTR.LOOP
-	STX	_outbufptr,PC
-	LEAS	2,S
-# endasm
-#endif /* __AS09__ */
-
 #if __AS386_16__
 # asm
 # if !__CALLER_SAVES__

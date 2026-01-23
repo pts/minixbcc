@@ -1071,10 +1071,8 @@ PRIVATE void outstackreg()
 PUBLIC void public(name)
 char *name;
 {
-#ifndef AS09
     outexport();
     outnccname(name);
-#endif
     outccname(name);
     outnbyte(PUBLICENDCHAR);
 }

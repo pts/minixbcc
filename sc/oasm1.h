@@ -1,14 +1,3 @@
-#if __AS09__
-# asm
-	TFR	X,D
-	LDX	_outbufptr,PC
-	STB	,X+
-	STX	_outbufptr,PC
-	CMPX	_outbuftop,PC
-	LBHS	CALL.FLUSHOUT
-# endasm
-#endif /* __AS09__ */
-
 #if __AS386_16__
 # asm
 # if !__FIRST_ARG_IN_AX__

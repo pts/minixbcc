@@ -9,9 +9,3 @@
 #define LABELSTARTCHAR '.'	/* first char of names of generated labels */
 #define LOCALSTARTCHAR '.'	/* first char of local names */
 #define PUBLICENDCHAR ':'
-
-/* adjustments for other assemblers */
-
-#ifdef AS09
-# undef LABELENDCHAR
-#endif
