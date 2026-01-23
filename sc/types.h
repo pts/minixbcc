@@ -9,11 +9,11 @@
 */
 
 typedef unsigned char char_t;	/* target char */
-typedef long value_t;		/* target ints, longs and offsets */
-typedef unsigned long uvalue_t;	/* target unsigned ints, longs and offsets */
+typedef INT32T value_t;		/* target ints, longs and offsets */
+typedef unsigned INT32T uvalue_t;  /* target unsigned ints, longs and offsets */
 
-typedef long offset_t;		/* target machine offset */
-typedef unsigned long uoffset_t;	/* target unsigned machine offset */
+typedef INT32T offset_t;	/* target machine offset */
+typedef unsigned INT32T uoffset_t;  /* target unsigned machine offset */
 #define outuvalue outhex
 #define outvalue outshex
 

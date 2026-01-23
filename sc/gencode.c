@@ -393,10 +393,10 @@ PUBLIC void codeinit()
 #endif
 	    accregsize = 4;
 
-	intmaskto = (unsigned long) 0xFFFFFFFFL;
+	intmaskto = (unsigned INT32T) 0xFFFFFFFFL;
 	maxintto = 0x7FFFFFFFL;
 	maxoffsetto = 0x7FFFFFFFL;
-	maxuintto = (unsigned long) 0xFFFFFFFFL;
+	maxuintto = (unsigned INT32T) 0xFFFFFFFFL;
     }
     if (callersaves)
 	calleemask = 0;

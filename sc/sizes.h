@@ -6,7 +6,7 @@
   the compiler is not very portable in this area
   it only directly supports Intel i86 (8086) and i386
   it assumes
-      sizeof(source long) >= sizeof(target long)
+      sizeof(source INT32T) >= sizeof(target long)
       usual register size = int
       long = 2 int sizes
 */

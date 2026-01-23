@@ -411,7 +411,7 @@ struct nodestruct *p2;
 
 		val = *target->offset.offd;
 		if (val > maxlongto)
-		    val -= (double) (unsigned long) 0xFFFFFFFF + 1;  /* XXX */
+		    val -= (double) (unsigned INT32T) 0xFFFFFFFF + 1;  /* XXX */
 		target->offset.offv = (value_t) val;
 	    }
 	    if (!(lscalar & RSCALAR) && rscalar & RSCALAR)

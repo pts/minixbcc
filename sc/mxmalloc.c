@@ -11,8 +11,6 @@
 #endif /* _ANSI */
 
 typedef unsigned size_t;
-typedef unsigned short mode_t;
-typedef long off_t;
 
 #ifdef SBRK
 extern char *brksize;  /* Defined in assembly. */
