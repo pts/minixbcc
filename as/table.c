@@ -124,7 +124,7 @@ PUBLIC struct sym_s *lookup()
 	    hashval ^= hconv(nameptr[-1]);
     }
     else
-	hashval  = hconv(nameptr[-(length / 2)]) * MULTIPLIER,
+	hashval  = hconv(nameptr[-(int) (length >> 1)]) * MULTIPLIER,
 	hashval ^= hconv(nameptr[-2]) << 2,
 	hashval ^= hconv(nameptr[-1]);
     nameptr = symname;
