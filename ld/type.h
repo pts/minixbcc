@@ -5,10 +5,10 @@ typedef unsigned char bool_t;
 
 typedef unsigned short u2_t;
 typedef unsigned u2_pt;
-typedef unsigned long u4_t;
-typedef unsigned long u4_pt;
+typedef unsigned INT32T u4_t;
+typedef unsigned INT32T u4_pt;
 
-typedef unsigned long offset_t;
+typedef unsigned INT32T offset_t;
 
 #ifdef OBJ_H			/* obj.h is included */
 
@@ -25,7 +25,7 @@ struct modstruct		/* module table entry format */
     char *filename;		/* file containing this module */
     char *archentry;		/* name of component file for archives */
     char *modname;		/* name of module */
-    long textoffset;		/* offset to module text in file */
+    offset_t textoffset;	/* offset to module text in file */
     char class;			/* class of module */
     char loadflag;		/* set if module to be loaded */
     char segmaxsize[NSEG / 4];	/* |SF|SE|..|S0|, 2 bits for seg max size */
@@ -97,8 +97,8 @@ void putbyte P((int ch));
 int readchar P((void));
 void readin P((char *buf, unsigned count));
 bool_pt readineofok P((char *buf, unsigned count));
-void seekin P((INT32T offset));
-void seekout P((INT32T offset));
+void seekin P((unsigned INT32T offset));
+void seekout P((unsigned INT32T offset));
 void writechar P((int c));
 void writedrel P((char *buf, unsigned count));
 void writeout P((char *buf, unsigned count));

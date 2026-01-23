@@ -288,19 +288,25 @@ unsigned count;
     return FALSE;
 }
 
+#if __STDC__
+#  define cast_lseek_offset(offset) (offset)
+#else
+#  define cast_lseek_offset(offset) ((off_t) (offset))  /* We must pass the offset of the correct size, because the C compiler doesn't know the argument type. Compile with -Doff_t=long if needed. */
+#endif
+
 PUBLIC void seekin(offset)
-INT32T offset;
+unsigned INT32T offset;
 {
     inbufptr = inbufend = inbuf;
-    if (lseek(infd, (long) offset, SEEK_SET) < 0)
+    if ((INT32T) offset < 0 || lseek(infd, cast_lseek_offset((INT32T) offset), SEEK_SET) < 0)
 	prematureeof();
 }
 
 PUBLIC void seekout(offset)
-INT32T offset;
+unsigned INT32T offset;
 {
     flushout();
-    if (lseek(outfd, (long) offset, SEEK_SET) != offset)
+    if ((INT32T) offset < 0 || lseek(outfd, cast_lseek_offset((INT32T) offset), SEEK_SET) != cast_lseek_offset((INT32T) offset))
 	outputerror("cannot seek in");
 }
 

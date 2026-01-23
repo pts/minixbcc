@@ -24,6 +24,8 @@
 #define STDOUT_FILENO  1  /* file descriptor for stdout */
 #define STDERR_FILENO  2  /* file descriptor for stderr */
 
+typedef long off_t;    /* offsets within a file */
+
 #ifdef LIBCHMINIX  /* Minix-specific <time.h> and <sys/stat.h>. */
   typedef long time_t;
   typedef unsigned short  dev_t;    /* holds (major|minor) device pair */
@@ -31,7 +33,6 @@
   typedef unsigned short  ino_t;    /* i-node number */
   typedef unsigned short  mode_t;   /* mode number within an i-node */
   typedef unsigned char   nlink_t;  /* number-of-links field within an i-node */
-  typedef long            off_t;    /* offsets within a file */
   typedef unsigned short  uid_t;    /* user id */
   struct stat {
     dev_t st_dev;		/* major/minor device number */
@@ -76,7 +77,7 @@ unsigned strlen _LIBCP((const char *_s));
 /* <unistd.h> */
 int read  _LIBCP((int _fd, char *_buf, unsigned _nbytes));
 int write _LIBCP((int _fd, char *_buf, unsigned _nbytes));
-long lseek _LIBCP((int _fd, long _offset, int _whence));
+off_t lseek _LIBCP((int _fd, off_t _offset, int _whence));
 int close _LIBCP((int _fd));
 char *brk _LIBCP((char *addr));
 char *sbrk _LIBCP((int incr));

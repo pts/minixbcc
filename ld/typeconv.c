@@ -23,8 +23,8 @@
 	4 byte orderings for both char arrays and unsigneds are supported:
 	0123 - little-endian
 	3210 - big-endian
-	2301 - little-endian with long words big-endian (pdp11)
-	1032 - big-endian with long words little_endian (who knows?)
+	2301 - int32_t little-endian with int16_t words big-endian (PDP-11)
+	1032 - int32_t big-endian with int16_t words little_endian (who knows?)
 
 	The unsigned's byte order is that of the machine on which these
 	routines are running.
@@ -56,7 +56,7 @@ PRIVATE void (*pu4c4) P((char *buf, u4_t offset)) = u4c4_00;
 
 /* === char arrays to unsigneds === */
 
-/* no bytes swapped, longwinded to avoid alignment problems */
+/* no bytes swapped, copying the bytes to avoid alignment problems */
 
 PRIVATE u2_pt c2u2_00(buf)
 register char *buf;
@@ -182,7 +182,7 @@ unsigned count;
 
 /* === unsigneds to char arrays === */
 
-/* no bytes swapped, longwinded to avoid alignment problems */
+/* no bytes swapped, copying the bytes to avoid alignment problems */
 
 PRIVATE void u2c2_00(buf, offset)
 register char *buf;

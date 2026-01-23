@@ -27,11 +27,11 @@ typedef char assert_sizeof_ar_hdr[sizeof(struct ar_hdr) == 60 ? 1 : -1];
 #define MINIXARNAMEMAX    14
 struct minixar_hdr {  /* Minix archive (*.a) member header. */
 	char	ar_name[MINIXARNAMEMAX];
-	char	ar_date[4];	/* long in byte order 2 3 1 0 */
-	char	ar_uid[1];
-	char	ar_gid[1];
-	char	ar_mode[2];	/* short in byte order 0 1 */
-	char	ar_size[4];	/* long in byte order 2 3 1 0 */
+	char	ar_date[4];	/* mtime; int32_t in PDP-11 byte order 2 3 1 0. */
+	char	ar_uid[1];	/* uint8_t. */
+	char	ar_gid[1];	/* uint8_t. */
+	char	ar_mode[2];	/* uint16_t in little-endian byte order 0 1. */
+	char	ar_size[4];	/* int32_t in PDP-11 byte order 2 3 1 0. */
 };
 typedef char assert_sizeof_minixar_hdr[sizeof(struct minixar_hdr) == 26 ? 1 : -1];
 
@@ -108,7 +108,7 @@ char *filename;
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
 	    }
-	    seekin((INT32T) (filepos += roundup(filelength, 2, offset_t)));
+	    seekin((unsigned INT32T) (filepos += roundup(filelength, 2, offset_t)));
 	}
 	break;
     default:
@@ -125,7 +125,7 @@ char *filename;
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
 	    }
-	    seekin((INT32T) (filepos += roundup(filelength, 2, offset_t)));
+	    seekin((unsigned INT32T) (filepos += roundup(filelength, 2, offset_t)));
 	}
 	break;
     }
@@ -186,7 +186,15 @@ offset_t *output;
 	} else {
 	    return 0;    /* Bad digit in c. */
 	}
-	v += c;
+#ifdef __BCC__
+#  ifdef __AS386_32__
+	v += (unsigned long) (unsigned char) c;  /* Cast to (unsigned long) Works around suboptimal code generation in BCC sc v3. */
+#  else
+	v += (unsigned char) c;
+#  endif
+#else
+	v += (unsigned char) c;
+#endif
     } while ((c = *s++) != '\0' && c != ' ' && c != '\t');
     for (; c == ' ' || c == '\t'; c = *s++) {}
     if (c != '\0') return 0;    /* Trailing garbage. */
