@@ -150,6 +150,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = cc; then  # For cross-com
   "$@" -O $cflags -o sysdet sysdet.c || exit "$?"
   sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1
   test "$?" = 0 || exit 2
+  rm -f sysdet
   case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac
   # !! Autodetect the -DACKFIX and -DACKFIX0 flags in $sysdet in case acka3 is used as cc.
 
