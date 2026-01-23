@@ -69,10 +69,10 @@ struct symstruct		/* symbol table entry format */
 
 /* prototypes */
 
-#if defined(PROTO) || __STDC__
-#define P(x)	x
+#if __STDC__
+#  define P(x) x
 #else
-#define P(x)	()
+#  define P(x) ()
 #endif
 
 /* dump.c */

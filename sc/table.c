@@ -624,10 +624,10 @@ ts_size_growobj_wasted += chartop - (char *) object;
 }
 
 #define ALLOC_UNIT ((unsigned) 0x400)
-#ifdef S_ALIGNMENT
-#define ALLOC_OVERHEAD (S_ALIGNMENT - 1 + sizeof (unsigned))
+#if SC_ALIGNMENT < 2
+#  define ALLOC_OVERHEAD (sizeof (unsigned))
 #else
-#define ALLOC_OVERHEAD (sizeof (unsigned))
+#  define ALLOC_OVERHEAD (SC_ALIGNMENT - 1 + sizeof (unsigned))
 #endif
 
 PUBLIC void growheap(size)

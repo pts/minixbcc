@@ -23,9 +23,9 @@
 #define HOLDSTRINGS		/* hold strings for dumping at end
 				 * since assembler has only 1 data seg */
 
-#define S_ALIGNMENT (sizeof(int))  /* source memory alignment, power of 2 !! porting */
-
-#define UNPORTABLE_ALIGNMENT  /* we would need portable alignment for large model on DOS */
+#ifndef SC_ALIGNMENT
+#  define SC_ALIGNMENT ALIGNBYTES  /* source memory alignment, power of 2 */
+#endif
 
 /* local style */
 

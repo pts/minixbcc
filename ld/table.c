@@ -51,7 +51,7 @@ char *name;
 	oldsymptr = symptr;
 	symptr = symptr->next;
     }
-    align(heapptr);
+    align_add(heapptr);
     symptr = (struct symstruct *) heapptr;
     if ((heapptr = symptr->name + (strlen(name) + 1)) > heapend)
 	outofmemory();
@@ -144,7 +144,7 @@ unsigned nbytes;
 {
     char *allocptr;
 
-    align(heapptr);
+    align_add(heapptr);
     allocptr = heapptr;
     if ((heapptr += nbytes) > heapend)
 	outofmemory();
@@ -159,7 +159,7 @@ PUBLIC char *readstring()
     char *s;
     char *start;
 
-    align(heapptr);
+    align_add(heapptr);
     start = s = ((struct symstruct *) heapptr)->name;
     while (TRUE)
     {

@@ -1,17 +1,17 @@
 /* align.h - memory alignment requirements for linker */
 
-/* align(x) works on char *x. */
-#ifndef S_ALIGNMENT
-#  define align(x)
+/* align_add(x) works on char *x. */
+#if LD_ALIGNMENT < 2
+#  define align_add(x)
 #else
-#  if S_ALIGNMENT < 2
-#    define align(x)
-#  else
-#    ifdef BCCALIGNFIX
-      typedef char assert_alignptrsize[sizeof(unsigned) >= sizeof(void*)];  /* True for both BCC i86 (bcc -0) and BCC i386 (bcc -3). */
-#      define align(x) ((x) = (char*)(((unsigned) (void*) (x) + (S_ALIGNMENT-1)) & ~(S_ALIGNMENT-1)))  /* This assumes sizeof(unsigned) >= sizeof(char*). */
+  typedef char assert_alignptrsize[sizeof(INTPTRT) >= sizeof(char *)];
+#  ifdef PORTALIGN  /* This portable alignment implementation avoids arithmetic on integer casted from pointers. It is needed on e.g. the DOS large model. It is longer than the non-portable implementation. */
+#    if 1  /* The `(int) (INTPTRT)' cast is to pacify the GCC warning -Wpointer-to-int-cast. */
+#      define align_add(x)     ((x) += -(int)      (INTPTRT) (x) &            (LD_ALIGNMENT - 1))  /* This works in BCC sc v0 and v3. However, PORTALIGN is typically disabled for BCC. */
 #    else
-#      define align(x) ((x) += -(unsigned) (x) & (unsigned) ((S_ALIGNMENT) - 1))  /* This works even if sizeof(char*) > sizeof(unsigned). */  /* BCC sc v0 (1990-06-09) generates incorrect code for this for both i86 (bcc -0) and i386 (bcc -3). */
+#      define align_add_bad(x) ((x) += -(unsigned) (INTPTRT) (x) & (unsigned) (LD_ALIGNMENT - 1))  /* This is buggy in BCC sc v0 (1990-06-09), but not in v3, both `sc -0' and `sc -3': it applies the `&' only to the low byte. */
 #    endif
+#  else
+#    define align_add(x) ((x) = (char *) (((INTPTRT) (char *) (x) + (LD_ALIGNMENT - 1)) & ~(LD_ALIGNMENT - 1)))
 #  endif
 #endif

@@ -449,7 +449,7 @@ char *argv[];
     struct inclist *incnew;
     struct inclist *incptr;
     bool_t flag[128];  /* !! Make this smaller. It's only used for a few flags. */
-    void (*argfunc)();
+    void (*argfunc) P((char *arg_));
 
 #if 0
     lineptr = "\n";		/* empty line in case error message */

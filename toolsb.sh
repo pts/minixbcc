@@ -21,8 +21,8 @@ if test "$cmp" = tcmp; then
   a='tcmp( ) { cmp  "$1" "$2" >>tools.diff || echo "cp -p \"$1\" \"$2\""; }'; eval "$a"  # eval to make Minix /bin/sh skip it.
   a='tdiff() { diff "$1" "$2" >>tools.diff || echo "cp -p \"$1\" \"$2\""; }'; eval "$a"  # eval to make Minix /bin/sh skip it.
 fi
-if test "$a03" = 0; then aa=-a; dsmallmem=-DSMALLMEM  # For Minix i86.
-else                     aa=; dsmallmem=  # For Minix i386.
+if test "$a03" = 0; then aa=-a; cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4 -DSC_ALIGNMENT=2 -DLD_ALIGNMENT=8 $cflags"  # For Minix i86. !! Drop SC_ALIGNMENT and LD_ALIGNMENT, apply default host values.
+else                     aa=;   cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DSC_ALIGNMENT=4 -DLD_ALIGNMENT=8 $cflags"  # For Minix i386. !! Drop SC_ALIGNMENT and LD_ALIGNMENT, apply default host values.
 fi
 
 if test "$sedi"; then  # as v0 abort()s on the include pseudo-op, so we manually process it with sed+cat.
@@ -32,7 +32,7 @@ fi
 "$as" -"$a03" $aa -w -o "$a03"/lscs.o sc/lscs"$a03$sedi".s || exit "$?"
 "$cmp" "$a03"/lscs.o "$a03"g/lscs.n || exit "$?"
 for b in mxmalloc bcc-cc1 assign codefrag debug declare express exptree floatop function gencode genloads glogcode hardop input label loadexp longop output preproc preserve scan softop state table type; do
-  "$sc" -"$a03" $cflags -DOPEN00 $dsmallmem -DSBRK -DLIBCH -o "$a03"/sc"$b".s sc/"$b".c || exit "$?"
+  "$sc" -"$a03" $cflags -DOPEN00 -DSBRK -DLIBCH -o "$a03"/sc"$b".s sc/"$b".c || exit "$?"
   "$diff" "$a03"/sc"$b".s "$a03"g/sc"$b".r || exit "$?"
   "$as" -"$a03" -u -w -o "$a03"/sc"$b".o "$a03"/sc"$b".s || exit "$?"
   "$cmp"  "$a03"/sc"$b".o "$a03"g/sc"$b".n || exit "$?"
@@ -53,7 +53,7 @@ fi
 "$as" -"$a03" $aa -w -o "$a03"/lass.o as/lass"$a03$sedi".s || exit "$?"
 "$cmp" "$a03"/lass.o "$a03"g/lass.n || exit "$?"
 for b in as assemble error express genbin genlist genobj gensym heap keywords macro mops pops readsrc scan table typeconv; do
-  "$sc" -"$a03" $cflags -DMINIX_SYNTAX $dsmallmem -DMINIXHEAP -DBRKSIZE -DOPEN00 -DLIBCH -o "$a03"/as"$b".s as/"$b".c || exit "$?"
+  "$sc" -"$a03" $cflags -DMINIX_SYNTAX -DMINIXHEAP -DBRKSIZE -DOPEN00 -DLIBCH -o "$a03"/as"$b".s as/"$b".c || exit "$?"
   "$diff" "$a03"/as"$b".s "$a03"g/as"$b".r || exit "$?"
   "$as" -"$a03" -u -w -o "$a03"/as"$b".o "$a03"/as"$b".s || exit "$?"
   "$cmp"  "$a03"/as"$b".o "$a03"g/as"$b".n || exit "$?"
@@ -73,7 +73,7 @@ fi
 "$as" -"$a03" $aa -w -o "$a03"/llds.o ld/llds"$a03$sedi".s || exit "$?"
 "$cmp" "$a03"/llds.o "$a03"g/llds.n || exit "$?"
 for b in dumps heap io ld readobj table typeconv writebin; do
-  "$sc" -"$a03" $cflags -DOPEN00 $dsmallmem -DMINIXHEAP -DBRKSIZE -DLIBCH -DLIBCHMINIX -o "$a03"/ld"$b".s ld/"$b".c || exit "$?"
+  "$sc" -"$a03" $cflags -DOPEN00 -DMINIXHEAP -DBRKSIZE -DLIBCH -DLIBCHMINIX -o "$a03"/ld"$b".s ld/"$b".c || exit "$?"
   "$diff" "$a03"/ld"$b".s "$a03"g/ld"$b".r || exit "$?"
   "$as" -"$a03" -u -w -o "$a03"/ld"$b".o "$a03"/ld"$b".s || exit "$?"
   "$cmp"  "$a03"/ld"$b".o "$a03"g/ld"$b".n || exit "$?"

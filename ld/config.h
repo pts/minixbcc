@@ -2,14 +2,11 @@
 
 /* these may need to be defined to suit the source processor */
 
-#define S_ALIGNMENT 8		/* source memory alignment, power of 2 */
-				/* don't use for 8 bit processors */
-				/* don't use even for 80386 - overhead for */
-				/* alignment cancels improved access */
+#ifndef LD_ALIGNMENT
+#  define LD_ALIGNMENT ALIGNBYTES  /* source memory alignment, power of 2 */
+#endif
 
 /* these should be defined if they are supported by the source compiler */
-
-#undef  PROTO			/* compiler handles prototypes */
 
 /* these must be defined to suit the source libraries */
 
