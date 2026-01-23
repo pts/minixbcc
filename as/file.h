@@ -1,6 +1,6 @@
 /* file.h - global variables involving files for assembler */
 
-EXTERN fd_t binfil;		/* binary output file (0 = memory) */
+EXTERN fd_t binfil;		/* binary output file */
 EXTERN char *filnamptr;		/* file name pointer */
 EXTERN fd_t infil0;		/* initial input file */
 EXTERN fd_t infil;		/* current input file (stacked, 0 = memory) */

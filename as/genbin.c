@@ -6,9 +6,6 @@
 #include "file.h"
 #include "globvar.h"
 
-PRIVATE char *asmbeg;		/* beginning of assembler code */
-				/* for overwrite check */
-				/* bss zeroi-initialzation to (char*) 0, and not changed */
 PRIVATE offset_t binfbuf;	/* binary code buffer for file (counter) */
 PRIVATE offset_t binmax;	/* maximum value of binmbuf for pass 1 */
 PRIVATE offset_t binmin;	/* minimum value of binmbuf for pass 1 */
@@ -144,25 +141,11 @@ PUBLIC void initbin()
     binmin = -1;		/* greater than anything */
 }
 
-#ifdef ACKFIX0
-#  if _EM_WSIZE < _EM_PSIZE  /* Macros defined by ACK ANSI C compiler on Minix. The condition is false. */
-    typedef long myintptr;
-#  else
-    typedef int myintptr;  /* Pacify ACK 3.1 warning on Minix 1.5.10 i86: conversion of pointer to long loses accuracy */
-#  endif
-  typedef char assert_ptrsize[sizeof(myintptr) == sizeof(char*) ? 1 : -1];
-#else
-  typedef offset_t myintptr;
-  typedef char assert_ptrsize[sizeof(myintptr) >= sizeof(char*) ? 1 : -1];
-#endif
-
 /* write char to binary file or directly to memory */
 
 PUBLIC void putbin(c)
 opcode_pt c;
 {
-    if (binfil != 0x0)
-    {
 	if (!binaryc)		/* pass 1, just record limits */
 	{
 	    if (binmbuf < binmin)
@@ -186,18 +169,6 @@ opcode_pt c;
 		binmbuf = ++binfbuf;
 	    }
 	}
-    }
-    else if (binaryc && !(lcdata & UNDBIT))
-	/* memory output, and enabled */
-    {
-	register char *bufptr;
-
-	if ((bufptr = (char *) (myintptr) binmbuf) >= asmbeg && bufptr < heapptr)  /* This converts an offset_t to a pointer. */
-	    error(OWRITE);
-	else
-	    *bufptr = c;
-	++binmbuf;
-    }
 }
 
 /* write sized offset to binary file or directly to memory */

@@ -91,6 +91,7 @@ PRIVATE void initp1()
     lstfil = STDOUT;
     mapnum = 15;		/* default map number for symbol table */
     spt_top = (spt = hid_spt) + SPTSIZ;
+    binfil = -1;
 }
 
 /* initialise nonzero values which start same each pass */
@@ -120,7 +121,7 @@ char *message;
 {
     int fd;
 
-    if ((fd = creat(name, CREAT_PERMS)) < 0 || fd > 255)
+    if ((fd = creat(name, CREAT_PERMS)) < 0 || fd > 255)  /* !! Why can't it be larger than 255? Is it saved somewhere? */
 	as_abort(message);
     return fd;
 }
@@ -162,7 +163,7 @@ char **argv;
 		asld_compatible = TRUE;
 		break;
 	    case 'b':
-		if (!isnextarg || binfil != 0)
+		if (!isnextarg || binfil != -1)
 		    usage();
 		binfil = my_creat(nextarg, "error creating binary file");
 		binaryg = TRUE;

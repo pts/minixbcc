@@ -65,7 +65,7 @@ PRIVATE char *errormessage[] =
     /* LINLONG */   "line too long",
     /* MACOV */     "MACRO stack overflow",
     /* OBJSYMOV */  "object symbol table overflow",
-    /* OWRITE */    "program overwrite",
+    /* OWRITE */    "",  /* "program overwrite", -- never emitted, kept for compatibility only. */
     /* PAROV */     "parameter table overflow",
     /* SYMOV */     "symbol table overflow",
     /* SYMOUTOV */  "output symbol table overflow",
