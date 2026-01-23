@@ -591,10 +591,6 @@ struct symstruct *adr;
 	if (indflag)
 	    outindleft();
 	outregname(adr->storage);
-#ifdef XENIX_AS
-	if (indflag)
-	    outindright();
-#endif
 	break;
     case LOCAL:
 # ifdef FRAMEPOINTER
@@ -628,10 +624,6 @@ struct symstruct *adr;
 	    badaddress();
 	outregname(LOCAL);
 # endif /* FRAMEPOINTER */
-# ifdef XENIX_AS
-	if (indflag)
-	    outindright();
-# endif
 	break;
     case GLOBAL:
 	bumplc();
@@ -641,9 +633,7 @@ struct symstruct *adr;
 	    outimmed();
 	else
 	{
-# ifndef XENIX_AS
 	    outindleft();
-# endif
 	    bumplc();
 	}
 	if (adr->flags & LABELLED)
@@ -670,9 +660,7 @@ struct symstruct *adr;
     if (indflag)
     {
 	--adr->indcount;
-# ifndef XENIX_AS
 	outindright();
-# endif
     }
 }
 

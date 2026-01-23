@@ -21,11 +21,7 @@
 #define EXTERN
 #include "output.h"
 
-#ifdef XENIX_AS
-# define HEXSTARTCHAR '/'
-#else
-# define HEXSTARTCHAR '$'
-#endif
+#define HEXSTARTCHAR '$'
 #define OUTBUFSIZE 2048
 #define opcodeleadin()		/* outtab() for fussy assemblers */
 

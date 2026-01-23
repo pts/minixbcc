@@ -15,10 +15,3 @@
 #ifdef AS09
 # undef LABELENDCHAR
 #endif
-
-#ifdef XENIX_AS
-# undef LABELSTARTCHAR
-# define LABELSTARTCHAR 'L'
-# undef LOCALSTARTCHAR
-# define LOCALSTARTCHAR 'L'
-#endif

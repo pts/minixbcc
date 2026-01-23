@@ -33,9 +33,6 @@ FORWARD void clr P((store_pt reg));
 FORWARD bool_pt lowregisDreg P((void));
 FORWARD void outand P((void));
 FORWARD void outequate P((void));
-# ifdef XENIX_AS  /* !! Remove. */
-FORWARD void outexport P((void));
-# endif
 FORWARD void outmovsx P((void));
 FORWARD void outmovzx P((void));
 FORWARD void tfrhilo P((void));
@@ -66,17 +63,9 @@ FORWARD void opregadr P((void));
 #define outdefstr() outop0str(".ascii\t\"")
 #define outexchange() outop1str("xchg\t")
 #define outglobl() outop0str(".globl\t")
-#ifdef XENIX_AS
-# define outimport() outexport()
-#else
-# define outexport() outop0str("export\t")
-# define outimport() outop0str("import\t")
-#endif
-#ifdef XENIX_AS
-# define outj1switch() outop3str("seg\tcs\nbr\t@");
-#else
-# define outj1switch() outop3str("seg\tcs\nbr\t");
-#endif
+#define outexport() outop0str("export\t")
+#define outimport() outop0str("import\t")
+#define outj1switch() outop3str("seg\tcs\nbr\t");
 #define outj2switch() \
 	(outindleft(), outstr(ireg0str), outindright(), bumplc2(), outnl())
 #define outlcommon() outop0str("\tlcomm\t")
@@ -137,16 +126,10 @@ PUBLIC void defbyte()
 {
     outop0str(".byte\t");
 }
-#ifdef XENIX_AS
-PUBLIC void defword()
-{
-}				/* don't have to print ".word\t" */
-#else
 PUBLIC void defword()
 {
     outop0str(".word\t");
 }
-#endif
 PUBLIC void defdword()
 {
     outop0str("dd\t");
@@ -181,17 +164,10 @@ PRIVATE void outand()
 {
     outop2str(ANDSTRING);
 }
-#ifdef XENIX_AS
-PUBLIC void outcalladr()
-{
-    outop2str("call\t@");
-}
-#else
 PUBLIC void outcalladr()
 {
     outop2str("call\t");
 }
-#endif
 PUBLIC void outcmp()
 {
     outop2str("cmp\t");
@@ -208,12 +184,6 @@ PRIVATE void outequate()
 {
     outop0str("\t=\t");
 }
-#ifdef XENIX_AS
-PRIVATE void outexport()
-{
-    outop0str(".globl\t");
-}
-#endif
 PUBLIC void outfail()
 {
     outop0str(".fail\t");
@@ -222,16 +192,6 @@ PUBLIC void outinc()
 {
     outop1str("inc\t");
 }
-#ifdef XENIX_AS
-PUBLIC void outindleft()
-{
-    outbyte('(');
-}
-PUBLIC void outindright()
-{
-    outbyte(')');
-}
-#else
 PUBLIC void outindleft()
 {
     outbyte('[');
@@ -240,7 +200,6 @@ PUBLIC void outindright()
 {
     outbyte(']');
 }
-#endif
 #ifndef FRAMEPOINTER
 PUBLIC void outindstackreg()
 {

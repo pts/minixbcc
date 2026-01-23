@@ -44,11 +44,6 @@ struct symstruct *source;
     }
     else
     {
-#ifdef XENIX_AS
-	if (source->indcount == 0)	/* fix call fixed address */
-	    out_callstring();
-	else
-#endif
 	    outcalladr();
 	outadr(source);
     }
