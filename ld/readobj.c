@@ -5,12 +5,35 @@
 #else
 #  include <string.h>
 #endif
-#include "ar.h"			/* maybe local copy of <ar.h> for cross-link */
-#include "minixar.h"
 #include "const.h"
 #include "obj.h"
 #include "type.h"
 #include "globvar.h"
+
+#define ARMAG	"!<arch>\n"  /* Header bytes (8, trailing NUL unused). */
+#define SARMAG	8  /* Number of header bytes. */
+struct ar_hdr {  /* GNU archive (*.a) member header. */
+	char	ar_name[16];  /* Space-padded. May be terminated by '/'. !! */
+	char	ar_date[12];  /* Unix timestamp, decimal, space-padded. */
+	char	ar_uid[6];  /* User  ID, decimal, space-padded. */
+	char	ar_gid[6];  /* Group ID, decimal, space-padded. */
+	char	ar_mode[8];  /* Stat st_mode, octal, space-padded. */
+	char	ar_size[10];  /* File size in bytes, decimal, space-padded. */
+	char	ar_fmag[2];  /* '`', '\n'. */
+};
+typedef char assert_sizeof_ar_hdr[sizeof(struct ar_hdr) == 60 ? 1 : -1];
+
+#define	MINIXARMAG	0177545
+#define MINIXARNAMEMAX    14
+struct minixar_hdr {  /* Minix archive (*.a) member header. */
+	char	ar_name[MINIXARNAMEMAX];
+	char	ar_date[4];	/* long in byte order 2 3 1 0 */
+	char	ar_uid[1];
+	char	ar_gid[1];
+	char	ar_mode[2];	/* short in byte order 0 1 */
+	char	ar_size[4];	/* long in byte order 2 3 1 0 */
+};
+typedef char assert_sizeof_minixar_hdr[sizeof(struct minixar_hdr) == 26 ? 1 : -1];
 
 /*
    Linking takes 2 passes. The 1st pass reads through all files specified

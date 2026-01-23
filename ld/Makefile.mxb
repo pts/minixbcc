@@ -29,10 +29,10 @@
 
 all: ld ld.bugc
 
-ld: dumps.c io.c ld.c readobj.c table.c typeconv.c writebin.c align.h aout.h ar.h  byteord.h config.h const.h globvar.h minixar.h obj.h type.h
+ld: dumps.c io.c ld.c readobj.c table.c typeconv.c writebin.c align.h aout.h  byteord.h config.h const.h globvar.h obj.h type.h
 	$(CC) -O -DS_ALIGNMENT=1 -o ld dumps.c io.c heap.c ld.c readobj.c table.c typeconv.c writebin.c
 	chmem =150000 ld
 
-ld.bugc: dumps.c io.c ld.c readobj.c table.c typeconv.c writebin.c align.h aout.h ar.h bsd-a.out.h byteord.h config.h const.h globvar.h minixar.h obj.h type.h
+ld.bugc: dumps.c io.c ld.c readobj.c table.c typeconv.c writebin.c align.h aout.h bsd-a.out.h byteord.h config.h const.h globvar.h obj.h type.h
 	$(CC) -O -DMINIXBUGCOMPAT -o ld.bugc dumps.c io.c heap.c ld.c readobj.c table.c typeconv.c writebin.c
 	chmem =150000 ld.bugc
