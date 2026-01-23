@@ -85,11 +85,11 @@ char *filename;
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
 	    }
-	    seekin(filepos += roundup(filelength, 2, offset_t));
+	    seekin((INT32T) (filepos += roundup(filelength, 2, offset_t)));
 	}
 	break;
     default:
-	seekin(0L);
+	seekin((INT32T) 0);
 	readin(filemagic, sizeof filemagic);
 	if (memcmp(filemagic, ARMAG, sizeof filemagic) != 0)
 	    input1error(" has bad magic number");
@@ -102,7 +102,7 @@ char *filename;
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
 	    }
-	    seekin(filepos += roundup(filelength, 2, offset_t));
+	    seekin((INT32T) (filepos += roundup(filelength, 2, offset_t)));
 	}
 	break;
     }

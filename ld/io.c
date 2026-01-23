@@ -302,18 +302,18 @@ unsigned count;
 }
 
 PUBLIC void seekin(offset)
-long offset;
+INT32T offset;
 {
     inbufptr = inbufend = inbuf;
-    if (lseek(infd, offset, SEEK_SET) < 0)
+    if (lseek(infd, (long) offset, SEEK_SET) < 0)
 	prematureeof();
 }
 
 PUBLIC void seekout(offset)
-long offset;
+INT32T offset;
 {
     flushout();
-    if (lseek(outfd, offset, SEEK_SET) != offset)
+    if (lseek(outfd, (long) offset, SEEK_SET) != offset)
 	outputerror("cannot seek in");
 }
 

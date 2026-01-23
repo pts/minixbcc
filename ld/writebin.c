@@ -438,10 +438,7 @@ bool_pt arguzp;
     /* dump symbol table */
     if (!stripflag)
     {
-	seekout(A_MINHDR
-		+ (long) (etextpadoff - btextoffset)
-		+ (long) (edataoffset - bdataoffset)
-		);
+	seekout((INT32T) ((unsigned INT32T) A_MINHDR + (unsigned INT32T) (etextpadoff - btextoffset) + (unsigned INT32T) (edataoffset - bdataoffset)));
 	memset(extsym + OFFSETOF_n_unused, 0, A_LISTHDR - OFFSETOF_n_unused);  /* .n_numaux = .n_type = 0; */  /* Unused fields. */
 	for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	    if (modptr->loadflag)
@@ -488,7 +485,7 @@ bool_pt arguzp;
 			++nsym;
 		    }
 	    }
-	seekout((long) OFFSETOF_a_syms);
+	seekout((INT32T) OFFSETOF_a_syms);
 	u4c4(buf4, (u4_t) nsym * sizeof extsym);
 	writeout(buf4, 4);
     }
@@ -511,7 +508,7 @@ struct modstruct *modptr;
     relocsize = 2;
     symparray = modptr->symparray;
     openin(modptr->filename);	/* does nothing if already open */
-    seekin((long) modptr->textoffset);
+    seekin((INT32T) modptr->textoffset);
     while (TRUE)
     {
 	if ((command = readchar()) < 0)
@@ -676,7 +673,7 @@ unsigned newseg;
     {
 	segpos[curseg] = spos;
 	spos = segpos[curseg = newseg];
-	seekout(A_MINHDR + (long) spos + (long) segadj[curseg]);
+	seekout((INT32T) ((unsigned INT32T) A_MINHDR + (unsigned INT32T) spos + (unsigned INT32T) segadj[curseg]));
     }
 }
 
