@@ -217,33 +217,3 @@ void u4c4 P((char *buf, u32_t offset));
 void u2cn P((char *buf, u16_pt offset, unsigned count));
 void u4cn P((char *buf, u32_t offset, unsigned count));
 bool_pt typeconv_init P((void));
-
-#if 0
-/* library - fcntl.h */
-int creat P((const char *__path, int __mode));
-int open P((const char *__path, int __oflag, ...));
-
-/* library - stdlib.h */
-void abort P((void));
-void exit P((int __status));
-void *malloc P((unsigned __size));
-
-/* library - string.h */
-int memcmp P((const void *__s1, const void *__s2, unsigned __max));
-void *memset P((void *__s, int __ch, unsigned __nbytes));
-char *strchr P((const char *__s, int __ch));
-int strcmp P((const char *__s1, const char *__s2));
-char *strcpy P((char *__target, const char *__source));
-unsigned strlen P((const char *__s));
-int strncmp P((const char *__s1, const char *__s2, int __max));
-char *strrchr P((const char *__s, int __ch));
-
-/* library - unistd.h */
-char *brk P((char *__adr));
-int close P((int __fd));
-long lseek P((int __fd, long __offset, int __whence));
-int read P((int __fd, char *__buf, unsigned __nbytes));
-char *sbrk P((int __incr));
-int write P((int __fd, char *__buf, unsigned __nbytes));
-
-#endif
