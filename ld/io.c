@@ -291,7 +291,7 @@ unsigned count;
 #if __STDC__
 #  define cast_lseek_offset(offset) (offset)
 #else
-#  define cast_lseek_offset(offset) ((off_t) (offset))  /* We must pass the offset of the correct size, because the C compiler doesn't know the argument type. Compile with -Doff_t=long if needed. */
+#  define cast_lseek_offset(offset) ((off_t) (offset))  /* We must pass the offset of the correct size, because the K&R C compiler doesn't know the argument type of lseek(...). Compile with -Doff_t=long if needed. */
 #endif
 
 PUBLIC void seekin(offset)
