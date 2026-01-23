@@ -88,9 +88,8 @@ sort_symbols:
 	for (copyptr = symlptr; copyptr < copytop;)
 	{
 	    symptr = *copyptr++;
-	    writew((unsigned)
-		   (symptr->next = (struct sym_s *) label_stringptr));
-				/* reuse "next" to record string position */
+	    writew(label_stringptr);
+	    symptr->next = (struct sym_s *) (unsigned INTPTRT) label_stringptr;  /* reuse "next" to record string position */
 	    label_stringptr += symptr->length + 3;
 	}
 	for (copyptr = symlptr; copyptr < copytop;)
@@ -106,7 +105,7 @@ sort_symbols:
 	for (copyptr = symlptr; copyptr < copytop;)
 	{
 	    symptr = *copyptr++;
-	    writew((unsigned) symptr->next);	/* now has string position */
+	    writew((unsigned) (unsigned INTPTRT) symptr->next);  /* string position, set in the loop above */
 	}
     }
 }

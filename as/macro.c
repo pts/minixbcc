@@ -13,18 +13,6 @@
 #define EXTERN
 #include "macro.h"
 
-#ifdef ACKFIX0
-#  if _EM_WSIZE < _EM_PSIZE  /* Macros defined by ACK ANSI C compiler on Minix. The condition is false. */
-    typedef long myintptr;
-#  else
-    typedef int myintptr;  /* Pacify ACK 3.1 warning on Minix 1.5.10 i86: conversion of long to pointer loses accuracy */
-#  endif
-  typedef char assert_ptrsize[sizeof(myintptr) == sizeof(char*) ? 1 : -1];
-#else
-  typedef offset_t myintptr;
-  typedef char assert_ptrsize[sizeof(myintptr) >= sizeof(char*) ? 1 : -1];
-#endif
-
 /*
   Enter macro: stack macro and get its parameters.
   Parameters form a linked list of null-terminated strings of form
@@ -47,8 +35,7 @@ struct sym_s *symptr;
 	register char *stringptr;
 
 	++maclevel;
-	/* !! porting: this converts a long to a pointer; add a static assert checking that it fits (i.e. sizeof(offset_t) >= sizeof(char*). */
-	(--macstak)->text = (char*) (myintptr) symptr->value_reg_or_op.value;  /* This converts an offset_t to a pointer. */
+	(--macstak)->text = symptr->value_reg_or_op.text;
 	macstak->parameters = param1 = macpar;
 	param1->next = (struct schain_s*) 0;
 	*(stringptr = build_number(++macnum, 3, param1->string)) = 0;
@@ -137,9 +124,7 @@ PUBLIC void pmacro()
 	    else
 		symptr->type |= MACBIT;
 	    symptr->data = UNDBIT;	/* undefined till end */
-	    symptr->value_reg_or_op.value = (unsigned) heapptr;
-					/* beginning of store for macro */
-					/* value s.b. (char *) */
+	    symptr->value_reg_or_op.text = heapptr;  /* beginning of store for macro body */
 	    getsym_nolookup();		/* test for "C" */
 	    if (sym == IDENT && lineptr == symname + 1 && *symname == 'C')
 		savingc = TRUE;

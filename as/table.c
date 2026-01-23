@@ -173,9 +173,10 @@ PUBLIC struct sym_s *lookup()
 #endif
     *hashptr = symptr = (struct sym_s *) heapptr;
     symptr->type = 0;
+    symptr->value_reg_or_op.value = 0;
+    symptr->next = (struct sym_s*) 0;
     symptr->data = inidata;
     symptr->length = length;
-    symptr->value_reg_or_op.value = (unsigned) (symptr->next = (struct sym_s*) 0);
     heapptr = symptr->name;
     do
 	*heapptr++ = *nameptr++;

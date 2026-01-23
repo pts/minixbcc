@@ -61,6 +61,7 @@ struct sym_s
 	    opcode_t opcode;	/* opcode, if sym is a hardware op */
 	}
 	    op;			/* if sym is pseudo-op or hardware op */
+	char *text;		/* macro body text for entermac(...) and pmacro(...) */
     }
         value_reg_or_op;
     unsigned char length;	/* length of symbol string */
