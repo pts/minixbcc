@@ -10,7 +10,7 @@ char *strcpy(s1, s2)
 char *s1;
 _CONST char *s2;
 {
-#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+#if C_CODE || __AS386_16__ + __AS386_32__ != 1
     char *initial_s1;
 
     initial_s1 = s1;
@@ -18,17 +18,6 @@ _CONST char *s2;
 	;
     return initial_s1;
 #else /* !C_CODE etc */
-
-#if __AS09__
-# asm
-	LDU	_strcpy.s2,S	
-	LEAY	,X		s1 stays in X to return
-STRCPY.LOOP
-	LDB	,U+
-	STB	,Y+
-	BNE	STRCPY.LOOP
-# endasm
-#endif /* __AS09__ */
 
 #if __AS386_16__
 # asm

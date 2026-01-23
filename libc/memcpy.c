@@ -12,7 +12,7 @@ void *s1;
 _CONST void *s2;
 size_t nbytes;
 {
-#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+#if C_CODE || __AS386_16__ + __AS386_32__ != 1
     register char *cs1;
     register char *cs2;
     unsigned largecount;
@@ -41,70 +41,6 @@ size_t nbytes;
     }
     return s1;
 #else /* !C_CODE etc */
-
-#if __AS09__
-# asm
-	LDD	_memcpy.nbytes,S
-	CMPX	_memcpy.s2,S
-	BLO	MEMCOPY.UP	"UP" is direction of move although target less
-	BEQ	MEMCOPY.EXIT
-
-	LEAU	D,X
-	LDY	_memcpy.s2,S
-	LEAY	D,Y
-	ANDB	#8-1
-	BEQ	MEMCOPY.DOWN.8.NEXT
-MEMCOPY.DOWN.1.LOOP
-	LDA	,-Y
-	STA	,-U
-	DECB
-	BNE	MEMCOPY.DOWN.1.LOOP
-	BRA	MEMCOPY.DOWN.8.NEXT
-
-MEMCOPY.DOWN.8.LOOP
-	LDX	-2,Y
-	LDD	-4,Y
-	STX	,--U		grrr, PSHU fails on some page boundaries
-	PSHU	D
-	LDX	-6,Y
-	LDD	-8,Y
-	PSHU	X,D
-	LEAY	-8,Y
-MEMCOPY.DOWN.8.NEXT
-	CMPY	_memcpy.s2,S
-	BHI	MEMCOPY.DOWN.8.LOOP
-	BRA	MEMCOPY.EXIT
-
-MEMCOPY.UP
-	LEAY	,X		s1 in Y
-	LDU	_memcpy.s2,S	
-	LEAX	D,U
-	STX	_memcpy.s2,S	reuse s2 for top of source
-	ANDB	#8-1
-	BEQ	MEMCOPY.UP.8.NEXT
-MEMCOPY.UP.1.LOOP
-	LDA	,U+
-	STA	,Y+
-	DECB
-	BNE	MEMCOPY.UP.1.LOOP
-	BRA	MEMCOPY.UP.8.NEXT
-
-MEMCOPY.UP.8.LOOP
-	PULU	D,X
-	STD	,Y
-	STX	2,Y
-	PULU	D
-	LDX	,U++		PULU fails on some page boundaries
-	STD	4,Y
-	STX	6,Y
-	LEAY	8,Y
-MEMCOPY.UP.8.NEXT
-	CMPU	_memcpy.s2,S
-	BLO	MEMCOPY.UP.8.LOOP
-MEMCOPY.EXIT
-
-# endasm
-#endif /* __AS09__ */
 
 /*
     80*86 calling conventions (small model only):

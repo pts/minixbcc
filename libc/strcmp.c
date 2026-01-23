@@ -12,7 +12,7 @@ int strcmp(s1, s2)
 _CONST char *s1;
 _CONST char *s2;
 {
-#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+#if C_CODE || __AS386_16__ + __AS386_32__ != 1
     unsigned char ch;
 
     while ((ch = *s1++) != 0)
@@ -20,25 +20,6 @@ _CONST char *s2;
 	    return ch;
     return ch - *s2;
 #else /* !C_CODE etc */
-
-#if __AS09__
-# asm
-	LDU	_strcmp.s2,S	s1 is already in X
-	CLRA			set up for char extension by SBCA
-STRCMP.LOOP
-	LDB	,X+
-	BEQ	STRCMP.STRING1.ENDED
-	SUBB	,U+
-	BEQ	STRCMP.LOOP	
-	SBCA	#0
-	TFR	D,X
-	RTS
-STRCMP.STRING1.ENDED
-	SUBB	,U		negative unless ,U is 0 (unsigned chars)
-	SBCA	#0
-	TFR	D,X
-# endasm
-#endif /* __AS09__ */
 
 #if __AS386_16__
 # asm

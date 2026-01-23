@@ -14,7 +14,7 @@ _CONST char *s1;
 _CONST char *s2;
 size_t n;
 {
-#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+#if C_CODE || __AS386_16__ + __AS386_32__ != 1
     if (n <= 0)
 	return 0;
     while (*s1++ == *s2++)
@@ -22,35 +22,6 @@ size_t n;
 	    return 0;
     return s1[-1] - s2[-1];
 #else /* !C_CODE etc */
-
-#if __AS09__
-# asm
-	LDY	_strncmp.n,S
-	BNE	STRNCMP.SENSIBLE.N
-	LDX	#0
-	RTS
-
-STRNCMP.SENSIBLE.N
-	LDU	_strncmp.s2,S	s1 is already in X
-	CLRA			set up for char extension by SBCA
-STRNCMP.LOOP
-	LDB	,X+
-	BEQ	STRNCMP.STRING1.ENDED
-	SUBB	,U+
-	BNE	STRNCMP.EXIT
-	LEAY	-1,Y
-	BNE	STRNCMP.LOOP
-STRNCMP.EXIT
-	SBCA	#0
-	TFR	D,X
-	RTS
-
-STRNCMP.STRING1.ENDED
-	SUBB	,U		negative unless ,X is 0 (unsigned chars)
-	SBCA	#0
-	TFR	D,X
-# endasm
-#endif /* __AS09__ */
 
 #if __AS386_16__
 # asm

@@ -7,7 +7,7 @@
 size_t strlen(s)
 _CONST char *s;
 {
-#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+#if C_CODE || __AS386_16__ + __AS386_32__ != 1
     _CONST char *start;
 
     start = s;
@@ -15,19 +15,6 @@ _CONST char *s;
 	;
     return (s - 1) - start;
 #else /* !C_CODE etc */
-
-#if __AS09__
-# asm
-	PSHS	X		remember start
-STRLEN.LOOP
-	LDB	,X+
-	BNE	STRLEN.LOOP
-	LEAX	-1,X
-	TFR	X,D
-	SUBD	,S++
-	TFR	D,X
-# endasm
-#endif /* __AS09__ */
 
 #if __AS386_16__
 # asm

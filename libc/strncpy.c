@@ -12,7 +12,7 @@ char *s1;
 _CONST char *s2;
 size_t n;
 {
-#if C_CODE || __AS09__ + __AS386_16__ + __AS386_32__ != 1
+#if C_CODE || __AS386_16__ + __AS386_32__ != 1
     char *initial_s1;
 
     initial_s1 = s1;
@@ -25,32 +25,6 @@ size_t n;
     }
     return initial_s1;
 #else /* !C_CODE etc */
-
-#if __AS09__
-# asm
-	LDU	_strncpy.s2,S	s1 already in X
-	STX	_strncpy.s2,S	remember s1 to return
-	LDY	_strncpy.n,S
-	BEQ	STRNCPY.EXIT
-STRNCPY.LOOP
-	LDB	,U+
-	STB	,X+
-	BEQ	STRNCPY.PAD
-	LEAY	-1,Y
-	BNE	STRNCPY.LOOP
-	BRA	STRNCPY.EXIT
-
-STRNCPY.PAD
-	LEAY	-1,Y
-	BEQ	STRNCPY.EXIT
-STRNCPY.PAD.LOOP
-	STB	,X+
-	LEAY	-1,Y
-	BNE	STRNCPY.PAD.LOOP
-STRNCPY.EXIT
-	LDX	_strncpy.s2,S
-# endasm
-#endif /* __AS09__ */
 
 #if __AS386_16__
 # asm
