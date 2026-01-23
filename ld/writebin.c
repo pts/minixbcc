@@ -21,22 +21,31 @@
 
 /* --- Minix a.out executable file format support */
 
-struct exec {  /* a.out header */  /* !! Don't use it. */
-	unsigned char	a_magic[2];	/* magic number: {1, 3} */
-	unsigned char	a_flags;	/* flags, see below */
-	unsigned char	a_cpu;		/* cpu id : A_I8085, A_I80386 etc. */
-	unsigned char	a_hdrlen;	/* length of header */
-	unsigned char	a_unused;	/* reserved for future use */
-	unsigned short	a_version;	/* version stamp, not used */
-	long		a_text;		/* size of text segement in bytes */
-	long		a_data;		/* size of data segment in bytes */
-	long		a_bss;		/* size of bss segment in bytes */
-	long		a_entry;	/* entry point */
-	long		a_total;	/* total memory allocated */
-	long		a_syms;		/* size of symbol table */
+#if 0  /* Not used to avoid byte order and alignment issues, a char[A_MINHDR] is used instead. */
+struct exec {  /* Minix a.out executable header. */
+	uint8_t		a_magic[2];	/* magic number: {1, 3} for little endian */
+	uint8_t		a_flags;	/* flags, see below */
+	uint8_t		a_cpu;		/* cpu id : A_I8085, A_I80386 etc. */
+	uint8_t		a_hdrlen;	/* length of header */
+	uint8_t		a_unused;	/* reserved for future use */
+	uint16_t	a_version;	/* version stamp, not used */
+	int32_t		a_text;		/* size of text segement in bytes */
+	int32_t		a_data;		/* size of data segment in bytes */
+	int32_t		a_bss;		/* size of bss segment in bytes */
+	int32_t		a_entry;	/* entry point */
+	int32_t		a_total;	/* total memory allocated */
+	int32_t		a_syms;		/* size of symbol table */
 };
+typedef char assert_sizeof_exec[sizeof(struct exec) == 32 ? 1 : -1];
+#endif
 
+#define OFFSETOF_a_text 8
+#define OFFSETOF_a_data 0xc
+#define OFFSETOF_a_bss  0x10
+#define OFFSETOF_a_entry 0x14
+#define OFFSETOF_a_total 0x18
 #define OFFSETOF_a_syms 0x1c
+#define A_MINHDR	0x20	/* Byte size of the short form of struct exec. */
 
 #define A_I8086		0x04	/* intel i8086/8088 */
 #define A_I80386	0x10	/* intel i80386 */
@@ -46,15 +55,22 @@ struct exec {  /* a.out header */  /* !! Don't use it. */
 #define A_EXEC		0x10	/* executable */
 #define A_SEP		0x20	/* separate I/D */
 
-#define A_MINHDR 32  /* Byte size of the short form of struct exec. */
-
-struct nlist {  /* symbol table entry */  /* !! Don't use it. */
+#if 0  /* Not used to avoid byte order and alignment issues, a char[A_LISTHDR] is used instead. */
+struct nlist {  /* Minix a.out symbol table entry */  /* !! Don't use it. */
 	char	 	n_name[8];	/* symbol name */
-	long	 	n_value;	/* value */
-	unsigned char	n_sclass;	/* storage class */
-	unsigned char	n_numaux;	/* number of auxiliary entries, not used */
-	unsigned short	n_type;		/* language base and derived type. not used */
+	int32_t	 	n_value;	/* value: signed, little-endian 32-bit integer */
+	uint8_t		n_sclass;	/* storage class: unsigned byte */
+	uint8_t		n_numaux;	/* number of auxiliary entries, not used, byte */
+	uint16_t	n_type;	/* language base and derived type. not used, unsigned, little-endian 16-bit integer */
 };
+typedef char assert_sizeof_nlist[sizeof(struct nlist) == 16 ? 1 : -1];
+#endif
+
+#define OFFSETOF_n_name 0
+#define OFFSETOF_n_value 8
+#define OFFSETOF_n_sclass 0xc
+#define OFFSETOF_n_unused 0xd
+#define A_LISTHDR	0x10  /* Byte size of the Minix a.out symbol table entry .*/
 
 /* low bits of storage class (section) */
 #define	N_SECT		  07	/* section mask */
@@ -226,7 +242,7 @@ bool_pt arguzp;
 {
     char buf4[4];
     char *cptr;
-    struct nlist extsym;  /* !! Don't use this struct, to avoid alignment issues during serialization. */
+    char extsym[A_LISTHDR];  /* !! Don't use this struct, to avoid alignment issues during serialization. */
     flags_t flags;
     struct modstruct *modptr;
     unsigned seg;
@@ -426,7 +442,7 @@ bool_pt arguzp;
 		+ (long) (etextpadoff - btextoffset)
 		+ (long) (edataoffset - bdataoffset)
 		);
-	extsym.n_numaux = extsym.n_type = 0;
+	memset(extsym + OFFSETOF_n_unused, 0, A_LISTHDR - OFFSETOF_n_unused);  /* .n_numaux = .n_type = 0; */  /* Unused fields. */
 	for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	    if (modptr->loadflag)
 	    {
@@ -437,44 +453,43 @@ bool_pt arguzp;
 		     (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
 		    if (symptr->modptr == modptr)
 		    {
-		        namecpy(extsym.n_name, extsym.n_name + sizeof extsym.n_name, symptr->name);
-			u4cn((char *) &extsym.n_value, (u4_t) symptr->value,
-			     sizeof extsym.n_value);
+		        namecpy(extsym + OFFSETOF_n_name, extsym + OFFSETOF_n_name + 8, symptr->name);
+			u4c4(extsym + OFFSETOF_n_value, (u4_t) symptr->value);
 #if 0
 			/* 0x4063 == 040143 == ((3 & SEGM_MASK) | C_MASK | I_MASK | (1 << SZ_SHIFT). */
 			if (strcmp(symptr->name, "_environ") == 0) printf("sym %s flags=0x%x=0%o\n", symptr->name, symptr->flags, symptr->flags);
 #endif
 			if ((flags = symptr->flags) & A_MASK)
-			    extsym.n_sclass = N_ABS;  /* 01 for Minix. */
+			    extsym[OFFSETOF_n_sclass] = N_ABS;  /* 01 for Minix. */
 #ifdef MINIXBUGCOMPAT
 			else if (flags & (E_MASK | I_MASK) && !(flags & C_MASK))  /* The old ld linker in bccbin32.tar.Z had this bug: it incorrectly marked _environ (with C_MASK) as C_STAT rather than C_EXT. */
 #else
 			else if (flags & (E_MASK | I_MASK))
 #endif
-			    extsym.n_sclass = C_EXT;  /* 020 == 0x10 for Minix. */
+			    extsym[OFFSETOF_n_sclass] = C_EXT;  /* 020 == 0x10 for Minix. */
 			else
-			    extsym.n_sclass = C_STAT;  /* 030 == 0x18 for Minix. */
+			    extsym[OFFSETOF_n_sclass] = C_STAT;  /* 030 == 0x18 for Minix. */
 			if (!(flags & I_MASK) ||
 			     flags & C_MASK)
 			    switch (flags & (A_MASK | SEGM_MASK))
 			    {
 			    case 0:
-				extsym.n_sclass |= N_TEXT;  /* 02 for Minix. */
+				extsym[OFFSETOF_n_sclass] |= N_TEXT;  /* 02 for Minix. */
 			    case A_MASK:
 				break;
 			    default:
 				if (flags & (C_MASK | SA_MASK))
-				    extsym.n_sclass |= N_BSS;  /* 04 for Minix. */
+				    extsym[OFFSETOF_n_sclass] |= N_BSS;  /* 04 for Minix. */
 				else
-				    extsym.n_sclass |= N_DATA;  /* 03 for Minix. */
+				    extsym[OFFSETOF_n_sclass] |= N_DATA;  /* 03 for Minix. */
 				break;
 			    }
-			writeout((char *) &extsym, sizeof extsym);
+			writeout(extsym, sizeof extsym);
 			++nsym;
 		    }
 	    }
 	seekout((long) OFFSETOF_a_syms);
-	u4cn(buf4, (u4_t) nsym * sizeof extsym, 4);
+	u4c4(buf4, (u4_t) nsym * sizeof extsym);
 	writeout(buf4, 4);
     }
     closeout();
@@ -674,23 +689,19 @@ unsigned countsize;
 
 PRIVATE void writeheader()
 {
-    struct exec header;  /* !! Don't use `struct exec' here, to avoid alignment issues. */
+    char header[A_MINHDR];  /* Minix a.out executable header. */
     offset_t a_total;
 
-    memset(&header, 0, sizeof header);
-    header.a_magic[0] = 1;
-    header.a_magic[1] = 3;
-    header.a_flags = sepid ? A_SEP : A_EXEC;
-    if (uzp) header.a_flags |= A_UZP;
-    header.a_cpu = bits32 ? A_I80386 : A_I8086;
-    header.a_hdrlen = A_MINHDR;
-    offtocn((char *) &header.a_text, etextpadoff - btextoffset,
-	    sizeof header.a_text);
-    offtocn((char *) &header.a_data, edataoffset - bdataoffset,
-	    sizeof header.a_data);
-    offtocn((char *) &header.a_bss, endoffset - edataoffset,
-	    sizeof header.a_bss);
-    if (uzp) offtocn((char *) &header.a_entry, page_size(), sizeof header.a_entry);
+    memset(header, 0, sizeof header);  /* Some fields are unfilled, we zero-initialize them. */
+    header[0] = 1;  /* a_magic[0]. */
+    header[1] = 3;  /* a_magic[1]. */
+    header[2] = (sepid ? A_SEP : A_EXEC) | (uzp ? A_UZP : 0);  /* a_flags. */
+    header[3] = bits32 ? A_I80386 : A_I8086;  /* a_cpu. */
+    header[4] = A_MINHDR;  /* a_hdrlen. */
+    u4c4(header + OFFSETOF_a_text, etextpadoff - btextoffset);
+    u4c4(header + OFFSETOF_a_data, edataoffset - bdataoffset);
+    u4c4(header + OFFSETOF_a_bss, endoffset - edataoffset);
+    if (uzp) u4c4(header + OFFSETOF_a_entry, page_size());
 
     if (dynam_size) { a_total = endoffset + dynam_size; }
 #ifdef MINIXBUGCOMPAT
@@ -702,9 +713,9 @@ PRIVATE void writeheader()
     if (a_total < endoffset || a_total > (bits32 ? ~a_total : (offset_t) 0x10000L)) {
 	fatalerror(dynam_size ? "dynamic memory size (-h) makes a_total too large" : "a_total too large");
     }
-    offtocn((char *) &header.a_total, a_total, sizeof header.a_total);
+    u4c4(header + OFFSETOF_a_total, a_total);
 
-    writeout((char *) &header, A_MINHDR);
+    writeout(header, A_MINHDR);
 }
 
 PRIVATE void writenulls(count)
