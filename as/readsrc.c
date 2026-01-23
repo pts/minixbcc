@@ -38,8 +38,8 @@ struct fcbstruct		/* file control block structure */
 struct fbufstruct		/* file buffer structure */
 {
     struct fcbstruct fcb;	/* status after opening an include sub-file */
-    char fpartline[MAXLINE + 1];/* buffer for partial line */
-    char fbuf[INBUFSIZE + 1];	/* buffer to read into */
+    char fpartline[MAXLINE + 1];  /* buffer for partial line */
+    char fbuf[1 + INBUFSIZE + 1];  /* buffer to read into */
     char fname[1];		/* file name (variable length), 1 for null */
 };
 
@@ -73,7 +73,7 @@ PRIVATE void clearsource()
 {
     input.includer = inputbuf;
     inputbuf = &xyz;
-    input.first = input.limit = input.buf = inputbuf->fbuf;
+    input.first = input.limit = input.buf = inputbuf->fbuf + 1;
     *(lineptr = linebuf = input.first - 1) = EOLCHAR;
     input.blocksize = 0;
 }

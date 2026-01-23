@@ -80,6 +80,7 @@ void dodefine()
 	if (type[(c = skipws())] != LET)
 	    goto bad_define;
 	isredefine = FALSE;			/* Set if redefining	*/
+	old = (char*) 0;  /* Pacify useless GCC 4.5 warning -Wmaybe-uninitialized. */
 	if ((dp = lookid(c)) == NULL)		/* If not known now	*/
 	    dp = defendel(token, FALSE);	/* Save the name	*/
 	else {					/* It's known:		*/

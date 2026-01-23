@@ -108,15 +108,21 @@ PUBLIC void pmacro()
     bool_t savingc;
     struct sym_s *symptr;
 
-    saving =			/* prepare for bad macro */
-	savingc = FALSE;	/* normally don't save comments */
-    macload = TRUE;		/* show loading */
     if (label != (struct sym_s*) 0)
+    {
 	error(ILLAB);
+	goto done;
+    }
     else if (sym != IDENT)
+    {
 	error(LABEXP);
+	goto done;
+    }
     else
     {
+	saving =		/* prepare for bad macro */
+	    savingc = FALSE;	/* normally don't save comments */
+	macload = TRUE;		/* show loading */
 	symptr = gsymptr;
 	if (symptr->type & MNREGBIT)
 	    error(LABEXP);
@@ -183,4 +189,5 @@ PUBLIC void pmacro()
 	*heapptr++ = ETB;
 	symptr->data = 0;
     }
+  done: ;
 }

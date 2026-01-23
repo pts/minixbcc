@@ -333,6 +333,7 @@ struct typelist **ptypelist;
     if (gvarsc != NULLDECL)
 	error("illegal type name");
     basetype = gvartype;
+    scalar = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     while (sym != SEMICOLON && sym != EOFSYM)
     {
 	gvartype = basetype;

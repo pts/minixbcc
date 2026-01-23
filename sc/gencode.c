@@ -492,6 +492,7 @@ struct nodestruct *exp;
     regmark = reguse;
     saveoffset = savelist = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     structarg = (struct symstruct*) 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
+    saveargsp = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     if ((op_t) op == FUNCOP)
     {
 	saveargsp = lastargsp;

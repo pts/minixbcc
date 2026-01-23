@@ -133,6 +133,7 @@ char **argv;
     bool_t isnextarg;
     char *nextarg;
 
+    nextarg = (char *) 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     if (argc <= 1)
 	usage();
     do

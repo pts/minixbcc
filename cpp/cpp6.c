@@ -536,6 +536,7 @@ int	c;				/* First character of token	*/
 	    return (NULL);			/* undefined just now	*/
 	nhash += (np - token);			/* Fix hash value	*/
 	dp = symtab[nhash & SBMASK];		/* Starting bucket	*/
+	temp = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
 	while (dp != (DEFBUF *) NULL) {		/* Search symbol table	*/
 	    if (dp->hash == nhash		/* Fast precheck	*/
 	     && (temp = strcmp(dp->name, token)) >= 0)

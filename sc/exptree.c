@@ -287,6 +287,8 @@ struct nodestruct *p2;
     scalar_t rscalar;
     bool_t uflag;
 
+    rscalar = 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
+    source = (struct symstruct *) 0;  /* Pacify GCC warning -Wmaybe-uninitialized. */
     switch ((op_t) t)
     {
     case ADDABOP:

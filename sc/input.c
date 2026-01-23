@@ -40,15 +40,16 @@
 #  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
 #endif
 
+#define PUSHBACK 3
 struct fbufstruct		/* file buffer structure */
 {
     struct fcbstruct fcb;	/* status after opening an include sub-file */
     char *fname;		/* file name */
     bool_t fname_malloced;	/* nonzero if fname was malloced */
-    char pushback[3];		/* allows pushback to 2 before start of fbuf
-				 * XXX 3 chars before?
-				 * XXX should do everything in fbuf */
-    char fbuf[INBUFSIZE + 1];	/* buffer to read into */
+    /*char pushback[3];*/	/* allows pushback to 2 before start of fbuf; now integrated to fbuf */
+				/* XXX 3 chars before? */
+				/* XXX should do everything in fbuf */
+    char fbuf[PUSHBACK + INBUFSIZE + 1];	/* buffer to read into */
 };
 
 struct inclist			/* list of include file directories */
@@ -185,10 +186,10 @@ PUBLIC void errorloc()
 	outudec(input.linenumber);
 	outbyte('.');
 	if (maclevel == 0)
-	    outudec((unsigned) (lineptr - inputbuf->fbuf) - input.lineoffset);
+	    outudec((unsigned) (lineptr - (inputbuf->fbuf + PUSHBACK)) - input.lineoffset);
 	else
 	{
-	    outudec((unsigned) (savedlineptr() - inputbuf->fbuf)
+	    outudec((unsigned) (savedlineptr() - (inputbuf->fbuf + PUSHBACK))
 		    - input.lineoffset);
 	    outstr(" (macro level ");
 	    outudec((unsigned) maclevel);
@@ -400,10 +401,10 @@ ts_s_inputbuf_tot += sizeof *inputbuf;
     definefile(fname);
     if (orig_cppmode && !suppress_line_numbers)
 	outcpplinenumber(1, fname, input.includer == (struct fbufstruct*) 0 ? "" : " 1");
-    *(input.limit = newinputbuf->fbuf) = EOL;
+    *(input.limit = newinputbuf->fbuf + PUSHBACK) = EOL;
 
     /* dummy line so #include processing can start with skipline() */
-    ch = *(lineptr = newinputbuf->fbuf - 1) = EOL;
+    ch = *(lineptr = newinputbuf->fbuf + PUSHBACK - 1) = EOL;
 }
 
 /* switch from include file to file which included it */
@@ -586,12 +587,12 @@ PUBLIC void skipeol()
 #ifdef INSERT_BACKSLASH_NEWLINES
 	if (bs_state == 1 && *(lineptr - 1) == EOL)
 #endif
-	    input.lineoffset = (int) (lineptr - inputbuf->fbuf);
+	    input.lineoffset = (int) (lineptr - (inputbuf->fbuf + PUSHBACK));
 	return;
     }
-    input.lineoffset -= (int) (lineptr - inputbuf->fbuf);
+    input.lineoffset -= (int) (lineptr - (inputbuf->fbuf + PUSHBACK));
 #ifdef FAKE_INBUFSIZE_1
-    lineptr = inputbuf->fbuf;
+    lineptr = inputbuf->fbuf + PUSHBACK;
 #ifdef INSERT_BACKSLASH_NEWLINES
     switch (bs_state)
     {
@@ -622,7 +623,7 @@ case0:
 #endif
     *lineptr = ich;
 #else
-    nread = read(input.fd, lineptr = inputbuf->fbuf, INBUFSIZE);
+    nread = read(input.fd, lineptr = inputbuf->fbuf + PUSHBACK, INBUFSIZE);
 #endif
     if (nread < 0)
 	fatalerror("input error");

@@ -180,6 +180,8 @@ char **argv;
   hdrbuf[1] = '\377';  /* '\xff'. High byte of MINIXARMAG. */
   hdrp0 = hdrbuf + 2;
 
+  mfd = 0;   /* Pacify useless GCC 4.5 warning -Wmaybe-uninitialized. */
+  size = 0;  /* Pacify useless GCC 4.5 warning -Wmaybe-uninitialized. */
   while ((arg = *argv++) != (char*)0) {
     if ((mfd = open00(arg)) < 0) fatal2("error opening member file", arg);
     /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add this `L' cast to long. */

@@ -3,6 +3,7 @@
 # build.sh: build the BCC compiler tools, libc and extr tools
 # by pts@fazekas.hu at Thu Jan  8 15:51:45 CET 2026
 #
+# !! make it work with `minicc --gcc=4.2' (missing memcpy), `minicc --pcc' (missing prototypes for cpp; code generation difference in sc), `minicc --tcc' (missing memcpy) and `minicc --utcc' (ld.cross segfaults)
 # !! add driver tool command-line
 # !! add driver flag -E to invoke CPP
 # !! test isatty implementations, espacially the assembly implementation in sc
@@ -21,6 +22,7 @@
 # !! strtol -1 / 2 sign incompatibility with the i86 /local/bin/sc (== -1); the other one returns 0.
 # !! replace divisions with right shifts (BCC is not smart enough to optimize it, it also means something different)
 # !! fix sar code generation bug in bcc3 for div2(...), div4(...) etc. in bcc3
+# !! fix suboptimal i386 code generation in ld for `v += (unsigned long) (unsigned char) c;'; this already uses movzx: `v += (unsigned char) c;'
 # !! everywhere (sc, as, ld, cpp)
 #    ifdef ACKFIX  /* Workaround for the bug in Minix 1.5.10 i86 ACK 3.1 C compiler, which sign-extends the (unsigned char) cast. */
 #    #  define UCHARCAST(c) (unsigned char) ((unsigned) (c) & 0xff)
@@ -140,6 +142,8 @@ if test "$1" = dcc0 || test "$1" = dcc3; then  # On Minix i86 or i386, autodetec
 fi
 
 if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minicc || test "$1" = cc; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, minilibc686 minicc on Linux, or a generic Unix C compiler (cc) on Unix.
+  # GCC is known to work with GCC 4.3--4.9 and GCC 7.5.0.
+  # Clang is known to work with Clang 6.0.0.
   # Example invocation for OpenWatcom v2 on Linux (without the -I.../lh, it would segfault): ./build.sh owcc -blinux -I"$WATCOM"/lh
   # minicc is from http://github.com/pts/minilibc686
   # !! Autodetect and add the -I"$WATCOM"/lh for OpenWatcom v2 on Linux.
@@ -151,9 +155,10 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   rm -f sysdet
   cc="$1"; shift
   case "$cc" in
-   owcc | minicc) detcflags="-Wno-n201"; cflags="-Wno-n308" ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI.
+   owcc) detcflags="-Wno-n201"; cflags="-Wno-n308" ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI.
+   minicc) case "$1" in --gcc*) detcflags=; cflags=; ;; *) detcflags="-Wno-n201"; cflags="-Wno-n308" ;; esac ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI.
    cc) detcflags=; cflags="-O" ;;
-   *) detcflags="-m32 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast"; cflags="-m32 -s -O2 -Werror -Wall -W" ;;  # !! Remove -m32 -m32.
+   *) detcflags="-m32 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast"; cflags="-m32 -s -O2 -Werror -Wall -W -Wno-maybe-uninitialized" ;;  # !! Remove -m32 -m32. !! Remove -Werror.
   esac
   "$cc" -O $detcflags "$@" -o sysdet sysdet.c || exit "$?"
   sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1
