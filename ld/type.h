@@ -8,11 +8,7 @@ typedef unsigned u2_pt;
 typedef unsigned long u4_t;
 typedef unsigned long u4_pt;
 
-#ifdef LONG_OFFSETS
 typedef unsigned long offset_t;
-#else
-typedef unsigned offset_t;  /* !! Enable this in sc, ld, cr for sizeof(int) == 32, especially for `gcc -m64', where sizeof(long) == 8. */
-#endif
 
 #ifdef OBJ_H			/* obj.h is included */
 

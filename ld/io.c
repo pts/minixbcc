@@ -11,7 +11,7 @@
 #  include <stdlib.h>
 #endif
 #include "const.h"
-#include "obj.h"		/* needed for LONG_OFFSETS and offset_t */
+#include "obj.h"
 #include "type.h"
 #ifdef GLOBVARI
 #  include "globvar"  /* Workaround for #include basename bug. `globvar' and `globvar.h' are the same. */
@@ -183,25 +183,12 @@ register unsigned num;
     puthexdig(num);
 }
 
-#ifdef LONG_OFFSETS
-
 PUBLIC void put08lx(num)  /* Used by dumpsyms(). */
 register offset_t num;
 {
     put04x(num >> 16);
     put04x(num & 0xffff);
 }
-
-#else /* not LONG_OFFSETS */
-
-PUBLIC void put08x(num)  /* Used by dumpsyms(). */
-register offset_t num;
-{
-    putstr("0000");
-    put04x(num);
-}
-
-#endif /* not LONG_OFFSETS */
 
 PUBLIC void putbstr(width, str)
 unsigned width;

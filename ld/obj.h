@@ -2,8 +2,6 @@
 
 #define OBJ_H
 
-#define LONG_OFFSETS
-
 #define OMAGIC 0x86A3
 
 #if 0
@@ -12,13 +10,8 @@
 #  define OMAGIC_I86 0x86A0  /* This is currently unused. The linker expects OMAGIC_I386 for i86 object files as well. */
 #endif
 
-#ifdef LONG_OFFSETS
-# define cntooffset cnu4
-# define offtocn u4cn
-#else
-# define cntooffset cnu2
-# define offtocn u2cn
-#endif
+#define cntooffset cnu4
+#define offtocn u4cn
 
 #define roundup( num, boundary, type ) \
 	(((num) + ((boundary) - 1)) & (type) ~((boundary) - 1))

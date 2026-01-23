@@ -149,7 +149,7 @@ offset_t *output;
 {
     register char c;
     bool_t sign;
-    unsigned long v;
+    offset_t v;  /* Unsigned. */
 
     sign = 0;
     v = 0;
@@ -190,8 +190,8 @@ offset_t *output;
     } while ((c = *s++) != '\0' && c != ' ' && c != '\t');
     for (; c == ' ' || c == '\t'; c = *s++) {}
     if (c != '\0') return 0;    /* Trailing garbage. */
-    if (sign) v = ~v + 1;    /* Twos complement. */
-    if (v > ~v) return 0;    /* Negative twos complement. */
+    if (sign) v = ~v + 1;    /* Two's complement. */
+    if (v > ~v) return 0;    /* Negative two's complement. */
     *output = v;  /* Always nonnegative here. */
     return 1;
 }

@@ -529,12 +529,8 @@ struct modstruct *modptr;
 		relocsize = 2;
 		break;
 	    case CM_LONG_SIZE:
-#ifdef LONG_OFFSETS
 		relocsize = 4;
 		break;
-#else
-		fatalerror("relocation by long offsets not implemented");
-#endif
 	    case CM_1_SKIP:
 		skip(1);
 		break;

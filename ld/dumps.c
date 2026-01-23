@@ -52,11 +52,7 @@ PUBLIC void dumpsyms()
 		    if (uflag)
 			putstr("        ");
 		    else
-#ifdef LONG_OFFSETS
 			put08lx(symptr->value);
-#else
-			put08x(symptr->value);
-#endif
 		    putstr(flags & A_MASK ? "  A" : "  R");
 		    if (uflag)
 			putstr(" U");
