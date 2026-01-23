@@ -202,8 +202,8 @@ bool_pt argreloc_output;
 PRIVATE void checksize P((void));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 PRIVATE void checksize() {
     if (!bits32) {
-	if (etextoffset > 0xff00L) fatalerror("a_text too large");  /* This is the actual limit for a_text in Minix 1.5.10 i86. */
-	if (endoffset > 0xffc0L) fatalerror("a_data+a_bss too large");  /* 0x20 bytes for the stack. */
+	if (etextoffset > (offset_t) 0xff00L) fatalerror("a_text too large");  /* This is the actual limit for a_text in Minix 1.5.10 i86. */
+	if (endoffset > (offset_t) 0xffc0L) fatalerror("a_data+a_bss too large");  /* 0x20 bytes for the stack. */
     }
 }
 
@@ -698,12 +698,12 @@ PRIVATE void writeheader()
 
     if (dynam_size) { a_total = endoffset + dynam_size; }
 #ifdef MINIXBUGCOMPAT
-    else if (endoffset < 0x10000L) { a_total = (offset_t) 0x10000L; }
+    else if (endoffset < (offset_t) 0x10000L) { a_total = (offset_t) 0x10000L; }
 #else  /* The ACK C compiler in Minix 1.5.10 i86 targeting Minix 1.5.10 i86 always sets a_total to 0x10000, so we do the same for !bits32. */
     else if (!bits32 || endoffset <= (offset_t) (0x10000L - 0x8000L)) { a_total = (offset_t) 0x10000L; }
 #endif
     else { a_total = endoffset + (offset_t) 0x8000L; }
-    if (a_total < endoffset || a_total > (bits32 ? ~a_total : (offset_t) 0x10000L)) {
+    if (a_total < endoffset || a_total > (bits32 ? (offset_t) ~a_total : (offset_t) 0x10000L)) {
 	fatalerror(dynam_size ? "dynamic memory size (-h) makes a_total too large" : "a_total too large");
     }
     u4c4(header + OFFSETOF_a_total, a_total);

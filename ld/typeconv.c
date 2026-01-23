@@ -326,12 +326,12 @@ PUBLIC bool_pt typeconv_init()  /* !! hardcode the defaults */
 	pc4u4 = c4u4_00;
 	pu2c2 = u2c2_00;
 	pu4c4 = u4c4_00;
-	if (conv4 == 0x03040102L)
+	if (conv4 == (u4_pt) 0x03040102L)
 	{
 	    pc4u4 = c4u4_0s;
 	    pu4c4 = u4c4_0s;
 	}
-	else if (conv4 != 0x01020304L)
+	else if (conv4 != (u4_pt) 0x01020304L)
 	    return FALSE;
     }
     else if (conv2 == 0x0403)
@@ -340,12 +340,12 @@ PUBLIC bool_pt typeconv_init()  /* !! hardcode the defaults */
 	pc4u4 = c4u4_ss;
 	pu2c2 = u2c2_ss;
 	pu4c4 = u4c4_ss;
-	if (conv4 == 0x02010403L)
+	if (conv4 == (u4_pt) 0x02010403L)
 	{
 	    pc4u4 = c4u4_s0;
 	    pu4c4 = u4c4_s0;
 	}
-	else if (conv4 != 0x04030201L)
+	else if (conv4 != (u4_pt) 0x04030201L)
 	    return FALSE;
     }
     else
