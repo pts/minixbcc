@@ -37,7 +37,7 @@ for b in mxmalloc bcc-cc1 assign codefrag debug declare express exptree floatop 
   "$as" -"$a03" -u -w -o "$a03"/sc"$b".o "$a03"/sc"$b".s || exit "$?"
   "$cmp"  "$a03"/sc"$b".o "$a03"g/sc"$b".n || exit "$?"
 done
-rm -f sc
+rm -f sc.tool
 if test "$a03" = 3; then cv=150000; else cv=; fi  # chmem =150000 sc || exit "$?"  # C compiler backend.
 if test "$sedi"; then hflag=; elif test "$cv"; then hflag="-h $cv"; cv=; else hflag=; fi
 "$ld" -"$a03" -i $hflag -o sc.tool "$a03"/lscs.o "$a03"/scmxmalloc.o "$a03"/scbcc-cc1.o "$a03"/scassign.o "$a03"/sccodefrag.o "$a03"/scdebug.o "$a03"/scdeclare.o "$a03"/scexpress.o "$a03"/scexptree.o "$a03"/scfloatop.o "$a03"/scfunction.o "$a03"/scgencode.o "$a03"/scgenloads.o "$a03"/scglogcode.o "$a03"/schardop.o "$a03"/scinput.o "$a03"/sclabel.o "$a03"/scloadexp.o "$a03"/sclongop.o "$a03"/scoutput.o "$a03"/scpreproc.o "$a03"/scpreserve.o "$a03"/scscan.o "$a03"/scsoftop.o "$a03"/scstate.o "$a03"/sctable.o "$a03"/sctype.o || exit "$?"
@@ -58,7 +58,7 @@ for b in as assemble error express genbin genlist genobj gensym heap keywords ma
   "$as" -"$a03" -u -w -o "$a03"/as"$b".o "$a03"/as"$b".s || exit "$?"
   "$cmp"  "$a03"/as"$b".o "$a03"g/as"$b".n || exit "$?"
 done
-rm -f as
+rm -f as.tool
 if test "$a03" = 3; then cv=192480; else cv=; fi  # chmem =192480 as || exit "$?"  # Assembler. v0 /local/bin/as has only =150000.
 if test "$sedi"; then hflag=; elif test "$cv"; then hflag="-h $cv"; cv=; else hflag=; fi
 "$ld" -"$a03" -i $hflag -o as.tool "$a03"/lass.o "$a03"/asas.o "$a03"/asassemble.o "$a03"/aserror.o "$a03"/asexpress.o "$a03"/asgenbin.o "$a03"/asgenlist.o "$a03"/asgenobj.o "$a03"/asgensym.o "$a03"/asheap.o "$a03"/askeywords.o "$a03"/asmacro.o "$a03"/asmops.o "$a03"/aspops.o "$a03"/asreadsrc.o "$a03"/asscan.o "$a03"/astable.o "$a03"/astypeconv.o || exit "$?"
@@ -78,7 +78,7 @@ for b in dumps heap io ld readobj table typeconv writebin; do
   "$as" -"$a03" -u -w -o "$a03"/ld"$b".o "$a03"/ld"$b".s || exit "$?"
   "$cmp"  "$a03"/ld"$b".o "$a03"g/ld"$b".n || exit "$?"
 done
-rm -f ld
+rm -f ld.tool
 if test "$a03" = 3; then cv=150000; else cv=; fi  # chmem =150000 ld || exit "$?"  # Linker.
 if test "$sedi"; then hflag=; elif test "$cv"; then hflag="-h $cv"; cv=; else hflag=; fi
 "$ld" -"$a03" -i $hflag -o ld.tool "$a03"/llds.o "$a03"/lddumps.o "$a03"/ldheap.o "$a03"/ldio.o "$a03"/ldld.o "$a03"/ldreadobj.o "$a03"/ldtable.o "$a03"/ldtypeconv.o "$a03"/ldwritebin.o || exit "$?"
@@ -98,7 +98,7 @@ for b in cr; do
   "$as" -"$a03" -u -w -o "$a03"/cr"$b".o "$a03"/cr"$b".s || exit "$?"
   "$cmp"  "$a03"/cr"$b".o "$a03"g/cr"$b".n || exit "$?"
 done
-rm -f cr
+rm -f cr.tool
 if test "$a03" = 3; then cv=40000; else cv=; fi  # chmem =40000 cr || exit "$?"  # Library builder. The memory includes the argv (very long list of member filenames).
 if test "$sedi"; then hflag=; elif test "$cv"; then hflag="-h $cv"; cv=; else hflag=; fi
 "$ld" -"$a03" -i $hflag -o cr.tool "$a03"/lcrs.o "$a03"/crcr.o || exit "$?"
