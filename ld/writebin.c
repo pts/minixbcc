@@ -691,10 +691,10 @@ PRIVATE void writeheader()
     header[2] = (sepid ? A_SEP : A_EXEC) | (uzp ? A_UZP : 0);  /* a_flags. */
     header[3] = bits32 ? A_I80386 : A_I8086;  /* a_cpu. */
     header[4] = A_MINHDR;  /* a_hdrlen. */
-    u4c4(header + OFFSETOF_a_text, etextpadoff - btextoffset);
-    u4c4(header + OFFSETOF_a_data, edataoffset - bdataoffset);
-    u4c4(header + OFFSETOF_a_bss, endoffset - edataoffset);
-    if (uzp) u4c4(header + OFFSETOF_a_entry, page_size());
+    u4c4(header + OFFSETOF_a_text, (u4_pt) (etextpadoff - btextoffset));
+    u4c4(header + OFFSETOF_a_data, (u4_pt) (edataoffset - bdataoffset));
+    u4c4(header + OFFSETOF_a_bss, (u4_pt) (endoffset - edataoffset));
+    if (uzp) u4c4(header + OFFSETOF_a_entry, (u4_pt) page_size());
 
     if (dynam_size) { a_total = endoffset + dynam_size; }
 #ifdef MINIXBUGCOMPAT
