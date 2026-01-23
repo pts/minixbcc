@@ -498,7 +498,7 @@ unsigned count;
     if (count == 0)
 	return 0;
     readin(buf, count);
-    return cntooffset(buf, count);
+    return cnu4(buf, count);
 }
 
 PRIVATE unsigned segbits(seg, sizedesc)

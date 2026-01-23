@@ -88,8 +88,8 @@ register char *where;
 {
     static char hexdigits[] = "0123456789ABCDEF";
 
-    where[0] = hexdigits[(num % 256) / 16];
-    where[1] = hexdigits[num % 16];
+    where[0] = hexdigits[(num & 0xff) >> 4];
+    where[1] = hexdigits[num & 0xf];
     return where + 2;
 }
 
@@ -99,7 +99,7 @@ PUBLIC char *build_2hex_number(num, where)
 unsigned num;
 char *where;
 {
-    return build_1hex_number(num, build_1hex_number(num / 256, where));
+    return build_1hex_number(num, build_1hex_number(num >> 8, where));
 }
 
 /* format 2 byte number as decimal with given width (pad with leading '0's) */
@@ -226,16 +226,16 @@ PRIVATE void listcode()
 	build_number(linum, numlength, numptr);
     }
     if ((count = mcount) != 0 || popflags & POPLC)
-	build_2hex_number((u16_t) lc, listptr->lc);
+	build_2hex_number((unsigned) lc, listptr->lc);
     if (popflags & POPLO)
     {
 	if (popflags & POPLONG)
-	    build_2hex_number((u16_t) (lastexp.offset >> 16),
+	    build_2hex_number((unsigned) (lastexp.offset >> 16),
 			      listptr->displ4);
 	if (popflags & POPHI)
-	    build_2hex_number((u16_t) lastexp.offset, listptr->displ2);
+	    build_2hex_number((unsigned) lastexp.offset, listptr->displ2);
 	else
-	    build_1hex_number((u16_t) lastexp.offset, listptr->displ1);
+	    build_1hex_number((unsigned) lastexp.offset, listptr->displ1);
 	if (lastexp.data & RELBIT)
 	    listptr->reldispl[0] = '>';
     }
@@ -399,10 +399,10 @@ PUBLIC void writenl()
 PUBLIC void writeoff(offset)
 offset_t offset;
 {
-    char buf[sizeof offset];
+    char buf[4];
 
-    u4c4(buf, offset);
-    (void)!write(innum, buf, sizeof buf);
+    u4c4(buf, (u4_pt) offset);
+    (void)!write(innum, buf, 4);
 }
 
 /* write string */
@@ -429,6 +429,6 @@ unsigned word;
 {
     char buf[2];
 
-    u2c2(buf, (u16_t) word);
-    (void)!write(innum, buf, sizeof buf);
+    u2c2(buf, (u2_pt) word);
+    (void)!write(innum, buf, 2);
 }

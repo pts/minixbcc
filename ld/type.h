@@ -1,12 +1,13 @@
 /* type.h - types for linker */
 
-typedef unsigned bool_pt;
-typedef unsigned char bool_t;
-
 typedef unsigned short u2_t;
 typedef unsigned u2_pt;
 typedef unsigned INT32T u4_t;
 typedef unsigned INT32T u4_pt;
+typedef char assert_sizeof_u4_pt[sizeof(u4_pt) >= sizeof(int) ? 1 : -1];  /* Make sure that u4_t defined above doesn't promote to anything larger than u4_pt. */
+
+typedef unsigned char bool_t;
+typedef unsigned bool_pt;	/* !! change to int for ANSI C */
 
 typedef unsigned INT32T offset_t;
 
@@ -146,13 +147,13 @@ char *stralloc P((char *s));
 
 /* typeconvert.c */
 u2_pt c2u2 P((char *buf));
-u4_t c4u4 P((char *buf));
+u4_pt c4u4 P((char *buf));
 u2_pt cnu2 P((char *buf, unsigned count));
-u4_t cnu4 P((char *buf, unsigned count));
+u4_pt cnu4 P((char *buf, unsigned count));
 void u2c2 P((char *buf, u2_pt offset));
-void u4c4 P((char *buf, u4_t offset));
+void u4c4 P((char *buf, u4_pt offset));
 void u2cn P((char *buf, u2_pt offset, unsigned count));
-void u4cn P((char *buf, u4_t offset, unsigned count));
+void u4cn P((char *buf, u4_pt offset, unsigned count));
 bool_pt typeconv_init P((void));
 
 /* writebin.c */

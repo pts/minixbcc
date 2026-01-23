@@ -211,9 +211,8 @@ void inst_keywords P((void));
 struct sym_s *lookup P((void));
 void statistics P((void));
 
-/* type.c */
-void u2c2 P((char *buf, u16_pt offset));
-void u4c4 P((char *buf, u32_t offset));
-void u2cn P((char *buf, u16_pt offset, unsigned count));
-void u4cn P((char *buf, u32_t offset, unsigned count));
+/* typeconv.c */
+void u2c2 P((char *buf, u2_pt offset));
+void u4c4 P((char *buf, u4_pt offset));
+void u4cn P((char *buf, u4_pt offset, unsigned count));
 bool_pt typeconv_init P((void));

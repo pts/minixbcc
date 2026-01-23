@@ -328,8 +328,7 @@ bool_pt arguzp;
 		}
 	    for (seg = 0, cptr = modptr->segsize; seg < NSEG; ++seg)
 	    {
-		segsz[seg] += cntooffset(cptr,
-			  sizecount = segsizecount((unsigned) seg, modptr));
+		segsz[seg] += cnu4(cptr, sizecount = segsizecount((unsigned) seg, modptr));
 
 		/* adjust sizes to even to get quad boundaries */
 		/* this should be specifiable dynamically */
@@ -451,7 +450,7 @@ bool_pt arguzp;
 		    if (symptr->modptr == modptr)
 		    {
 		        namecpy(extsym + OFFSETOF_n_name, extsym + OFFSETOF_n_name + 8, symptr->name);
-			u4c4(extsym + OFFSETOF_n_value, (u4_t) symptr->value);
+			u4c4(extsym + OFFSETOF_n_value, (u4_pt) symptr->value);
 #if 0
 			/* 0x4063 == 040143 == ((3 & SEGM_MASK) | C_MASK | I_MASK | (1 << SZ_SHIFT). */
 			if (strcmp(symptr->name, "_environ") == 0) printf("sym %s flags=0x%x=0%o\n", symptr->name, symptr->flags, symptr->flags);
@@ -486,7 +485,7 @@ bool_pt arguzp;
 		    }
 	    }
 	seekout((unsigned INT32T) OFFSETOF_a_syms);
-	u4c4(buf4, (u4_t) nsym * sizeof extsym);
+	u4c4(buf4, (u4_pt) ((u4_t) nsym * sizeof extsym));
 	writeout(buf4, 4);
     }
     closeout();
@@ -558,7 +557,7 @@ struct modstruct *modptr;
 	    offset = readsize(relocsize);
 	    if (modify & R_MASK)
 		offset -= (spos + relocsize);
-	    offtocn(buf, segbase[modify & SEGM_MASK] + offset, relocsize);
+	    u4cn(buf, (u4_pt) (segbase[modify & SEGM_MASK] + offset), relocsize);
 	    writeout(buf, relocsize);
 	    spos += relocsize;
 	    break;
@@ -569,7 +568,7 @@ struct modstruct *modptr;
 	    if (modify & R_MASK)
 		offset -= (spos + relocsize);
 	    offset += symptr->value;	    
-	    offtocn(buf, offset, relocsize);
+	    u4cn(buf, (u4_pt) offset, relocsize);
 	    writeout(buf, relocsize);
 	    spos += relocsize;
 	}
@@ -604,8 +603,7 @@ struct modstruct *modptr;
 #endif
     for (seg = 0, sizeptr = modptr->segsize; seg < NSEG; ++seg)
     {
-	size = cntooffset(sizeptr,
-			  sizecount = segsizecount((unsigned) seg, modptr));
+	size = cnu4(sizeptr, sizecount = segsizecount((unsigned) seg, modptr));
 	sizeptr += sizecount;
 	if ((count = segpos[seg] - segbase[seg]) != size)
 	    size_error(seg, count, size);
@@ -706,7 +704,7 @@ PRIVATE void writeheader()
     if (a_total < endoffset || a_total > (bits32 ? (offset_t) ~a_total : (offset_t) 0x10000L)) {
 	fatalerror(dynam_size ? "dynamic memory size (-h) makes a_total too large" : "a_total too large");
     }
-    u4c4(header + OFFSETOF_a_total, a_total);
+    u4c4(header + OFFSETOF_a_total, (u4_pt) a_total);
 
     writeout(header, A_MINHDR);
 }

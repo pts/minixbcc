@@ -43,16 +43,16 @@ FORWARD u4_pt c4u4_ss P((char *buf));
 FORWARD u4_pt c4u4_s0 P((char *buf));
 FORWARD u4_pt c4u4_0s P((char *buf));
 FORWARD void u2c2_00 P((char *buf, u2_pt offset));
-FORWARD void u4c4_00 P((char *buf, u4_t offset));
+FORWARD void u4c4_00 P((char *buf, u4_pt offset));
 FORWARD void u2c2_ss P((char *buf, u2_pt offset));
-FORWARD void u4c4_ss P((char *buf, u4_t offset));
-FORWARD void u4c4_s0 P((char *buf, u4_t offset));
-FORWARD void u4c4_0s P((char *buf, u4_t offset));
+FORWARD void u4c4_ss P((char *buf, u4_pt offset));
+FORWARD void u4c4_s0 P((char *buf, u4_pt offset));
+FORWARD void u4c4_0s P((char *buf, u4_pt offset));
 
 PRIVATE u2_pt (*pc2u2) P((char *buf)) = c2u2_00;
 PRIVATE u4_pt (*pc4u4) P((char *buf)) = c4u4_00;
 PRIVATE void (*pu2c2) P((char *buf, u2_pt offset)) = u2c2_00;
-PRIVATE void (*pu4c4) P((char *buf, u4_t offset)) = u4c4_00;
+PRIVATE void (*pu4c4) P((char *buf, u4_pt offset)) = u4c4_00;
 
 /* === char arrays to unsigneds === */
 
@@ -140,7 +140,7 @@ char *buf;
     return (*pc2u2) (buf);
 }
 
-PUBLIC u4_t c4u4(buf)
+PUBLIC u4_pt c4u4(buf)
 char *buf;
 {
     return (*pc4u4) (buf);
@@ -163,7 +163,7 @@ unsigned count;
     }
 }
 
-PUBLIC u4_t cnu4(buf, count)
+PUBLIC u4_pt cnu4(buf, count)
 char *buf;
 unsigned count;
 {
@@ -195,7 +195,7 @@ u2_pt offset;
 
 PRIVATE void u4c4_00(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     buf[0] = ((char *) &offset)[0];
     buf[1] = ((char *) &offset)[1];
@@ -218,7 +218,7 @@ u2_pt offset;
 
 PRIVATE void u4c4_ss(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     buf[0] = ((char *) &offset)[3];
     buf[1] = ((char *) &offset)[2];
@@ -230,7 +230,7 @@ u4_t offset;
 
 PRIVATE void u4c4_s0(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     buf[0] = ((char *) &offset)[1];
     buf[1] = ((char *) &offset)[0];
@@ -242,7 +242,7 @@ u4_t offset;
 
 PRIVATE void u4c4_0s(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     buf[0] = ((char *) &offset)[2];
     buf[1] = ((char *) &offset)[3];
@@ -261,7 +261,7 @@ u2_pt offset;
 
 PUBLIC void u4c4(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     (*pu4c4) (buf, offset);
 }
@@ -280,14 +280,14 @@ unsigned count;
 	(*pu2c2) (buf, offset);
 	return;
     case 4:
-	(*pu4c4) (buf, (u4_t) offset);
+	(*pu4c4) (buf, (u4_pt) offset);
 	return;
     }
 }
 
 PUBLIC void u4cn(buf, offset, count)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 unsigned count;
 {
     switch (count)

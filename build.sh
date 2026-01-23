@@ -158,7 +158,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
    owcc) detcflags="-Wno-n201"; cflags="-Wno-n308" ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI.
    minicc) case "$1" in --gcc*) detcflags=; cflags=; ;; *) detcflags="-Wno-n201"; cflags="-Wno-n308" ;; esac ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI.
    cc) detcflags=; cflags="-O" ;;
-   *) detcflags="-m32 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast"; cflags="-m32 -s -O2 -Werror -Wall -W -Wno-maybe-uninitialized" ;;  # !! Remove -m32 -m32. !! Remove -Werror.
+   *) detcflags="-Wno-pointer-to-int-cast -Wno-int-to-pointer-cast"; cflags="-s -O2 -Wall -W -Wno-maybe-uninitialized" ;;
   esac
   "$cc" -O $detcflags "$@" -o sysdet sysdet.c || exit "$?"
   sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1

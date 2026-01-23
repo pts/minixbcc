@@ -23,8 +23,8 @@
 	4 byte orderings for both char arrays and unsigneds are supported:
 	0123 - little-endian
 	3210 - big-endian
-	2301 - little-endian with long words big-endian (pdp11)
-	1032 - big-endian with long words little_endian (who knows?)
+	2301 - int32_t little-endian with int16_t words big-endian (PDP-11)
+	1032 - int32_t big-endian with int16_t words little_endian (who knows?)
 
 	The unsigned's byte order is that of the machine on which these
 	routines are running.
@@ -37,17 +37,17 @@
 #include "globvar.h"
 
 FORWARD void u2c2_00 P((char *buf, u2_pt offset));
-FORWARD void u4c4_00 P((char *buf, u4_t offset));
+FORWARD void u4c4_00 P((char *buf, u4_pt offset));
 FORWARD void u2c2_ss P((char *buf, u2_pt offset));
-FORWARD void u4c4_ss P((char *buf, u4_t offset));
-FORWARD void u4c4_s0 P((char *buf, u4_t offset));
-FORWARD void u4c4_0s P((char *buf, u4_t offset));
+FORWARD void u4c4_ss P((char *buf, u4_pt offset));
+FORWARD void u4c4_s0 P((char *buf, u4_pt offset));
+FORWARD void u4c4_0s P((char *buf, u4_pt offset));
 
 PRIVATE u2_pt c2u2_00 P((char *buf));
 PRIVATE u4_pt c4u4_00 P((char *buf));
 
 PRIVATE void (*pu2c2) P((char *buf, u2_pt offset)) = u2c2_00;
-PRIVATE void (*pu4c4) P((char *buf, u4_t offset)) = u4c4_00;
+PRIVATE void (*pu4c4) P((char *buf, u4_pt offset)) = u4c4_00;
 
 PUBLIC void u2c2(buf, offset)
 register char *buf;
@@ -58,14 +58,14 @@ u2_pt offset;
 
 PUBLIC void u4c4(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     (*pu4c4) (buf, offset);
 }
 
 PUBLIC void u4cn(buf, offset, count)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 unsigned count;
 {
     switch (count)
@@ -84,7 +84,7 @@ unsigned count;
 
 /* === char arrays to unsigneds === */
 
-/* no bytes swapped, longwinded to avoid alignment problems */
+/* no bytes swapped, copying the bytes to avoid alignment problems */
 
 PRIVATE u2_pt c2u2_00(buf)
 register char *buf;
@@ -111,7 +111,7 @@ register char *buf;
 
 /* === unsigneds to char arrays === */
 
-/* no bytes swapped, longwinded to avoid alignment problems */
+/* no bytes swapped, copying the bytes to avoid alignment problems */
 
 PRIVATE void u2c2_00(buf, offset)
 register char *buf;
@@ -124,7 +124,7 @@ u2_pt offset;
 
 PRIVATE void u4c4_00(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     buf[0] = ((char *) &offset)[0];
     buf[1] = ((char *) &offset)[1];
@@ -147,7 +147,7 @@ u2_pt offset;
 
 PRIVATE void u4c4_ss(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     buf[0] = ((char *) &offset)[3];
     buf[1] = ((char *) &offset)[2];
@@ -159,7 +159,7 @@ u4_t offset;
 
 PRIVATE void u4c4_s0(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     buf[0] = ((char *) &offset)[1];
     buf[1] = ((char *) &offset)[0];
@@ -171,7 +171,7 @@ u4_t offset;
 
 PRIVATE void u4c4_0s(buf, offset)
 register char *buf;
-u4_t offset;
+u4_pt offset;
 {
     buf[0] = ((char *) &offset)[2];
     buf[1] = ((char *) &offset)[3];

@@ -2,8 +2,9 @@
 
 typedef unsigned short u2_t;
 typedef unsigned u2_pt;
-typedef unsigned long u4_t;
-typedef unsigned long u4_pt;
+typedef unsigned INT32T u4_t;
+typedef unsigned INT32T u4_pt;
+typedef char assert_sizeof_u4_pt[sizeof(u4_pt) >= sizeof(int) ? 1 : -1];  /* Make sure that u4_t defined above doesn't promote to anything larger than u4_pt. */
 
 /* redefine foo_t's because their use has become non-portable */
 
@@ -18,18 +19,15 @@ typedef unsigned long u4_pt;
 #define sem_t sem_T
 #define smallcount_t smallcount_T
 #define soffset_t soffset_T
-#define u8_t u8_T
-#define u16_t u16_T
-#define u32_t u32_T
 
 typedef unsigned char bool_t;
-typedef unsigned bool_pt;	/* change to int for ANSI C */
+typedef unsigned bool_pt;	/* !! change to int for ANSI C */
 typedef unsigned count_t;
 typedef unsigned error_pt;
 typedef int fd_t;
 typedef unsigned char indcount_t;
-typedef unsigned long offset_t;
-typedef long soffset_t;
+typedef unsigned INT32T offset_t;  /* !! as has offset_t and uoffset_t, make these consistent; ld and as have unsigned ... offset_t. */
+typedef INT32T soffset_t;
 typedef unsigned opcode_pt;
 typedef unsigned char opcode_t;
 typedef unsigned opsize_pt;
@@ -38,10 +36,6 @@ typedef unsigned reg_pt;
 typedef unsigned char scale_t;
 typedef unsigned char smallcount_t;
 typedef /* signed */ char sem_t;
-typedef unsigned u16_pt;
-typedef unsigned short u16_t;
-typedef unsigned long u32_pt;
-typedef unsigned long u32_t;
 
 /* symbol table entry */
 

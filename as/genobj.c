@@ -36,7 +36,7 @@ FORWARD void flushabs P((void));
 FORWARD void flushrmb P((void));
 FORWARD void genobjadr P((struct address_s *adrptr, int size));
 FORWARD void putobj1 P((opcode_pt c));
-FORWARD void putobj4 P((u32_t offset));
+FORWARD void putobj4 P((offset_t offset));
 FORWARD void putobjoffset P((offset_t offset, count_t size));
 FORWARD void putobjword P((unsigned word));
 FORWARD void writeobj P((char *buf, unsigned count));
@@ -327,7 +327,7 @@ PUBLIC void objheader()
     unsigned strsiz;		/* size of object string table */
     unsigned symosiz;		/* size of object symbol table */
     register struct sym_s *symptr;
-    u32_t textlength;
+    offset_t textlength;
 
     if ((objectc = objectg) == 0)
 	return;
@@ -414,13 +414,13 @@ PUBLIC void objheader()
 
     /* offset to start of text */
 
-    putobj4((u32_t) (sizeof module_header + 4 + 4 + 2 + 1 + 1 +
-		     sizeof seg_max_sizes + 4 + segsizebytes + 2 +
-		     symosiz) + strsiz);
+    putobj4((offset_t) (sizeof module_header + 4 + 4 + 2 + 1 + 1 +
+		        sizeof seg_max_sizes + 4 + segsizebytes + 2 +
+		        symosiz) + strsiz);
 
     /* length of text */
 
-    putobj4((u32_t) textlength);
+    putobj4((offset_t) textlength);
 
     /* length of string area */
 
@@ -464,7 +464,7 @@ PUBLIC void objheader()
 	if (lcp->lc != 0)
 	{
 	    if (isge4byteoffset(lcp->lc))
-		putobj4(lcp->lc);
+		putobj4((offset_t) lcp->lc);
 	    else
 		putobjword((unsigned) lcp->lc);
 	}
@@ -582,12 +582,12 @@ opcode_pt c;
 /* write 32 bit offset to object code buffer assuming ... */
 
 PRIVATE void putobj4(offset)
-u32_t offset;
+offset_t offset;
 {
-    char buf[sizeof offset];
+    char buf[4];
 
-    u4c4(buf, offset);
-    writeobj(buf, sizeof buf);
+    u4c4(buf, (u4_pt) offset);
+    writeobj(buf, 4);
 }
 
 /* write sized offset to object code buffer assuming ... */
@@ -596,9 +596,9 @@ PRIVATE void putobjoffset(offset, size)
 offset_t offset;
 count_t size;
 {
-    char buf[sizeof offset];
+    char buf[4];
 
-    u4cn(buf, offset, size);
+    u4cn(buf, (u4_pt) offset, size);
     putobj1(buf[0]);
     if (size > 1)
 	putobj1(buf[1]);
@@ -614,9 +614,9 @@ count_t size;
 PRIVATE void putobjword(word)
 unsigned word;
 {
-    char buf[sizeof word];
+    char buf[2];
 
-    u2c2(buf, word);
+    u2c2(buf, (u2_pt) word);
     putobj1(buf[0]);
     putobj1(buf[1]);
 }
