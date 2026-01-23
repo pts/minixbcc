@@ -81,14 +81,14 @@ PUBLIC uoffset_t opregsize = 2;
 PUBLIC uoffset_t pshregsize = 2;
 PUBLIC uoffset_t returnadrsize = 2;
 
-PUBLIC uvalue_t intmaskto = 0xFFFFL;
-PUBLIC uvalue_t maxintto = 0x7FFFL;
-PUBLIC uvalue_t maxlongto = 0x7FFFFFFFL;
-PUBLIC uvalue_t maxoffsetto = 0x7FFFL;
-PUBLIC uvalue_t maxshortto = 0x7FFFL;
-PUBLIC uvalue_t maxuintto = 0xFFFFL;
-PUBLIC uvalue_t maxushortto = 0xFFFFL;
-PUBLIC uvalue_t shortmaskto = 0xFFFFL;
+PUBLIC uvalue_t intmaskto = (uvalue_t) 0xFFFFL;
+PUBLIC uvalue_t maxintto = (uvalue_t) 0x7FFFL;
+PUBLIC uvalue_t maxlongto = (uvalue_t) 0x7FFFFFFFL;
+PUBLIC uvalue_t maxoffsetto = (uvalue_t) 0x7FFFL;
+PUBLIC uvalue_t maxshortto = (uvalue_t) 0x7FFFL;
+PUBLIC uvalue_t maxuintto = (uvalue_t) 0xFFFFL;
+PUBLIC uvalue_t maxushortto = (uvalue_t) 0xFFFFL;
+PUBLIC uvalue_t shortmaskto = (uvalue_t) 0xFFFFL;
 
 PRIVATE store_pt callermask;
 PRIVATE offset_t lastargsp;
@@ -393,10 +393,10 @@ PUBLIC void codeinit()
 #endif
 	    accregsize = 4;
 
-	intmaskto = (unsigned INT32T) 0xFFFFFFFFL;
-	maxintto = 0x7FFFFFFFL;
-	maxoffsetto = 0x7FFFFFFFL;
-	maxuintto = (unsigned INT32T) 0xFFFFFFFFL;
+	intmaskto = (uvalue_t) 0xFFFFFFFFL;
+	maxintto = (uvalue_t) 0x7FFFFFFFL;
+	maxoffsetto = (uvalue_t) 0x7FFFFFFFL;
+	maxuintto = (uvalue_t) 0xFFFFFFFFL;
     }
     if (callersaves)
 	calleemask = 0;
