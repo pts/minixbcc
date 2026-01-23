@@ -300,7 +300,7 @@ PUBLIC struct symstruct *namedlabel()
 {
     struct symstruct *symptr;
 
-    gs2name[1] = 0xFF;
+    gs2name[1] = (char) 0xFF;
     if ((symptr = findlorg(gs2name + 1)) == (struct symstruct*) 0)
     {
 	symptr = addglb(gs2name + 1, vtype);

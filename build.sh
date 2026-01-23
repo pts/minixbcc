@@ -139,8 +139,9 @@ if test "$1" = dcc0 || test "$1" = dcc3; then  # On Minix i86 or i386, autodetec
   shift; set "$m" "$@"
 fi
 
-if test "$1" = gcc || test "$1" = clang || test "$1" = cc || test "$1" = owcc; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, or a generic Unix C compiler (cc) on Unix.
-  # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc -blinux -I"$WATCOM"/lh
+if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minicc || test "$1" = cc; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, minilibc686 minicc on Linux, or a generic Unix C compiler (cc) on Unix.
+  # Example invocation for OpenWatcom v2 on Linux (without the -I.../lh, it would segfault): ./build.sh owcc -blinux -I"$WATCOM"/lh
+  # minicc is from http://github.com/pts/minilibc686
   # !! Autodetect and add the -I"$WATCOM"/lh for OpenWatcom v2 on Linux.
   # Assumptions about the host system:
   # * .text can be 75 KiB. This doesn't hold for ELKS and Minix i86.
@@ -148,20 +149,18 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = cc || test "$1" = owcc; t
   # * malloc(...) can allocate 192 KiB on top of that. This doesn't hold for ELKS and Minix i86.
   # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used. !! Autodetect this.
   rm -f sysdet
-  case "$1" in owcc | cc) cflags= ;; *) cflags="-m32 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast" ;; esac  # !! Remove -m32.
-  "$@" -O $cflags -o sysdet sysdet.c || exit "$?"
+  cc="$1"; shift
+  case "$cc" in
+   owcc | minicc) detcflags="-Wno-n201"; cflags="-Wno-n308" ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI.
+   cc) detcflags=; cflags="-O" ;;
+   *) detcflags="-m32 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast"; cflags="-m32 -s -O2 -Werror -Wall -W" ;;  # !! Remove -m32 -m32.
+  esac
+  "$cc" -O $detcflags "$@" -o sysdet sysdet.c || exit "$?"
   sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1
   test "$?" = 0 || exit 2
   rm -f sysdet
   case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac
   # !! Autodetect the -DACKFIX and -DACKFIX0 flags in $sysdet in case acka3 is used as cc.
-
-  cc="$1"; shift
-  if test "$1" = cc; then
-    cflags="-O"
-  else
-    cflags="-m32 -s -O2 -Werror -Wall -W"  # !! Does it all work with -m64? What changes if sizeof(long) == 8? Shouldn't we use int instead?
-  fi
 
   "$cc" $cflags $sysdet "$@" -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
   "$cc" $cflags $sysdet "$@" -DMINIX_SYNTAX -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"

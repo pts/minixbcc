@@ -302,7 +302,7 @@ PUBLIC void objheader()
 {
     static char module_header[] =
     {
-	0xA3, 0x86,
+	(char) 0xA3, (char) 0x86,
 	1, 0,
 	(char) ((unsigned) (0xA3 + 0x86 + 1 + 0) & (unsigned) 0xff),
     };

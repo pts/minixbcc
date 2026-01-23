@@ -273,11 +273,12 @@ PRIVATE unsigned read2fileheader2()
 {
     struct
     {
-	short omagic;  /* !! This depends on the byte order -- or does it? filechecksum doesn't depend on it. */
+	char magic[2];
 	char count_ca[2];	/* really an int */
     } fileheader;
 
-    fileheader.omagic = OMAGIC;
+    fileheader.magic[0] = (char) (OMAGIC & 0xff);  /* !! Pre-add these 2 bytes, pass the result to readfilecommon. */
+    fileheader.magic[1] = (char) ((unsigned) OMAGIC >> 8);
     readin(fileheader.count_ca, 2);
     return readfilecommon((char *) &fileheader);
 }
