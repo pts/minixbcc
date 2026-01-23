@@ -186,8 +186,8 @@ register unsigned num;
 PUBLIC void put08lx(num)  /* Used by dumpsyms(). */
 register offset_t num;
 {
-    put04x(num >> 16);
-    put04x(num & 0xffff);
+    put04x((unsigned) (num >> 16));
+    put04x((unsigned) num & 0xffff);
 }
 
 PUBLIC void putbstr(width, str)
