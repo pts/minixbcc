@@ -444,7 +444,7 @@ char *name;
 }
 
 PUBLIC void size_error(seg, count, size)
-char seg;
+unsigned seg;
 offset_t count;
 offset_t size;
 {

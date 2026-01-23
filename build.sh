@@ -139,14 +139,16 @@ if test "$1" = dcc0 || test "$1" = dcc3; then  # On Minix i86 or i386, autodetec
   shift; set "$m" "$@"
 fi
 
-if test "$1" = gcc || test "$1" = clang || test "$1" = cc; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), or a generic Unix C compiler (cc).
+if test "$1" = gcc || test "$1" = clang || test "$1" = cc || test "$1" = owcc; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, or a generic Unix C compiler (cc) on Unix.
+  # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc -blinux -I"$WATCOM"/lh
+  # !! Autodetect and add the -I"$WATCOM"/lh for OpenWatcom v2 on Linux.
   # Assumptions about the host system:
   # * .text can be 75 KiB. This doesn't hold for ELKS and Minix i86.
   # * There is 140 KiB of virtual memory for each process (total of: .text, .rodata, .data, .bss, stack). This doesn't hold for ELKS and Minix i86.
   # * malloc(...) can allocate 192 KiB on top of that. This doesn't hold for ELKS and Minix i86.
   # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used. !! Autodetect this.
   rm -f sysdet
-  cflags="-m32 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast"; test "$1" = cc && cflags=  # !! Remove -m32.
+  case "$1" in owcc | cc) cflags= ;; *) cflags="-m32 -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast" ;; esac  # !! Remove -m32.
   "$@" -O $cflags -o sysdet sysdet.c || exit "$?"
   sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1
   test "$?" = 0 || exit 2

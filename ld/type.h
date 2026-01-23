@@ -114,7 +114,7 @@ void redefined P((char *name, char *message, char *archentry,
 		  char *deffilename, char *defarchentry));
 void reserved P((char *name));
 #ifdef OBJ_H
-void size_error P((int seg, offset_t count, offset_t size));
+void size_error P((unsigned seg, offset_t count, offset_t size));
 #endif
 void undefined P((char *name));
 void usage P((void));

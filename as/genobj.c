@@ -210,7 +210,7 @@ PUBLIC void genobj()
 
 PRIVATE void genobjadr(adrptr, size)
 struct address_s *adrptr;
-smallcount_t size;
+int size;
 {
     unsigned char byte;
     unsigned symnum;

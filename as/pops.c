@@ -19,8 +19,8 @@ FORWARD void bumpsem P((struct flags_s *flagptr));
 FORWARD void constdata P((unsigned size));
 FORWARD void docomm P((void));
 FORWARD void doelseif P((pfv func));
-FORWARD void doequset P((int labits));
-FORWARD void doentexp P((int entbits, int impbits));
+FORWARD void doequset P((unsigned labits));
+FORWARD void doentexp P((unsigned entbits, unsigned impbits));
 FORWARD void doif P((pfv func));
 FORWARD struct sym_s *needlabel P((void));
 FORWARD void showredefinedlabel P((void));
@@ -177,7 +177,7 @@ pfv func;
 /* common routine for EQU/SET */
 
 PRIVATE void doequset(labits)
-unsigned char labits;
+unsigned labits;
 {
     register struct sym_s *labptr;
     unsigned char olddata;
@@ -214,8 +214,8 @@ unsigned char labits;
 /* common routine for ENTRY/EXPORT */
 
 PRIVATE void doentexp(entbits, impbits)
-unsigned char entbits;
-unsigned char impbits;
+unsigned entbits;
+unsigned impbits;
 {
     struct sym_s *symptr;
 

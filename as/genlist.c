@@ -378,9 +378,13 @@ unsigned nspaces;
 /* write 1 character */
 
 PUBLIC void writec(c)
-char c;
+int c;
 {
-    (void)!write(innum, &c, 1);
+    /* !! On a little-endian system, just do: (void)!write(innum, (char*) &c, 1); */
+    char buf[1];
+
+    buf[0] = c;
+    (void)!write(innum, buf, 1);
 }
 
 /* write newline */

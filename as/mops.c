@@ -1105,16 +1105,16 @@ PUBLIC void mbswap()
 
 PUBLIC void mcall()
 {
-    opcode_pt far;
+    opcode_pt far_;
     bool_t indirect;
     register struct sym_s *symptr;
 
-    far = 0x0;
+    far_ = 0x0;
     if (sym == IDENT && (symptr = gsymptr)->type & MNREGBIT &&
 	symptr->data & SIZEBIT &&
 	symptr->value_reg_or_op.op.routine == FAROP)
     {
-	far = 0x8;
+	far_ = 0x8;
 	getsym();
     }
     indirect = FALSE;
@@ -1172,7 +1172,7 @@ PUBLIC void mcall()
 		opcode = 0x20;
 	    else
 		opcode = 0x10;
-	    postb |= opcode + far;
+	    postb |= opcode + far_;
 	    opcode = 0xFF;
 	}
     }
