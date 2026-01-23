@@ -14,6 +14,8 @@
 
 #define O_RDONLY 0
 
+typedef long off_t;    /* offsets within a file */
+
 /* <fcntl.h> */
 int creat _LIBCP((const char *_path, int _mode));
 int open _LIBCP((const char *_path, int _oflag, ...));
@@ -27,7 +29,7 @@ unsigned strlen _LIBCP((const char *_s));
 /* <unistd.h> */
 int read  _LIBCP((int _fd, char *_buf, unsigned _nbytes));
 int write _LIBCP((int _fd, char *_buf, unsigned _nbytes));
-long lseek _LIBCP((int _fd, long _offset, int _whence));
+off_t lseek _LIBCP((int _fd, off_t _offset, int _whence));
 int close _LIBCP((int _fd));
 
 #undef _LIBCP

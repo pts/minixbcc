@@ -27,6 +27,12 @@
 #  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
 #endif
 
+#if __STDC__
+#  define cast_lseek_offset(offset) (offset)
+#else
+#  define cast_lseek_offset(offset) ((off_t) (offset))  /* We must pass the offset of the correct size, because the K&R C compiler doesn't know the argument type of lseek(...). Compile with -Doff_t=long if needed. */
+#endif
+
 /* Parses an unsigned decimal, hexadecimal or octal number. It doesn't check
  * for overflow. It allows leading ' ' and '\t'. It doesn't allow trailing
  * garbage. Returns nonzero on success. It produces a twos complement number
@@ -184,11 +190,11 @@ char **argv;
   size = 0;  /* Pacify useless GCC 4.5 warning -Wmaybe-uninitialized. */
   while ((arg = *argv++) != (char*)0) {
     if ((mfd = open00(arg)) < 0) fatal2("error opening member file", arg);
-    /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add this `L' cast to long. */
-    if ((size = lseek(mfd, 0L, 2)) == -1) fatal2("error getting member file size", arg);
+    /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add cast_lseek_offset(...). */
+    if ((size = lseek(mfd, cast_lseek_offset(0), 2)) == -1) fatal2("error getting member file size", arg);
     if ((INT32T) size < 0 || (size >> 15 >> 15 >> 1) != 0) fatal2("member file too large", arg);
-    /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add this `L' cast to long. */
-    if (lseek(mfd, 0L, 0) != 0) fatal2("error rewinding member file", arg);
+    /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add cast_lseek_offset(...). */
+    if (lseek(mfd, cast_lseek_offset(0), 0) != 0) fatal2("error rewinding member file", arg);
     for (p = arg + strlen(arg); p != arg && p[-1] != '/'; --p) {}
     if (*p == '\0') fatal2("empty member basename", arg);
     for (hdrp14 = (hdrp = hdrp0) + 14; *p != '\0' && hdrp != hdrp14; *hdrp++ = *p++) {}
