@@ -5,7 +5,6 @@
 #else
 #  include <string.h>
 #endif
-#include "aout.h"
 #include "const.h"
 #include "obj.h"
 #include "type.h"
@@ -20,18 +19,62 @@
 #  include <stdio.h>
 #endif
 
-/* After aout.h */
-#define a_entry a_no_entry
-#define n_was_name n_name
-#define n_was_numaux n_numaux
-#define n_was_other n_other
-#define n_was_sclass n_sclass
-#define n_was_strx n_value
-#define n_was_type n_type
+/* --- Minix a.out executable file format support */
+
+struct exec {  /* a.out header */  /* !! Don't use it. */
+	unsigned char	a_magic[2];	/* magic number: {1, 3} */
+	unsigned char	a_flags;	/* flags, see below */
+	unsigned char	a_cpu;		/* cpu id : A_I8085, A_I80386 etc. */
+	unsigned char	a_hdrlen;	/* length of header */
+	unsigned char	a_unused;	/* reserved for future use */
+	unsigned short	a_version;	/* version stamp, not used */
+	long		a_text;		/* size of text segement in bytes */
+	long		a_data;		/* size of data segment in bytes */
+	long		a_bss;		/* size of bss segment in bytes */
+	long		a_entry;	/* entry point */
+	long		a_total;	/* total memory allocated */
+	long		a_syms;		/* size of symbol table */
+};
+
+#define OFFSETOF_a_syms 0x1c
+
+#define A_I8086		0x04	/* intel i8086/8088 */
+#define A_I80386	0x10	/* intel i80386 */
+
+/* flags: */
+#define A_UZP		1	/* unallocated zero page */
+#define A_EXEC		0x10	/* executable */
+#define A_SEP		0x20	/* separate I/D */
+
+#define A_MINHDR 32  /* Byte size of the short form of struct exec. */
+
+struct nlist {  /* symbol table entry */  /* !! Don't use it. */
+	char	 	n_name[8];	/* symbol name */
+	long	 	n_value;	/* value */
+	unsigned char	n_sclass;	/* storage class */
+	unsigned char	n_numaux;	/* number of auxiliary entries, not used */
+	unsigned short	n_type;		/* language base and derived type. not used */
+};
+
+/* low bits of storage class (section) */
+#define	N_SECT		  07	/* section mask */
+#define N_UNDF		  00	/* undefined */
+#define N_ABS		  01	/* absolute */
+#define N_TEXT		  02	/* text */
+#define N_DATA		  03	/* data */
+#define	N_BSS		  04	/* bss */
+#define N_COMM		  05	/* (common), unused in executables */
+
+/* high bits of storage class */
+#define N_CLASS		0370	/* storage class mask */
+#define C_NULL
+#define C_EXT		0020	/* external symbol */
+#define C_STAT		0030	/* static */
+
+/* --- */
 
 #define page_size() 4096
 
-#define FILEHEADERLENGTH A_MINHDR
 #define DPSEG 2
 
 #define CM_MASK 0xC0
@@ -54,9 +97,6 @@
 #define CM_0_SEG 32
 
 #define ABS_TEXT_MAX 64
-
-#define offsetof(struc, mem) ((int) &((struc *) 0)->mem)
-#define memsizeof(struc, mem) sizeof(((struc *) 0)->mem)
 
 PRIVATE bool_t bits32;		/* nonzero for 32-bit executable */
 PRIVATE offset_t combase[NSEG];	/* bases of common parts of segments */
@@ -186,29 +226,6 @@ bool_pt arguzp;
 {
     char buf4[4];
     char *cptr;
-#if 0  /* Defined in "aout.h" and Minix /usr/include/a.out.h . */
-struct nlist {  /* symbol table entry */
-  char            n_name[8];  /* symbol name */
-  long            n_value;    /* value */
-  unsigned char   n_sclass;   /* storage class */
-  unsigned char   n_numaux;   /* number of auxiliary entries;  not used */
-  unsigned short  n_type;     /* language base and derived type; not used */
-};
-/* low bits of storage class (section) */
-#define N_SECT  07  /* section mask */
-#define N_UNDF  00  /* undefined */
-#define N_ABS   01  /* absolute */
-#define N_TEXT  02  /* text */
-#define N_DATA  03  /* data */
-#define N_BSS   04  /* bss */
-#define N_COMM  05  /* (common) */
-
-/* high bits of storage class */
-#define N_CLASS 0370  /* storage class mask */
-#define C_NULL
-#define C_EXT   0020  /* external symbol */
-#define C_STAT  0030  /* static */
-#endif
     struct nlist extsym;  /* !! Don't use this struct, to avoid alignment issues during serialization. */
     flags_t flags;
     struct modstruct *modptr;
@@ -405,11 +422,11 @@ struct nlist {  /* symbol table entry */
     /* dump symbol table */
     if (!stripflag)
     {
-	seekout(FILEHEADERLENGTH
+	seekout(A_MINHDR
 		+ (long) (etextpadoff - btextoffset)
 		+ (long) (edataoffset - bdataoffset)
 		);
-	extsym.n_was_numaux = extsym.n_was_type = 0;
+	extsym.n_numaux = extsym.n_type = 0;
 	for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	    if (modptr->loadflag)
 	    {
@@ -420,7 +437,7 @@ struct nlist {  /* symbol table entry */
 		     (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
 		    if (symptr->modptr == modptr)
 		    {
-		        namecpy(extsym.n_was_name, extsym.n_was_name + sizeof extsym.n_was_name, symptr->name);
+		        namecpy(extsym.n_name, extsym.n_name + sizeof extsym.n_name, symptr->name);
 			u4cn((char *) &extsym.n_value, (u4_t) symptr->value,
 			     sizeof extsym.n_value);
 #if 0
@@ -428,38 +445,37 @@ struct nlist {  /* symbol table entry */
 			if (strcmp(symptr->name, "_environ") == 0) printf("sym %s flags=0x%x=0%o\n", symptr->name, symptr->flags, symptr->flags);
 #endif
 			if ((flags = symptr->flags) & A_MASK)
-			    extsym.n_was_sclass = N_ABS;  /* 01 for Minix. */
+			    extsym.n_sclass = N_ABS;  /* 01 for Minix. */
 #ifdef MINIXBUGCOMPAT
 			else if (flags & (E_MASK | I_MASK) && !(flags & C_MASK))  /* The old ld linker in bccbin32.tar.Z had this bug: it incorrectly marked _environ (with C_MASK) as C_STAT rather than C_EXT. */
 #else
 			else if (flags & (E_MASK | I_MASK))
 #endif
-			    extsym.n_was_sclass = C_EXT;  /* 020 == 0x10 for Minix. */
+			    extsym.n_sclass = C_EXT;  /* 020 == 0x10 for Minix. */
 			else
-			    extsym.n_was_sclass = C_STAT;  /* 030 == 0x18 for Minix. */
+			    extsym.n_sclass = C_STAT;  /* 030 == 0x18 for Minix. */
 			if (!(flags & I_MASK) ||
 			     flags & C_MASK)
 			    switch (flags & (A_MASK | SEGM_MASK))
 			    {
 			    case 0:
-				extsym.n_was_sclass |= N_TEXT;  /* 02 for Minix. */
+				extsym.n_sclass |= N_TEXT;  /* 02 for Minix. */
 			    case A_MASK:
 				break;
 			    default:
 				if (flags & (C_MASK | SA_MASK))
-				    extsym.n_was_sclass |= N_BSS;  /* 04 for Minix. */
+				    extsym.n_sclass |= N_BSS;  /* 04 for Minix. */
 				else
-				    extsym.n_was_sclass |= N_DATA;  /* 03 for Minix. */
+				    extsym.n_sclass |= N_DATA;  /* 03 for Minix. */
 				break;
 			    }
 			writeout((char *) &extsym, sizeof extsym);
 			++nsym;
 		    }
 	    }
-	seekout((long) offsetof(struct exec, a_syms));
-	u4cn(buf4, (u4_t) nsym * sizeof extsym,
-	     memsizeof(struct exec, a_syms));
-	writeout(buf4, memsizeof(struct exec, a_syms));
+	seekout((long) OFFSETOF_a_syms);
+	u4cn(buf4, (u4_t) nsym * sizeof extsym, 4);
+	writeout(buf4, 4);
     }
     closeout();
     executable();
@@ -645,7 +661,7 @@ unsigned newseg;
     {
 	segpos[curseg] = spos;
 	spos = segpos[curseg = newseg];
-	seekout(FILEHEADERLENGTH + (long) spos + (long) segadj[curseg]);
+	seekout(A_MINHDR + (long) spos + (long) segadj[curseg]);
     }
 }
 
@@ -655,9 +671,6 @@ unsigned countsize;
     writenulls((offset_t) readsize(countsize));
 }
 
-#ifndef A_UZP
-#  define A_UZP 1
-#endif
 
 PRIVATE void writeheader()
 {
@@ -665,12 +678,12 @@ PRIVATE void writeheader()
     offset_t a_total;
 
     memset(&header, 0, sizeof header);
-    header.a_magic[0] = A_MAGIC0;
-    header.a_magic[1] = A_MAGIC1;
+    header.a_magic[0] = 1;
+    header.a_magic[1] = 3;
     header.a_flags = sepid ? A_SEP : A_EXEC;
     if (uzp) header.a_flags |= A_UZP;
     header.a_cpu = bits32 ? A_I80386 : A_I8086;
-    header.a_hdrlen = FILEHEADERLENGTH;
+    header.a_hdrlen = A_MINHDR;
     offtocn((char *) &header.a_text, etextpadoff - btextoffset,
 	    sizeof header.a_text);
     offtocn((char *) &header.a_data, edataoffset - bdataoffset,
@@ -691,7 +704,7 @@ PRIVATE void writeheader()
     }
     offtocn((char *) &header.a_total, a_total, sizeof header.a_total);
 
-    writeout((char *) &header, FILEHEADERLENGTH);
+    writeout((char *) &header, A_MINHDR);
 }
 
 PRIVATE void writenulls(count)
