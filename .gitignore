@@ -7,6 +7,11 @@ tags
 /[03]g/
 /mk.p/
 /p/
+/tools.diff
+/t
+/sysdet
+/sysftype
+/sysdet.exe
 
 /cpp/cpp
 /cpp/cpp.host
