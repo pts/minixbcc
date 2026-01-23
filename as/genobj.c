@@ -14,8 +14,8 @@
 #include "globvar.h"
 
 #define OBJBUFSIZE 512		/* size of object code output buffer */
-#define isge2byteoffset(offset) ((offset) >= 0x100)
-#define isge4byteoffset(offset) ((offset) >= 0x10000L)
+#define isge2byteoffset(offset) ((offset) >= (offset_t) 0x100)
+#define isge4byteoffset(offset) ((offset) >= (offset_t) 0x10000L)
 
 PRIVATE char hid_absbuf[OBJ_MAX_ABS_LEN];	/* absolute object code buf */
 PRIVATE char *absbuf;		/* start */

@@ -17,9 +17,9 @@ FORWARD void mshort2 P((void));
 FORWARD reg_pt regchk P((void));
 FORWARD void reldata P((void));
 
-#define iswordadr(offset) ((offset_t) (offset) < 0x10000L)
-#define iswordoffset(offset) ((offset_t) (offset) + 0x8000L < 0x10000L)
-#define iswordorswordoffset(offset) ((offset_t) (offset) + 0xFFFFL < 0x1FFFEL)
+#define iswordadr(offset) ((offset_t) (offset) < (offset_t) 0x10000L)
+#define iswordoffset(offset) ((offset_t) (offset) + (offset_t) 0x8000L < (offset_t) 0x10000L)
+#define iswordorswordoffset(offset) ((offset_t) (offset) + (offset_t) 0xFFFFL < (offset_t) 0x1FFFEL)
 
 #define BYTE_SEGWORD        0x00
 #define isspecreg(r) ((r) >= CR0REG && (r) <= TR7REG)
@@ -591,7 +591,7 @@ bool_pt signflag;
     {
 	if (immcount == 0x1)
 	{
-	    if ((offset_t) (immadr.offset + 0x80) >= 0x180)
+	    if ((offset_t) (immadr.offset + 0x80) >= (offset_t) 0x180)
 		datatoobig();
 	}
 	else if (signflag && is8bitsignedoffset(immadr.offset))
@@ -601,7 +601,7 @@ bool_pt signflag;
 	}
 	else if (immcount == 0x2)
 	{
-	    if ((offset_t) (immadr.offset + 0x8000L) >= 0x18000L)
+	    if ((offset_t) (immadr.offset + 0x8000L) >= (offset_t) 0x18000L)
 		datatoobig();
 	}
     }
@@ -1150,7 +1150,7 @@ PUBLIC void mcall()
 	    lastexp = source.displ;
 	    if (!(lastexp.data & (FORBIT | RELBIT | UNDBIT)) &&
 		defsize == 0x2 &&
-		(offset_t) (lastexp.offset + 0x8000L) >= 0x18000L)
+		(offset_t) (lastexp.offset + 0x8000L) >= (offset_t) 0x18000L)
 		datatoobig();
 	    mcount += defsize;
 	    target.size = 0x2;
@@ -1234,7 +1234,7 @@ PUBLIC void mcalli()
 	    lastexp = target.displ;
 	    if (!(lastexp.data & (FORBIT | RELBIT | UNDBIT)) &&
 		defsize == 0x2 &&
-		(offset_t) (lastexp.offset + 0x8000L) >= 0x18000L)
+		(offset_t) (lastexp.offset + 0x8000L) >= (offset_t) 0x18000L)
 		datatoobig();
 	    mcount += defsize;
 	    source.size = 0x2;
