@@ -13,7 +13,7 @@
 #define ARMAG	"!<arch>\n"  /* Header bytes (8, trailing NUL unused). */
 #define SARMAG	8  /* Number of header bytes. */
 struct ar_hdr {  /* GNU archive (*.a) member header. */
-	char	ar_name[16];  /* Space-padded. May be terminated by '/'. !! */
+	char	ar_name[16];  /* Space-padded. May be terminated by '/'. */
 	char	ar_date[12];  /* Unix timestamp, decimal, space-padded. */
 	char	ar_uid[6];  /* User  ID, decimal, space-padded. */
 	char	ar_gid[6];  /* Group ID, decimal, space-padded. */
@@ -203,7 +203,7 @@ unsigned size;
     char *pend, *result;
     register char *q;
 
-    for (pend = (q = p) + size; q != pend && *q != '\0'; ++q) {}
+    for (pend = (q = p) + size; q != pend && *q != '\0' && *q != '/'; ++q) {}
     for (; q != p && q[-1] == ' '; --q) {}  /* Remove trailing spaces. */
     size = q - p;
     memcpy(result = heapalloc(size + 1), p, size);
