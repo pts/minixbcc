@@ -47,7 +47,9 @@ struct get_s			/* to record included files */
 {
     fd_t fd;
     unsigned line;
-    long position;
+    /* Must be signed to pacify GCC -Wsign-compare when comparing it to the return value of lseek(...). */
+    /* Using INT32T limits the maximum *.s file size containing an INCLUDE (or GET) to <2 GiB, but it also gives us deterministic behavior. */
+    INT32T fileofs;
 };
 
 PRIVATE char hid_filnambuf[FILNAMLEN + 1];	/* buffer for file name */
@@ -110,6 +112,12 @@ char *name;
     return (fd_t) fd;
 }
 
+#if __STDC__
+#  define cast_lseek_offset(offset) (offset)
+#else
+#  define cast_lseek_offset(offset) ((off_t) (offset))  /* We must pass the offset of the correct size, because the K&R C compiler doesn't know the argument type of lseek(...). Compile with -Doff_t=long if needed. */
+#endif
+
 /*
   handle GET (== INCLUDE) pseudo_op
   syntax: include "filename"
@@ -119,7 +127,7 @@ char *name;
 
 PUBLIC void pget()
 {
-    long position;
+    INT32T fileofs;
 
     if (sym != STRINGCONST)
     {
@@ -145,9 +153,10 @@ PUBLIC void pget()
 	    --getstak;
 	    getstak->fd = infil;
 	    getstak->line = linum;
-	    if ((position = lseek(infil, 0L, 1)) < 0)
+	    if ((fileofs = lseek(infil, cast_lseek_offset(0), 1)) < 0 ||
+	        lseek(infil, cast_lseek_offset(0), 1) != cast_lseek_offset(fileofs))  /* Check for overflow. This could be omitted if sizeof(off_t) == sizeof(fileofs), but we play it compatible in case the libc of some ANSI C compilers (such as Turbo C++ 1.01) doesn't have off_t. */
 	        as_abort("error getting input position");
-	    getstak->position = position - (input.limit - lineptr) - (input.buf - input.first);
+	    getstak->fileofs = fileofs - (input.limit - lineptr) - (input.buf - input.first);
 	    ++infiln;
 	    linum = 0;
 	    infil = open_input(databuf.fcbuf);
@@ -187,7 +196,7 @@ PUBLIC void pproceof()
 	infil = getstak->fd;
 	linum = getstak->line;
 	if (--infiln != 0) {
-	    if (lseek(infil, getstak->position, 0) != getstak->position)
+	    if (lseek(infil, getstak->fileofs, 0) != getstak->fileofs)
 		as_abort("error setting input position");
 	}
 	++getstak;
