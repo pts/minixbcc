@@ -21,8 +21,8 @@ if test "$cmp" = tcmp; then
   a='tcmp( ) { cmp  "$1" "$2" >>tools.diff || echo "cp -p \"$1\" \"$2\""; }'; eval "$a"  # eval to make Minix /bin/sh skip it.
   a='tdiff() { diff "$1" "$2" >>tools.diff || echo "cp -p \"$1\" \"$2\""; }'; eval "$a"  # eval to make Minix /bin/sh skip it.
 fi
-if test "$a03" = 0; then aa=-a; cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4 -DSC_ALIGNMENT=2 -DLD_ALIGNMENT=8 $cflags"  # For Minix i86. !! Drop SC_ALIGNMENT and LD_ALIGNMENT, apply default host values.
-else                     aa=;   cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DSC_ALIGNMENT=4 -DLD_ALIGNMENT=8 $cflags"  # For Minix i386. !! Drop SC_ALIGNMENT and LD_ALIGNMENT, apply default host values.
+if test "$a03" = 0; then aa=-a; cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4 -DSC_ALIGNMENT=1 -DLD_ALIGNMENT=1 $cflags"  # For Minix i86. Save memory by using a small alignment.
+else                     aa=;   cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 $cflags"
 fi
 
 if test "$sedi"; then  # as v0 abort()s on the include pseudo-op, so we manually process it with sed+cat.
