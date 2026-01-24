@@ -57,8 +57,28 @@ static char osid[] = "-DOSID=? ";  /* '?', '0' for Minix i86, '3' for Minix i386
 
 #define AU ((unsigned) 1 << (sizeof(unsigned ) * 8 - 1))
 #define AUL ((unsigned long) 1 << (sizeof(unsigned long) * 8 - 1))
-int alignptrcheck(char *p) {
-  return sizeof(char *) == sizeof(int) ? ((char *) ((unsigned) p + AU) != p + AU) : ((char *) ((unsigned long) p + AUL) != p + AUL);
+/* Returns bool indicating whether pointer arithmetics is linear. True on
+ * most systems with a flat memory model. True on DOS for the small and
+ * medium memory models, false for the large, compact and huge memory
+ * models.
+ */
+int alignptrcheck(char *cp) {
+#if 0  /* This implementation would trigger the GCC warnings -Wpointer-to-int-cast -Wint-to-pointer-cast because of the size mismatch between the pointer and the integer. */
+  return sizeof(char *) == sizeof(int) ? ((char *) ((unsigned) p + AU) != p + AU) :
+      sizeof(char *) == sizeof(long) ? ((char *) ((unsigned long) p + AUL) != p + AUL) : 0;
+#else  /* Longer implementation, but doesn't trigger warnings. */
+  union { unsigned ui; unsigned long ul; char *cp; } u;
+  u.cp = cp;
+  if (sizeof(char *) == sizeof(int)) {
+    u.ui += AU;
+    return u.cp != cp + AU;
+  } else if (sizeof(char *) == sizeof(long)) {
+    u.ul += AUL;
+    return u.cp != cp + AUL;
+  } else {
+    return 0;  /* The result is irrelevant in this case. */
+  }
+#endif
 }
 
 int main P((int argc, char **argv));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */

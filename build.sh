@@ -147,7 +147,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc
   # Example strict mode invocations:
   # * GCC on modern Unix-like systems: .  /build.sh gcc   -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wno-maybe-uninitialized
-  # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wno-maybe-uninitialized
+  # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wno-maybe-uninitialized -Wno-unknown-warning-option
   # * OpenWatcom v2 on Linux:            ./build.sh owcc  -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror
   # * minilibc386 and OpenWatcom v2:     ./build.sh minicc -DDEBUG_SIZE_NOPAD -Werror
   # minicc is from http://github.com/pts/minilibc686
@@ -163,10 +163,9 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   case "$cc" in
    owcc) cflags="-O -Wno-n308 -Wno-n309" ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI.
    minicc) case "$1" in --gcc*) cflags="-O"; ;; *) cflags="-O -Wno-n308 -Wno-n309" ;; esac ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI. !! Get rid of the -Wno-n308 -Wno-n309
-   gcc | clang) detcflags="-O -Wno-pointer-to-int-cast -Wno-int-to-pointer-cast"; cflags="-O" ;;  # !! Get rid of the detection flags.
-   *) detcflags=; cflags="-O" ;;
+   *) cflags="-O" ;;
   esac
-  "$cc" -O $detcflags "$@" -o sysdet sysdet.c || exit "$?"
+  "$cc" $detcflags "$@" -o sysdet sysdet.c || exit "$?"
   sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1
   test "$?" = 0 || exit 2
   rm -f sysdet
