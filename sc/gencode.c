@@ -116,6 +116,12 @@ FORWARD void abop P((op_pt op, struct symstruct *source,
 FORWARD void smakeleaf P((struct nodestruct *exp));
 FORWARD void tcheck P((struct nodestruct *exp));
 
+#ifdef __BCC__
+#  define GET_OPDATA_FIRST(op) ((opdata - FIRSTOPDATA)[(op)])  /* (opdata - FIRSTOPDATA) is undefined behavior (UB), becase it creates a pointer outside an array. */
+#else
+#  define GET_OPDATA_FIRST(op) (opdata[(op) - FIRSTOPDATA])  /* This is correct C (without undefined behavior), but __BCC__ would generate longer code for it. */
+#endif
+
 PRIVATE void abop(op, source, target)
 op_pt op;
 struct symstruct *source;
@@ -142,14 +148,14 @@ struct symstruct *target;
     case ANDABOP:
     case EORABOP:
     case ORABOP:
-	op1((opdata - FIRSTOPDATA)[op], source, &temptarg);
+	op1(GET_OPDATA_FIRST(op), source, &temptarg);
 	break;
     case DIVABOP:
     case MODABOP:
     case MULABOP:
     case SLABOP:
     case SRABOP:
-	softop((opdata - FIRSTOPDATA)[op], source, &temptarg);
+	softop(GET_OPDATA_FIRST(op), source, &temptarg);
 	break;
     case PTRADDABOP:
 	regtemp = 0;
@@ -569,7 +575,7 @@ struct nodestruct *exp;
     case LEOP:
     case LTOP:
     case NEOP:
-	condtrue = (opdata - FIRSTOPDATA)[op];
+	condtrue = GET_OPDATA_FIRST(op);  /* !!! better code in BCC: (opdata - FIRSTOPDATA)[op] */
 	cmp(source, target, &condtrue);
 	break;
     case FUNCOP:

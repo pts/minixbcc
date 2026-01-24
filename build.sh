@@ -141,16 +141,23 @@ if test "$1" = dcc0 || test "$1" = dcc3; then  # On Minix i86 or i386, autodetec
   shift; set "$m" "$@"
 fi
 
-if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minicc || test "$1" = cc; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, minilibc686 minicc on Linux, or a generic Unix C compiler (cc) on Unix.
+if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minicc || test "$1" = cc | test "$1" = zig; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, minilibc686 minicc on Linux, or a generic Unix C compiler (cc) on Unix.
   # GCC is known to work with GCC 4.3--4.9 and GCC 7.5.0.
   # Clang is known to work with Clang 6.0.0.
   # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc
+  # Example invocation with zig cc Clang on Linux: ./build.sh zig cc
   # Example strict mode invocations:
   # * GCC on modern Unix-like systems: .  /build.sh gcc   -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -ansi -pedantic
-  # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -Wno-unknown-warning-option -ansi -pedantic
+  # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -Wno-deprecated-non-prototype -Wno-unknown-warning-option -Wno-unused-command-line-argument -ansi -pedantic
   # * OpenWatcom v2 on Linux:            ./build.sh owcc  -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror
   # * minilibc386 and OpenWatcom v2:     ./build.sh minicc -DDEBUG_SIZE_NOPAD -Werror
   # * minilibc386 and GCC 4.8:           ./build.sh minicc --gcc=4.8 -DDEBUG_SIZE_NOPAD -Werror
+  # * zig cc targeting Linux i386:       ./build.sh zig cc -target i386-linux-musl    -s -O2 -W -Wall -ansi -pedantic
+  # * zig cc targeting Linux amd64:      ./build.sh zig cc -target x86_64-linux-musl  -s -O2 -W -Wall -ansi -pedantic
+  # * zig cc targeting Linux PowerPC:    ./build.sh zig cc -target powerpc-linux-musl -s -O2 -W -Wall -ansi -pedantic  # Little-endian.
+  # * zig cc targeting Linux PowerPC64:  ./build.sh zig cc -target powerpc64-linux-musl -s -O2 -W -Wall -ansi -pedantic  # Little-endian.
+  # * zig cc targeting Linux ARM:        ./build.sh zig cc -target arm-linux-musleabi -s -O2 -W -Wall -ansi -pedantic
+  # * zig cc targeting Linux ARM64:      ./build.sh zig cc -target aarch64-linux-musl -s -O2 -W -Wall -ansi -pedantic
   # minicc is from http://github.com/pts/minilibc686
   # Assumptions about the host system:
   # * .text can be 75 KiB. This doesn't hold for ELKS and Minix i86.
@@ -159,22 +166,27 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used. !! Autodetect this.
   # !! make new enough GCC and Clang work without sysdet, e.g. with __SIZEOF_INT__, __SIZEOF_LONG__, __UINTPTR_TYPE__, __i386__ or __code_model_small__ etc. for PORTALIGN
   rm -f sysdet
-  cc="$1"; cflags=-O; shift
-  test "$cc" = minicc && cflags=  # It optimizes for size better by default than with -O.
+  cc2=
+  # !!! Fix Clang trap instructions with: ./build.sh zig cc -target i386-linux-musl -g -O0 -fno-wrapv -DDEBUG_CLANG
+  if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-Wno-deprecated-non-prototype -Wno-unused-command-line-argument -Wno-strict-prototypes -fno-lto -fwrapv"  # Example: ./build.sh zig cc
+  elif test "$1" = minicc; then cc="$1"; shift; cflags=  # It optimizes for size better by default than with -O.
+  else cc="$1"; shift; cflags=-O
+  fi
   test "$1" = -O0 && shift && cflags=  # Cancel the -O, in case the C compiler doesn't support it.
-  "$cc" $cflags "$@" -o sysdet sysdet.c || exit "$?"
+  "$cc" $cc2 $cflags "$@" -o sysdet sysdet.c || exit "$?"
   sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1
   test "$?" = 0 || exit 2
   rm -f sysdet
   case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac
   # !! Autodetect the -DACKFIX etc. flags in $sysdet in case acka3 is used as cc.
 
-  "$cc" $cflags $sysdet "$@" -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  "$cc" $cflags $sysdet "$@" -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  "$cc" $cflags $sysdet "$@" -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  "$cc" $cflags $sysdet "$@" -o cr.cross cr/cr.c || exit "$?"
-  "$cc" $cflags "$@" -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o cr.cross cr/cr.c || exit "$?"
+  "$cc" $cc2 $cflags "$@" -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
 
+  set cc  # For subsequent `test "$1" = ...'.
   sc=./sc.cross
   as=./as.cross
   ld=./ld.cross

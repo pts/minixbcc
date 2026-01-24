@@ -479,7 +479,7 @@ char *name;
 PUBLIC struct symstruct **gethashptr(sname)
 char *sname;
 {
-    register int hashval;
+    register unsigned hashval;
     register char *rsname;
 
     hashval = 0;

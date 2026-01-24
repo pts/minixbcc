@@ -2117,6 +2117,12 @@ PUBLIC void mret()
     }
 }
 
+#ifdef __BCC__
+#  define GET_SEGOVERRIDE_CSREG(reg) ((segoverride - CSREG)[(reg)])  /* (segoverride - CSREG) is undefined behavior (UB), becase it creates a pointer outside an array. */
+#else
+#  define GET_SEGOVERRIDE_CSREG(reg) (segoverride[(reg) - CSREG])  /* This is correct C (without undefined behavior), but __BCC__ would generate longer code for it. */
+#endif
+
 /* SEG CS/DS/ES/FS/GS/SS */
 
 PUBLIC void mseg()
@@ -2129,7 +2135,7 @@ PUBLIC void mseg()
     {
 	getsym();
 	++mcount;
-	opcode = (segoverride - CSREG)[reg];
+	opcode = GET_SEGOVERRIDE_CSREG(reg);
     }
 }
 
