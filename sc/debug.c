@@ -4,7 +4,7 @@
 
 #include "const.h"
 
-#ifdef DEBUG
+#ifdef DEBUG  /* TODO(pts): Enable this branch, and fix warnings. */
 
 #include "types.h"
 #include "gencode.h"
@@ -199,4 +199,9 @@ indn_pt count;
 	outbyte(byte);
 }
 
-#endif /* DEBUG */
+#else  /* DEBUG */
+
+extern int foo;  /* Pacify GCC warning -pedantic: ISO C forbids an empty translation unit */
+/*char debugc;*/  /* Pacify OpenWatcm v2 error owcc -std=c89: E1123: File must contain at least one external definition */  /* However, many other source files don't compile with that. */
+
+#endif  /* else DEBUG */

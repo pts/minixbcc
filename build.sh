@@ -146,8 +146,8 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # Clang is known to work with Clang 6.0.0.
   # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc
   # Example strict mode invocations:
-  # * GCC on modern Unix-like systems: .  /build.sh gcc   -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized
-  # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -Wno-unknown-warning-option
+  # * GCC on modern Unix-like systems: .  /build.sh gcc   -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -ansi -pedantic
+  # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -Wno-unknown-warning-option -ansi -pedantic
   # * OpenWatcom v2 on Linux:            ./build.sh owcc  -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror
   # * minilibc386 and OpenWatcom v2:     ./build.sh minicc -DDEBUG_SIZE_NOPAD -Werror
   # * minilibc386 and GCC 4.8:           ./build.sh minicc --gcc=4.8 -DDEBUG_SIZE_NOPAD -Werror
@@ -157,7 +157,6 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # * There is 140 KiB of virtual memory for each process (total of: .text, .rodata, .data, .bss, stack). This doesn't hold for ELKS and Minix i86.
   # * malloc(...) can allocate 192 KiB on top of that. This doesn't hold for ELKS and Minix i86.
   # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used. !! Autodetect this.
-  # !! make it work with: gcc -ansi -pedantic
   # !! make new enough GCC and Clang work without sysdet, e.g. with __SIZEOF_INT__, __SIZEOF_LONG__, __UINTPTR_TYPE__, __i386__ or __code_model_small__ etc. for PORTALIGN
   rm -f sysdet
   cc="$1"; cflags=-O; shift
@@ -172,7 +171,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
 
   "$cc" $cflags $sysdet "$@" -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
   "$cc" $cflags $sysdet "$@" -DMINIX_SYNTAX -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  "$cc" $cflags $sysdet "$@" -DDEBUG_SIZE_NOPAD -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+  "$cc" $cflags $sysdet "$@" -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
   "$cc" $cflags $sysdet "$@" -o cr.cross cr/cr.c || exit "$?"
   "$cc" $cflags "$@" -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
 
