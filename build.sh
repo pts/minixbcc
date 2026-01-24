@@ -157,7 +157,6 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # * There is 140 KiB of virtual memory for each process (total of: .text, .rodata, .data, .bss, stack). This doesn't hold for ELKS and Minix i86.
   # * malloc(...) can allocate 192 KiB on top of that. This doesn't hold for ELKS and Minix i86.
   # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used. !! Autodetect this.
-  # !! make it work with: gcc -ansi
   # !! make it work with: gcc -ansi -pedantic
   # !! make new enough GCC and Clang work without sysdet, e.g. with __SIZEOF_INT__, __SIZEOF_LONG__, __UINTPTR_TYPE__, __i386__ or __code_model_small__ etc. for PORTALIGN
   rm -f sysdet

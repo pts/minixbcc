@@ -28,6 +28,8 @@ FILE_LOCAL int evalnum _CPP_PROTO((int c));
 FILE_LOCAL int evalchar _CPP_PROTO((int skip));
 FILE_LOCAL int *evaleval _CPP_PROTO((int *valp, int op, int skip));  /* Does actual evaluation. */
 
+#define cpp_isascii(c) ((unsigned) (c) <= 127)  /* isascii(...) is not in ANSI C (C89), so we provide our own implementation */
+
 /*
  * Evaluate an #if expression.
  */
@@ -392,7 +394,7 @@ again:  do {					/* Collect the token	*/
 	} while ((t = type[c]) == LET && catenate());
 	if (t == INV) {				/* Total nonsense	*/
 	    if (!skip) {
-		if (isascii(c) && isprint(c))
+		if (cpp_isascii(c) && isprint(c))
 		    cierror("illegal character '%c' in #if", c);
 		else
 		    cierror("illegal character (%d decimal) in #if", c);
@@ -635,7 +637,7 @@ register int	c;
 	value = 0;
 	for (;;) {
 	    c1 = c;
-	    if (isascii(c) && isupper(c1))
+	    if (cpp_isascii(c) && isupper(c1))
 		c1 = tolower(c1);
 	    if (c1 >= 'a')
 		c1 -= ('a' - 10);
