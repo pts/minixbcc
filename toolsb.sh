@@ -53,7 +53,7 @@ fi
 "$as" -"$a03" $aa -w -o "$a03"/lass.o as/lass"$a03$sedi".s || exit "$?"
 "$cmp" "$a03"/lass.o "$a03"g/lass.n || exit "$?"
 for b in as assemble error express genbin genlist genobj gensym heap keywords macro mops pops readsrc scan table typeconv; do
-  "$sc" -"$a03" $cflags -DMINIX_SYNTAX -DMINIXHEAP -DBRKSIZE -DOPEN00 -DLIBCH -o "$a03"/as"$b".s as/"$b".c || exit "$?"
+  "$sc" -"$a03" $cflags -DMINIXHEAP -DBRKSIZE -DOPEN00 -DLIBCH -o "$a03"/as"$b".s as/"$b".c || exit "$?"
   "$diff" "$a03"/as"$b".s "$a03"g/as"$b".r || exit "$?"
   "$as" -"$a03" -u -w -o "$a03"/as"$b".o "$a03"/as"$b".s || exit "$?"
   "$cmp"  "$a03"/as"$b".o "$a03"g/as"$b".n || exit "$?"

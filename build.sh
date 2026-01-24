@@ -170,7 +170,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # !! Autodetect the -DACKFIX etc. flags in $sysdet in case acka3 is used as cc.
 
   "$cc" $cflags $sysdet "$@" -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  "$cc" $cflags $sysdet "$@" -DMINIX_SYNTAX -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+  "$cc" $cflags $sysdet "$@" -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
   "$cc" $cflags $sysdet "$@" -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
   "$cc" $cflags $sysdet "$@" -o cr.cross cr/cr.c || exit "$?"
   "$cc" $cflags "$@" -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
@@ -240,7 +240,7 @@ if test "$1" = ack0; then  # Minix 1.5.10 i86 ACK 3.1 C compiler with either the
   # We work it around by using a small, custom libc tailored for sc (lsca.s mxmalloc.c ... lsce.s).
   asld -i -o sc.mx sc/lsca.s mxmalloc.s bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s sc/lsce.s || exit "$?"
   rm -f mxmalloc.s bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s
-  cc -i -s -O $cflags -DMINIX_SYNTAX -DMINIXHEAP -DBRKSIZE -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+  cc -i -s -O $cflags -DMINIXHEAP -DBRKSIZE -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
   cc -i -s -O $cflags -DMINIXHEAP -DBRKSIZE -DACKFIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
   cc -i -s -O $cflags -o cr.mx cr/cr.c || exit "$?"
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
@@ -273,7 +273,7 @@ if test "$1" = acka0 || test "$1" = acka3; then  # Minix >=1.7.0 i86 ACK ANSI C 
   #
   # /usr/lib/ncpp -D_EM_WSIZE=2 -D_EM_PSIZE=2 -D_EM_SSIZE=2 -D_EM_LSIZE=4 -D_EM_FSIZE=4 -D_EM_DSIZE=8 -D__ACK__ -D__minix -D__i86 hello.c >/tmp/cc230000.i
   (cd sc && cc -i -s -O -m $cflags -DACKFIX -o ../sc.mx mxmalloc.c bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
-  (cd as && cc -i -s -O -m $cflags -DMINIX_SYNTAX -DMINIXHEAP -o ../as.mx as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
+  (cd as && cc -i -s -O -m $cflags -DMINIXHEAP -o ../as.mx as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
   (cd ld && cc -i -s -O -m $cflags -DMINIXHEAP -DACKFIX -o ../ld.mx dumps.c heap.c io.c ld.c readobj.c table.c typeconv.c writebin.c) || exit "$?"
   (cd cr && cc -i -s -O -m $cflags -o ../cr.mx cr.c) || exit "$?"
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
@@ -332,7 +332,7 @@ if test "$1" = bcc0; then  # BCC (v0 or v3) on Minix i86, targeting Minix i86: s
   rm -f $sco
   sco=
   # In BCC driver v0, `"$bcc" -i' (separate I&D) and `"$bcc"' default both run `ld -i' separate I&D.
-  "$bcc" -i -0 $cflags -DMINIX_SYNTAX -DMINIXHEAP -DBRKSIZE -DLIBCH -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+  "$bcc" -i -0 $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
   "$bcc" -i -0 $cflags -DMINIXHEAP -DBRKSIZE -DGLOBVARI -DLIBCH -DLIBCHMINIX -DBCCALIGNFIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
   "$bcc" -i -0 $cflags -DLIBCH -o cr.mx cr/cr.c || exit "$?"
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
@@ -353,7 +353,7 @@ if test "$1" = bcc3; then  # BCC (v0 or v3) on Minix i386, targeting Minix i386:
   cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4"
   "$bcc" -i $cflags -DLIBCH -o sc.mx sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
   # In BCC driver v0, `"$bcc" -i' (separate I&D) and `"$bcc"' default both run `ld -i' separate I&D.
-  "$bcc" -i $cflags -DMINIX_SYNTAX -DMINIXHEAP -DBRKSIZE -DLIBCH -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+  "$bcc" -i $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
   "$bcc" -i $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -DLIBCHMINIX -DBCCALIGNFIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
   "$bcc" -i $cflags -DLIBCH -o cr.mx cr/cr.c || exit "$?"
   chmem =150000 sc.mx || exit "$?"  # C compiler backend.

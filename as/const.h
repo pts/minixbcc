@@ -1,3 +1,9 @@
+#ifndef NO_MINIX_SYNTAX  /* Configurable from the command-line. Most users should keep the default (unspecified). */
+#  ifndef MINIX_SYNTAX
+#    define MINIX_SYNTAX 1  /* Default. */
+#  endif
+#endif
+
 #define align(x)		/* ((x) = ((int) (x) + (4-1)) & ~(4-1)) */
 #define LOW_BYTE	0	/* must be changed for big-endian */
 
