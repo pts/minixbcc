@@ -739,13 +739,13 @@ int		skip;		/* TRUE if short-circuit evaluation	*/
 	 * We warn on multi-byte constants and try to hack
 	 * (big|little)endian machines.
 	 */
-#if BIG_ENDIAN
+#if BIG_ENDIAN_TARGET
 	count = 0;
 #endif
 	while ((c = get()) != '\'' && c != EOF_CHAR && c != '\n') {
 	    if (!skip)
 		ciwarn("multi-byte constant '%c' isn't portable", c);
-#if BIG_ENDIAN
+#if BIG_ENDIAN_TARGET
 	    count += BITS_CHAR;
 	    value += (c << count);
 #else
