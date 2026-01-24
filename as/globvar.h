@@ -62,9 +62,8 @@ EXTERN offset_t lc;		/* location counter */
 EXTERN unsigned char lcdata;	/* shows how lc is bound */
 				/* FORBIT is set if lc is forward referenced */
 				/* RELBIT is is if lc is relocat. (not ASEG) */
-EXTERN offset_t lcjump;		/* lc jump between lines */
-#define mcount (((unsigned char *) &lcjump)[LOW_BYTE])
-				/* low byte of lcjump */
+EXTERN unsigned lcjump;		/* lc jump between lines */
+#define mcount lcjump  /* It would be a size optimization if only the low byte of lcjump was incremented (by the many ++mcount etc.), but it would also be a maintenance nightmare. */
 EXTERN struct lc_s *lcptr;	/* top of current spot in lctab */
 EXTERN struct lc_s *lctab;	/* start of lctab */
 EXTERN struct lc_s *lctabtop;	/* top of lctab */

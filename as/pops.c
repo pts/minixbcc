@@ -101,13 +101,14 @@ unsigned size;
     absexpres();
     if (!((lcdata |= lastexp.data) & UNDBIT))
     {
-	lcjump = lastexp.offset * size;
+	lcjump = remaining = lastexp.offset * size;
+	if (lcjump != remaining) error(ABOUNDS);  /* We reuse this error code for reporting overflow. */
 	popflags = POPLONG | POPHI | POPLO | POPLC;
 	if (size == 1 && sym == COMMA)
 	{
 	    symabsexpres();
 	    checkdatabounds();
-	    for (remaining = lcjump; remaining != 0; --remaining)
+	    for (; remaining != 0; --remaining)
 	    {
 		putbin((opcode_pt) lastexp.offset);	/* fill byte */
 		putabs((opcode_pt) lastexp.offset);

@@ -4,8 +4,6 @@
 #  endif
 #endif
 
-#define LOW_BYTE	0	/* must be changed for big-endian !! porting: do we have to change this? */
-
 /* const.h - constants for assembler */
 
 /* major switches */
