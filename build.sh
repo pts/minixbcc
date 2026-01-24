@@ -144,9 +144,8 @@ fi
 if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minicc || test "$1" = cc; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, minilibc686 minicc on Linux, or a generic Unix C compiler (cc) on Unix.
   # GCC is known to work with GCC 4.3--4.9 and GCC 7.5.0.
   # Clang is known to work with Clang 6.0.0.
-  # Example invocation for OpenWatcom v2 on Linux (without the -I.../lh, it would segfault): ./build.sh owcc -blinux -I"$WATCOM"/lh
+  # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc
   # minicc is from http://github.com/pts/minilibc686
-  # !! Autodetect and add the -I"$WATCOM"/lh for OpenWatcom v2 on Linux.
   # Assumptions about the host system:
   # * .text can be 75 KiB. This doesn't hold for ELKS and Minix i86.
   # * There is 140 KiB of virtual memory for each process (total of: .text, .rodata, .data, .bss, stack). This doesn't hold for ELKS and Minix i86.

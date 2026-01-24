@@ -17,6 +17,15 @@
 #endif
 #ifdef DEBUG_SIZE
 #  include <stdio.h>
+#  ifdef __WATCOMC__  /* OpenWatcom v2 or earlier. */
+#    ifdef _WCDATA  /* OpenWatcom v2 libc. */
+      /* Hake stderr work even if the owcc driver is run with the incorrect or missing $INCLUDE environment variable, and using (by default) -I"$WATCOM"/h instead of the correct -I"$WATCOM"/lh on Linux.. */
+      FILE *my_stderr_ptr;
+      FILE *my_stderr_get(void) { if (!my_stderr_ptr) my_stderr_ptr = fdopen(2, "w"); return my_stderr_ptr; }
+#      undef  stderr  /* The OpenWatcom v2 libc defines it. */
+#      define stderr my_stderr_get()
+#    endif
+#  endif
 #endif
 
 /* --- Minix a.out executable file format support */
@@ -414,6 +423,7 @@ bool_pt arguzp;
 #  endif
     /* These values are correct for both values of sepid, and for uzp == 0. They may be correct with uzp == 1 as well. */
     fprintf(stderr, "info: total executable size: a_text=%lu a_data=%lu a_bss=%lu a_data+a_bss=%lu\n", (unsigned long) (ETEXTMAYBEPADOFF - btextoffset), (unsigned long) (edataoffset - bdataoffset), (unsigned long) (endoffset - edataoffset), (unsigned long) (endoffset));
+    fflush(stderr);
 #else  /* For DEBUG_SIZE, do it later, after padmod(...) has printed the per-module infos. */
     checksize();
 #endif
@@ -600,6 +610,7 @@ struct modstruct *modptr;
 #ifdef DEBUG_SIZE_NOPAD
     /* Please note that a_bss values don't add up, because common symbols (C_MASK, N_COMM) may be defined in multiple modules. */
     fprintf(stderr, "info: module size: a_text=%lu a_data=%lu a_bss=%lu f=%s%s%s\n", (unsigned long) (segpos[0] - segbase[0]), (unsigned long) (segpos[3] - segbase[3]), (unsigned long) modptr->modcomsz, modptr->filename, modptr->archentry ? "//" : "", modptr->archentry ? modptr->archentry : "");
+    fflush(stderr);
 #endif
     for (seg = 0, sizeptr = modptr->segsize; seg < NSEG; ++seg)
     {
@@ -625,6 +636,7 @@ struct modstruct *modptr;
     /* This reports the padded size (because roundup has been called above. */
     /* Please note that a_bss values don't add up, because common symbols (C_MASK, N_COMM) may be defined in multiple modules. */
     fprintf(stderr, "info: module size: a_text=%lu a_data=%lu a_bss=%lu f=%s%s%s\n", (unsigned long) (segpos[0] - segbase[0]), (unsigned long) (segpos[3] - segbase[3]), (unsigned long) modptr->modcomsz, modptr->filename, modptr->archentry ? "//" : "", modptr->archentry ? modptr->archentry : "");
+    fflush(stderr);
 #  endif
     for (seg = 0; seg < NSEG; ++seg)
     {
