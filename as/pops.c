@@ -115,7 +115,7 @@ unsigned size;
 	    lastexp.offset = lcjump;
 	}
 	else
-	    accumulate_rmb(lastexp.offset * size);
+	    accumulate_rmb((offset_t) (lastexp.offset * size));
     }
 }
 
@@ -344,7 +344,7 @@ PUBLIC void palign()
 	popflags = POPLONG | POPHI | POPLO | POPLC;
 	if (lastexp.offset != 0 &&
 	    (lcjump = lc % lastexp.offset) != 0)
-	    accumulate_rmb(lcjump = lastexp.offset - lcjump);
+	    accumulate_rmb((offset_t) (lcjump = lastexp.offset - lcjump));
     }
 }
 
@@ -474,7 +474,7 @@ PUBLIC void pendb()
 	blockp = blockstak;
 	lcdata = blockp->data;
 	dirpag = blockp->dp;
-	accumulate_rmb(blockp->lc - lc);
+	accumulate_rmb((offset_t) (blockp->lc - lc));
 	lc = blockp->lc;
 	--blocklevel;
 	blockstak = blockp + 1;
@@ -540,7 +540,7 @@ PUBLIC void pequ()
 PUBLIC void peven()
 {
     popflags = POPLONG | POPHI | POPLO | POPLC;
-    accumulate_rmb(lcjump = lastexp.data = lc & 1);
+    accumulate_rmb((offset_t) (lcjump = lastexp.data = lc & 1));
 }
 
 /* EXPORT pseudo-op */
@@ -818,7 +818,7 @@ PUBLIC void porg()
     absexpres();
     if (!((lcdata = lastexp.data) & UNDBIT))
     {
-	accumulate_rmb(lastexp.offset - lc);
+	accumulate_rmb((offset_t) (lastexp.offset - lc));
 	binmbuf = lc = lastexp.offset;
 	popflags = POPLC;
     }
