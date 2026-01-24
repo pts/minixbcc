@@ -4,8 +4,7 @@
 #  endif
 #endif
 
-#define align(x)		/* ((x) = ((int) (x) + (4-1)) & ~(4-1)) */
-#define LOW_BYTE	0	/* must be changed for big-endian */
+#define LOW_BYTE	0	/* must be changed for big-endian !! porting: do we have to change this? */
 
 /* const.h - constants for assembler */
 

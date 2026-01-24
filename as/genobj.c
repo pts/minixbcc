@@ -8,6 +8,7 @@
 #  include <string.h>
 #endif
 #include "const.h"
+#include "align.h"
 #include "type.h"
 #include "address.h"
 #include "file.h"
@@ -345,7 +346,7 @@ PUBLIC void objheader()
     if ((nameptr = strrchr(module_name, '.')) != (char*) 0)
 	*nameptr = 0;
     strsiz = strlen(module_name) + 1;
-    align(heapptr);
+    align_add(heapptr);
     for (hashptr = spt, arrext = copyptr = (struct sym_s **) heapptr;
 	 hashptr < spt_top;)
 	if ((symptr = *hashptr++) != (struct sym_s*) 0)

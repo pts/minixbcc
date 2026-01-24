@@ -21,7 +21,7 @@ if test "$cmp" = tcmp; then
   a='tcmp( ) { cmp  "$1" "$2" >>tools.diff || echo "cp -p \"$1\" \"$2\""; }'; eval "$a"  # eval to make Minix /bin/sh skip it.
   a='tdiff() { diff "$1" "$2" >>tools.diff || echo "cp -p \"$1\" \"$2\""; }'; eval "$a"  # eval to make Minix /bin/sh skip it.
 fi
-if test "$a03" = 0; then aa=-a; cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4 -DSC_ALIGNMENT=1 -DLD_ALIGNMENT=1 $cflags"  # For Minix i86. Save memory by using a small alignment.
+if test "$a03" = 0; then aa=-a; cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4 -DSC_ALIGNMENT=1 -DLD_ALIGNMENT=1 -DAS_ALIGNMENT=1 $cflags"  # For Minix i86. Save memory by using a small alignment.
 else                     aa=;   cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 $cflags"
 fi
 

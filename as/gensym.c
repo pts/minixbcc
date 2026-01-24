@@ -9,6 +9,7 @@
 #  include <string.h>
 #endif
 #include "const.h"
+#include "align.h"
 #include "type.h"
 #include "flag.h"
 #include "file.h"
@@ -40,7 +41,7 @@ PUBLIC void gensym()
     /* make copy of all relavant symbol ptrs on heap */
     /* original ptrs can now be modified, but need to be an array for sort */
 
-    align(heapptr);
+    align_add(heapptr);
     for (hashptr = spt, symlptr = copyptr = (struct sym_s **) heapptr;
 	 hashptr < spt_top;)
 	if ((symptr = *hashptr++) != (struct sym_s*) 0)

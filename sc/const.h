@@ -23,10 +23,6 @@
 #define HOLDSTRINGS		/* hold strings for dumping at end
 				 * since assembler has only 1 data seg */
 
-#ifndef SC_ALIGNMENT
-#  define SC_ALIGNMENT ALIGNBYTES  /* source memory alignment, power of 2 */
-#endif
-
 /* local style */
 
 #define FALSE 0

@@ -1,5 +1,9 @@
 /* align.h - memory alignment requirements for the compiler backend */
 
+#ifndef SC_ALIGNMENT
+#  define SC_ALIGNMENT ALIGNBYTES  /* host memory alignment, power of 2 */
+#endif
+
 /* align(x) works on any pointer x, and it returns a (char *). */
 #if SC_ALIGNMENT < 2
 #  define align(x) ((char *) (x))

@@ -6,6 +6,7 @@
 #  include <string.h>
 #endif
 #include "const.h"
+#include "align.h"
 #include "type.h"
 #include "globvar.h"
 #include "scan.h"
@@ -163,7 +164,7 @@ PUBLIC struct sym_s *lookup()
     }
     if (!ifflag)
 	return (struct sym_s*) 0;
-    align(heapptr);
+    align_add(heapptr);
     if (heapptr >= heapend)
 	fatalerror(SYMOV);
 #ifdef DEBUG

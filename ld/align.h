@@ -1,5 +1,9 @@
 /* align.h - memory alignment requirements for linker */
 
+#ifndef LD_ALIGNMENT
+#  define LD_ALIGNMENT ALIGNBYTES  /* host memory alignment, power of 2 */
+#endif
+
 /* align_add(x) works on char *x. */
 #if LD_ALIGNMENT < 2
 #  define align_add(x)
