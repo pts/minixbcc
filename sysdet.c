@@ -55,6 +55,15 @@ static char header[32];
 
 static char osid[] = "-DOSID=? ";  /* '?', '0' for Minix i86, '3' for Minix i386, '5' for Minix-386vm or Minix-vmx. */
 
+#undef HAVE_SIZEOF
+#ifdef __SIZEOF_INT__
+#  ifdef __SIZEOF_LONG__
+#    ifdef __SIZEOF_POINTER__
+#      define HAVE_SIZEOF 1  /* Modern GCC and Clang have it all. */
+#    endif
+#  endif
+#endif
+
 #define AU ((unsigned) 1 << (sizeof(unsigned ) * 8 - 1))
 #define AUL ((unsigned long) 1 << (sizeof(unsigned long) * 8 - 1))
 /* Returns bool indicating whether pointer arithmetics is linear. True on
@@ -63,9 +72,25 @@ static char osid[] = "-DOSID=? ";  /* '?', '0' for Minix i86, '3' for Minix i386
  * models.
  */
 int alignptrcheck(char *cp) {
+#ifdef ALIGNPTRCHECK
+  (void)cp;
+
+  return ALIGNPTRCHECK;
+#else
+#ifdef HAVE_SIZEOF
+#if __SIZEOF_POINTER__ == __SIZEOF_INT__
+  return (char *) ((unsigned) cp + AU) != cp + AU;
+#else
+#if __SIZEOF_POINTER__ == __SIZEOF_LONG__
+  return (char *) ((unsigned long) cp + AUL) != cp + AUL;
+#else
+  return 0;
+#endif
+#endif
+#else
 #if 0  /* This implementation would trigger the GCC warnings -Wpointer-to-int-cast -Wint-to-pointer-cast because of the size mismatch between the pointer and the integer. */
-  return sizeof(char *) == sizeof(int) ? ((char *) ((unsigned) p + AU) != p + AU) :
-      sizeof(char *) == sizeof(long) ? ((char *) ((unsigned long) p + AUL) != p + AUL) : 0;
+  return sizeof(char *) == sizeof(int) ? ((char *) ((unsigned) cp + AU) != cp + AU) :
+      sizeof(char *) == sizeof(long) ? ((char *) ((unsigned long) cp + AUL) != cp + AUL) : 0;
 #else  /* Longer implementation, but doesn't trigger warnings. */
   union { unsigned ui; unsigned long ul; char *cp; } u;
   u.cp = cp;
@@ -78,6 +103,8 @@ int alignptrcheck(char *cp) {
   } else {
     return 0;  /* The result is irrelevant in this case. */
   }
+#endif
+#endif
 #endif
 }
 
@@ -109,6 +136,9 @@ char **argv;
       sizeof(int ) == 4 ? "-DINT32T=int " :
       sizeof(long) == 4 ? "-DINT32T=long " :
       "-DBADLONG ");  /* Neither int nor long is 4 bytes. */
+#if 0
+  gp += 1;  /* Even this pointer arithmetics makes qemu-ppc crash with a CPU trap. */
+#endif
   write_str(STDOUT_FILENO,
       sizeof(char *) == sizeof(int ) ? "-DINTPTRT=int " :
       sizeof(char *) == sizeof(long) ? "-DINTPTRT=long " :  /* (char *) be even 8 bytes, e.g. on amd64. GCC has sizeof(long) == 8 also there. !! Add `long long' as an option? Then #define longlong long long */
@@ -123,8 +153,14 @@ char **argv;
    * it back. Our non-portable alignment macro (in sc/align.h and
    * ld/align.h) does exactly this, so we want to use the portable one
    * (directed by -DPORTALIGN) instead.
+   *
+   * For the check we don't use (char *) 0, because pointer arithmetic on a
+   * NULL poiner is undefined behavior in C, and e.g. Clang 15.0.7 with `-O0
+   * -fno-wrapv' (both are defaults) would insert a check and a trap
+   * instruction. We don't use `(char *) argc' either, to avoid the GCC and
+   * Clang warning -Wint-to-pointer-cast.
    */
-  if (alignptrcheck((char *) 0)) write_str(STDOUT_FILENO, "-DPORTALIGN ");
+  if (alignptrcheck((char *) 1)) write_str(STDOUT_FILENO, "-DPORTALIGN ");
 
   if (argv[0] && (filename = argv[1])) {
     if (argv[2]) fatal2("too many command-line arguments", (CONST char*)0);
@@ -149,8 +185,7 @@ char **argv;
           (((header[2] & 3) == 0 && (header[2] & (0xff - 3)) != 0) ? '0' : '?'):  /* '0' is Minix i86. '?' is unknown. */  /* TODO(pts): Distinguish this from ELKS (i86) executable, and detect '4' (ELKS). Only some ELKS executables have a_version == 1. */
           (((header[2] & 3) == 3) ? '5' : '3');  /* '5' is Minix-386vm or Minix-vmx. '3' is Minix i386. */  /* The ACK ANSI C compiler 1.202 in Minix 1.7.0 i386 sets a_flags to 0 (not even A_EXEC or A_SEP. We allow this here, but not for i86. */
     }
-    if (osid[sizeof(osid) - 3] != '?') 
-    write_str(STDOUT_FILENO, osid);
+    if (osid[sizeof(osid) - 3] != '?') write_str(STDOUT_FILENO, osid);
   }
   write_str(STDOUT_FILENO, "\n");
   return 0;
