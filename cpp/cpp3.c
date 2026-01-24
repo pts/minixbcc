@@ -331,7 +331,7 @@ void initdefines()
 	register char		*tp;
 	register DEFBUF		*dp;
 	int			i;
-	long			tvec;
+	time_t			tvec;
 
 	/*
 	 * Predefine the built-in symbols.  Allow the
