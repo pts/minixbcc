@@ -26,6 +26,8 @@
 #include	"cppdef.h"
 #include	"cpp.h"
 
+FILE_LOCAL void domsg _CPP_PROTO((int argtype, char *severity, char *format, char *sarg, int narg));
+
 /*
  * skipnl()	skips over input text to the end of the line.
  * skipws()	skips over "whitespace" (spaces or tabs), but
@@ -260,8 +262,8 @@ catenate()
 }
 
 int scanstring(delim, outfun)
-register int	delim;			/* ' or "			*/
-int		(*outfun)();		/* Output function		*/
+register int	delim;				/* ' or "		*/
+void		(*outfun) _CPP_PROTO((int c));	/* Output function	*/
 /*
  * Scan off a string.  Warning if terminated by newline or EOF.
  * outfun() outputs the character -- to a buffer if in a macro.
@@ -297,7 +299,7 @@ int		(*outfun)();		/* Output function		*/
 
 void scannumber(c, outfun)
 register int	c;				/* First char of number	*/
-register int	(*outfun)();			/* Output/store func	*/
+register void	(*outfun) _CPP_PROTO((int c));	/* Output/store func	*/
 /*
  * Process a number.  We know that c is from 0 to 9 or dot.
  * Algorithm from Dave Conroy's Decus C.
@@ -897,7 +899,6 @@ char		*text;
  */
 {
 	register FILEINFO	*file;
-	extern FILEINFO		*getfile();
 
 	file = getfile(strlen(text) + 1, "");
 	strcpy(file->buffer, text);

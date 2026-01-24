@@ -146,10 +146,11 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # Clang is known to work with Clang 6.0.0.
   # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc
   # Example strict mode invocations:
-  # * GCC on modern Unix-like systems: .  /build.sh gcc   -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wno-maybe-uninitialized
-  # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wno-maybe-uninitialized -Wno-unknown-warning-option
+  # * GCC on modern Unix-like systems: .  /build.sh gcc   -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized
+  # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -Wno-unknown-warning-option
   # * OpenWatcom v2 on Linux:            ./build.sh owcc  -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror
   # * minilibc386 and OpenWatcom v2:     ./build.sh minicc -DDEBUG_SIZE_NOPAD -Werror
+  # * minilibc386 and GCC 4.8:           ./build.sh minicc --gcc=4.8 -DDEBUG_SIZE_NOPAD -Werror
   # minicc is from http://github.com/pts/minilibc686
   # Assumptions about the host system:
   # * .text can be 75 KiB. This doesn't hold for ELKS and Minix i86.
@@ -158,14 +159,12 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used. !! Autodetect this.
   # !! make it work with: gcc -ansi
   # !! make it work with: gcc -ansi -pedantic
+  # !! make new enough GCC and Clang work without sysdet, e.g. with __SIZEOF_INT__, __SIZEOF_LONG__, __UINTPTR_TYPE__, __i386__ or __code_model_small__ etc. for PORTALIGN
   rm -f sysdet
-  cc="$1"; detcflags="-O"; shift
-  case "$cc" in
-   owcc) cflags="-O -Wno-n308 -Wno-n309" ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI.
-   minicc) case "$1" in --gcc*) cflags="-O"; ;; *) cflags="-O -Wno-n308 -Wno-n309" ;; esac ;;  # !! No need for this after we convert the K&R function declarations in cpp/cpp.h to ANSI. !! Get rid of the -Wno-n308 -Wno-n309
-   *) cflags="-O" ;;
-  esac
-  "$cc" $detcflags "$@" -o sysdet sysdet.c || exit "$?"
+  cc="$1"; cflags=-O; shift
+  test "$cc" = minicc && cflags=  # It optimizes for size better by default than with -O.
+  test "$1" = -O0 && shift && cflags=  # Cancel the -O, in case the C compiler doesn't support it.
+  "$cc" $cflags "$@" -o sysdet sysdet.c || exit "$?"
   sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1
   test "$?" = 0 || exit 2
   rm -f sysdet
@@ -281,7 +280,7 @@ if test "$1" = acka0 || test "$1" = acka3; then  # Minix >=1.7.0 i86 ACK ANSI C 
   (cd cr && cc -i -s -O -m $cflags -o ../cr.mx cr.c) || exit "$?"
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
   # -wo is specified to omit the ACK ANSI C compiler 1.202 warnings: ... old-fashioned function declaration; ... old-fashioned function definition
-  (cd cpp && cc -i -s -O -m -wo -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"
+  (cd cpp && cc -i -s -O -m -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"
 
   h=0r  # Host system is Minix i86.
   sc=./sc.mx

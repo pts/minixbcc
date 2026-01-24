@@ -25,10 +25,10 @@
 #include	<rmsdef.h>
 #endif
 
-FILE_LOCAL void doinclude();
-FILE_LOCAL void doif();
-FILE_LOCAL int openinclude();
-FILE_LOCAL int hasdirectory();
+FILE_LOCAL void doinclude _CPP_PROTO((void));
+FILE_LOCAL void doif _CPP_PROTO((int hash));
+FILE_LOCAL int openinclude _CPP_PROTO((char *filename, int searchlocal));
+FILE_LOCAL int hasdirectory _CPP_PROTO((char *source, char *result));
 
 /*
  * Generate (by hand-inspection) a set of unique values for each control

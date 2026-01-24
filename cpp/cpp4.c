@@ -21,8 +21,8 @@
 #include	"cppdef.h"
 #include	"cpp.h"
 
-FILE_LOCAL int expcollect();
-FILE_LOCAL void expstuff();
+FILE_LOCAL int expcollect _CPP_PROTO((void));
+FILE_LOCAL void expstuff _CPP_PROTO((DEFBUF *tokenp));
 
 /*
  * parm[], parmp, and parlist[] are used to store #define() argument

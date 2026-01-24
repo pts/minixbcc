@@ -96,9 +96,9 @@
 #include	"cppdef.h"
 #include	"cpp.h"
 
-FILE_LOCAL void cppmain();
-FILE_LOCAL void sharp();
-FILE_LOCAL void output();
+FILE_LOCAL void cppmain _CPP_PROTO((void));
+FILE_LOCAL void sharp _CPP_PROTO((void));
+FILE_LOCAL void output _CPP_PROTO((int c));
 
 /*
  * Commonly used global variables:
@@ -239,6 +239,8 @@ char	*magic[] = {			/* Note: order is important	*/
 	"__FILE__",
 	NULL				/* Must be last			*/
 };
+
+int main _CPP_PROTO((int argc, char *argv[]));
 
 int main(argc, argv)
 int		argc;

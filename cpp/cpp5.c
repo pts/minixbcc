@@ -21,12 +21,12 @@
 #include	"cppdef.h"
 #include	"cpp.h"
 
-FILE_LOCAL int evallex();
-FILE_LOCAL int dosizeof();
-FILE_LOCAL int bittest();
-FILE_LOCAL int evalnum();
-FILE_LOCAL int evalchar();
-FILE_LOCAL int *evaleval();  /* Does actual evaluation. */
+FILE_LOCAL int evallex _CPP_PROTO((int skip));
+FILE_LOCAL int dosizeof _CPP_PROTO((void));
+FILE_LOCAL int bittest _CPP_PROTO((int value));
+FILE_LOCAL int evalnum _CPP_PROTO((int c));
+FILE_LOCAL int evalchar _CPP_PROTO((int skip));
+FILE_LOCAL int *evaleval _CPP_PROTO((int *valp, int op, int skip));  /* Does actual evaluation. */
 
 /*
  * Evaluate an #if expression.
@@ -153,7 +153,7 @@ register int	op;
 #define	S_PDOUBLE	(sizeof (double *))
 #endif
 #ifndef	S_PFPTR
-#define S_PFPTR		(sizeof (int (*)()))
+#define S_PFPTR		(sizeof (int (*) _CPP_PROTO((void))))
 #endif
 
 typedef struct types {

@@ -230,42 +230,49 @@ extern int	debug;			/* Debug level			*/
 extern int	keepcomments;		/* Don't remove comments if set	*/
 extern SIZES	size_table[];		/* For #if sizeof sizes		*/
 
-extern char *getmem();		/* Get memory or die.		*/
-extern DEFBUF *lookid();		/* Look for a #define'd thing	*/
-extern DEFBUF *defendel();		/* Symbol table enter/delete	*/
-extern char *savestring();		/* Stuff string in malloc mem.	*/
-extern void initdefines();
-extern int dooptions();
-extern void cierror();
-extern void cerror();
-extern void cfatal();
-extern void setincdirs();
-extern void addfile();
-extern void ciwarn();
-extern void cwarn();
-extern int get();
-extern void unget();
-extern int control();
-extern void skipnl();
-extern int macroid();
-extern int catenate();
-extern void scannumber();
-extern int scanstring();
-extern int skipws();
-extern void scanid();
-extern void save();  /* Save char in work[] */
-extern int eval();
-extern void dodefine();
-extern void doundef();
-extern int openfile();
-extern FILEINFO	*getfile();
-extern void charput();
-extern void textput();
-extern void checkparm();
-extern void stparmscan();
-extern void ungetstring();
-extern int cget();
-extern void expand();
+#if __STDC__
+#  define _CPP_PROTO(x) x
+#else
+#  define _CPP_PROTO(x) ()
+#endif
+
+extern char *getmem _CPP_PROTO((int ssize));	/* Get memory or die.		*/
+extern DEFBUF *lookid _CPP_PROTO((int c));	/* Look for a #define'd thing	*/
+extern DEFBUF *defendel _CPP_PROTO((char *name, int delete));  /* Symbol table enter/delete */
+extern char *savestring _CPP_PROTO((char *text));  /* Stuff string in malloc mem. */
+extern void initdefines _CPP_PROTO((void));
+extern int dooptions _CPP_PROTO((int argc, char *argv[]));
+extern void cierror _CPP_PROTO((char *format, int narg));
+extern void cerror _CPP_PROTO((char *format, char *sarg));
+extern void cfatal _CPP_PROTO((char *format, char *sarg));
+extern void setincdirs _CPP_PROTO((void));
+extern void addfile _CPP_PROTO((FILE *fp, char *filename));
+extern void ciwarn _CPP_PROTO((char *format, int narg));
+extern void cwarn _CPP_PROTO((char *format, char *sarg));
+extern int get _CPP_PROTO((void));
+extern void unget _CPP_PROTO((void));
+extern int control _CPP_PROTO((int counter));
+extern void skipnl _CPP_PROTO((void));
+extern int macroid _CPP_PROTO((int c));
+extern int catenate _CPP_PROTO((void));
+extern void scannumber _CPP_PROTO((int c, void (*outfn)(int c)));
+extern int scanstring _CPP_PROTO((int delim, void (*outfn)(int c)));
+extern int skipws _CPP_PROTO((void));
+extern void scanid _CPP_PROTO((int c));
+extern void save _CPP_PROTO((int c));  /* Save char in work[] */
+extern int eval _CPP_PROTO((void));
+extern void dodefine _CPP_PROTO((void));
+extern void doundef _CPP_PROTO((void));
+extern int openfile _CPP_PROTO((char *filename));
+extern FILEINFO	*getfile _CPP_PROTO((int bufsize, char *name));
+extern void charput _CPP_PROTO((int c));
+extern void textput _CPP_PROTO((char *s));
+extern void checkparm _CPP_PROTO((int c, DEFBUF *dp));
+extern void stparmscan _CPP_PROTO((int delim, DEFBUF *dp));
+extern void ungetstring _CPP_PROTO((char *text));
+extern int cget _CPP_PROTO((void));
+extern void expand _CPP_PROTO((DEFBUF *tokenp));
+extern FILEINFO	*getfile _CPP_PROTO((int bufsize, char *name));
 #if OK_TRIGRAPH
-extern void trigraph();
+extern void trigraph _CPP_PROTO((char *in));
 #endif
