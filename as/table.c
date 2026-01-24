@@ -11,7 +11,7 @@
 #include "globvar.h"
 #include "scan.h"
 
-#define hconv(ch) ((unsigned char) (ch) - 0x41)	/* better form for hashing */
+#define hconv(ch) ((unsigned) (unsigned char) (ch) - 0x41)  /* better form for hashing */
 
 #ifdef MNSIZE
 EXTERN char bytesizeops[];

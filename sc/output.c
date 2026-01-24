@@ -472,10 +472,10 @@ offset_t num;
     if ((uvalue_t) num >= -(maxoffsetto + 1))
     {
 	outminus();
-#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */
-	num = ~num + 1;  /* It works with any C compiler doing 2s complement arithmetic. */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+	num = (offset_t) (~(uoffset_t) num + 1);  /* It works with any C compiler doing 2s complement arithmetic. */
 #else
-	num = -num;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
+	num = (offset_t) -(uoffset_t) num;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
 #endif
     }
     outhex((uoffset_t) num);

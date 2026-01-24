@@ -722,10 +722,10 @@ struct nodestruct *p2;
 	targval *= sourceval;
 	break;
     case NEGOP:
-#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */
-	targval = ~targval + 1;  /* It works with any C compiler doing 2s complement arithmetic. */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+	targval = (value_t) (~(uvalue_t) targval + 1);  /* It works with any C compiler doing 2s complement arithmetic. */
 #else
-	targval = -targval;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
+	targval = (value_t) -(uvalue_t) targval;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
 #endif
 	break;
     case NEOP:

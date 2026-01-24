@@ -288,7 +288,7 @@ PUBLIC bool_pt isident()
 
 PRIVATE void intconst()
 {
-    fastin_t base;
+    unsigned char base;
     fastin_t digit;
     register char *digptr;
     fastin_t lcount;
@@ -370,7 +370,7 @@ PRIVATE void intconst()
 	    else
 		break;
 	}
-	constant.value.v = base * constant.value.v + (digit - '0');
+	constant.value.v = (value_t) (base * (uvalue_t) constant.value.v + (uvalue_t) (digit - '0'));  /* Adding (uvalue_t) casts so that the `+' and `*' can wrap around on overflow, without undefined behavior. */
 	++digptr;
     }
     ucount = lcount = 0;

@@ -11,13 +11,8 @@
 # !! doc: Minix 1.7.0 has the ANSI C compiler (ncc) as /usr/bin/cc  ; make it work
 # !! (after porting to ack) Remove the `t' symbols from `nm as.mx' etc. added by the assembler; use symbols starting with . instead?
 # !! Make the `bcc -i` and `ld -i` (separate I&D) default independent of the BCC driver version.
-# !! Port to -m64.
-# !! Port to big-endian architecture.
-# !! Port to sizeof(long) == 8.
 # !! Add patch to /usr/include to add `#ifndef __BCC__' for functions returning a struct.
-# !! Convert .x to .s, no need for preprocessor.
 # !! Is the `j' jump output of bcc3 compatible with as0? (as0 expects jmp as short jump.)
-# !! Port isatty.c to Minix 2.0.4 (from Minix 1.5.10).
 # !! Add the remaining patches to cpp.
 # !! strtol -1 / 2 sign incompatibility with the i86 /local/bin/sc (== -1); the other one returns 0.
 # !! replace divisions with right shifts (BCC is not smart enough to optimize it, it also means something different)
@@ -152,12 +147,12 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # * OpenWatcom v2 on Linux:            ./build.sh owcc  -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror
   # * minilibc386 and OpenWatcom v2:     ./build.sh minicc -DDEBUG_SIZE_NOPAD -Werror
   # * minilibc386 and GCC 4.8:           ./build.sh minicc --gcc=4.8 -DDEBUG_SIZE_NOPAD -Werror
-  # * zig cc targeting Linux i386:       ./build.sh zig cc -target i386-linux-musl    -s -O2 -W -Wall -ansi -pedantic
-  # * zig cc targeting Linux amd64:      ./build.sh zig cc -target x86_64-linux-musl  -s -O2 -W -Wall -ansi -pedantic
-  # * zig cc targeting Linux PowerPC:    ./build.sh zig cc -target powerpc-linux-musl -s -O2 -W -Wall -ansi -pedantic  # Little-endian.
-  # * zig cc targeting Linux PowerPC64:  ./build.sh zig cc -target powerpc64-linux-musl -s -O2 -W -Wall -ansi -pedantic  # Little-endian.
-  # * zig cc targeting Linux ARM:        ./build.sh zig cc -target arm-linux-musleabi -s -O2 -W -Wall -ansi -pedantic
-  # * zig cc targeting Linux ARM64:      ./build.sh zig cc -target aarch64-linux-musl -s -O2 -W -Wall -ansi -pedantic
+  # * zig cc targeting Linux i386:       ./build.sh zig cc -target i386-linux-musl      -s -O2 -W -Wall -ansi -pedantic  # Little-endian.
+  # * zig cc targeting Linux amd64:      ./build.sh zig cc -target x86_64-linux-musl    -s -O2 -W -Wall -ansi -pedantic  # Little-endian.
+  # * zig cc targeting Linux PowerPC:    ./build.sh zig cc -target powerpc-linux-musl   -s -O2 -W -Wall -ansi -pedantic  # Big-endian.
+  # * zig cc targeting Linux PowerPC64:  ./build.sh zig cc -target powerpc64-linux-musl -s -O2 -W -Wall -ansi -pedantic  # Big-endian.
+  # * zig cc targeting Linux ARM:        ./build.sh zig cc -target arm-linux-musleabi   -s -O2 -W -Wall -ansi -pedantic  # Little-endian.
+  # * zig cc targeting Linux ARM64:      ./build.sh zig cc -target aarch64-linux-musl   -s -O2 -W -Wall -ansi -pedantic  # Little-endian.
   # minicc is from http://github.com/pts/minilibc686
   # Assumptions about the host system:
   # * .text can be 75 KiB. This doesn't hold for ELKS and Minix i86.
@@ -167,8 +162,8 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # !! make new enough GCC and Clang work without sysdet, e.g. with __SIZEOF_INT__, __SIZEOF_LONG__, __UINTPTR_TYPE__, __i386__ or __code_model_small__ etc. for PORTALIGN
   rm -f sysdet
   cc2=
-  # !!! Fix Clang trap instructions with: ./build.sh zig cc -target i386-linux-musl -g -O0 -fno-wrapv -DDEBUG_CLANG
-  if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-Wno-deprecated-non-prototype -Wno-unused-command-line-argument -Wno-strict-prototypes -fno-lto -fwrapv"  # Example: ./build.sh zig cc
+  if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-unused-command-line-argument -Wno-strict-prototypes -fno-lto"  # Example: ./build.sh zig cc
+  elif test "$1" = clang; then cc="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-strict-prototypes"  # Example: ./build.sh clang
   elif test "$1" = minicc; then cc="$1"; shift; cflags=  # It optimizes for size better by default than with -O.
   else cc="$1"; shift; cflags=-O
   fi

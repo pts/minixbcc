@@ -7,7 +7,7 @@
 #define EXTERN
 #include "scan.h"
 
-PRIVATE int numbase;		/* base for number */
+PRIVATE unsigned numbase;	/* base for number */
 
 /* S01(...) macro used in the values of symofchar. */
 #ifdef MINIX_SYNTAX
@@ -212,14 +212,14 @@ PRIVATE void intconst()
 	    if (*reglineptr >= 'a' && *reglineptr <= 'f')
 	    {
 		if (number != 0)
-		    number = numbase * number + (*reglineptr - 'a' + 10);
+		    number = numbase * number + (offset_t) (*reglineptr - 'a' + 10);
 		else
 		    number = *reglineptr - 'a' + 10;
 	    }
 	    else if (*reglineptr >= 'A' && *reglineptr <= 'F')
 	    {
 		if (number != 0)
-		    number = numbase * number + (*reglineptr - 'A' + 10);
+		    number = numbase * number + (offset_t) (*reglineptr - 'A' + 10);
 		else
 		    number = *reglineptr - 'A' + 10;
 	    }
@@ -227,7 +227,7 @@ PRIVATE void intconst()
 		break;
 	}
 	else if (number != 0)
-	    number = numbase * number + (*reglineptr - '0');
+	    number = numbase * number + (offset_t) (*reglineptr - '0');
 	else
 	    number = *reglineptr - '0';
     }

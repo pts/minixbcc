@@ -87,7 +87,6 @@ PUBLIC void finishup()
 PRIVATE void initp1()
 {
     idefsize = defsize = sizeof (char *) > 2 ? 4 : 2;
-    lctabtop = lctab + NLOC;
     lstfil = STDOUT;
     mapnum = 15;		/* default map number for symbol table */
     spt_top = (spt = hid_spt) + SPTSIZ;

@@ -79,10 +79,10 @@ struct symstruct *source;
     if (targ.type->constructor & POINTER)
 	bump = targ.type->nexttype->typesize;
     if (op == PREDECOP || op == POSTDECOP)
-#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */
-	bump = ~bump + 1;  /* It works with any C compiler doing 2s complement arithmetic. */  /* Fix needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+	bump = (offset_t) (~(uoffset_t) bump + 1);  /* It works with any C compiler doing 2s complement arithmetic. */
 #else
-	bump = -bump;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
+	bump = (offset_t) -(uoffset_t) bump;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
 #endif
     postflag = FALSE;
     if (op == POSTDECOP || op == POSTINCOP)
