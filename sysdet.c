@@ -73,11 +73,18 @@ char **argv;
 
   (void)argc;
 
-  if ((int) ~(unsigned) 0 != -1 || (-1 & 3) != 3) write_str(STDOUT_FILENO, "-DBADSIGNED ");  /* int is not two's complement. */
-  if (((unsigned) 1 << (sizeof(unsigned) * 8 - 1)) == 0 || ((unsigned) 1 << (sizeof(unsigned) * 4) << (sizeof(unsigned) * 4))) write_str(STDOUT_FILENO, "-DBADBYTE ");  /* 1 bytes is not 8 bits. */
-  if (sizeof(char) != 1) write_str(STDOUT_FILENO, "-DBADCHAR ");  /* char is not 1 byte. */
-  if (sizeof(short) != 2) write_str(STDOUT_FILENO, "-DBADSHORT ");  /* short is not 2 bytes. The C standard allows 2 or more. */
-  if (sizeof(int) != 2 && sizeof(int) != 4) write_str(STDOUT_FILENO, "-DBADINT ");  /* int is not 2 or 4 bytes. The C standard allows 2 or more. */
+  /* Pacify OpenWatcom v2 (owcc -W -Wall -Werror) warning `W201: Unreachable code' int the lines defining the labels. None of the conditions below are true. */
+  if (argc < -5) goto ur4;
+  if (argc < -4) goto ur5;
+  if (argc < -3) goto ur3;
+  if (argc < -2) goto ur2;
+  if (argc < -1) goto ur1;
+
+  if ((int) ~(unsigned) 0 != -1 || (-1 & 3) != 3) ur1: write_str(STDOUT_FILENO, "-DBADSIGNED ");  /* int is not two's complement. */
+  if (((unsigned) 1 << (sizeof(unsigned) * 8 - 1)) == 0 || ((unsigned) 1 << (sizeof(unsigned) * 4) << (sizeof(unsigned) * 4))) ur2: write_str(STDOUT_FILENO, "-DBADBYTE ");  /* 1 bytes is not 8 bits. */
+  if (sizeof(char) != 1) ur3: write_str(STDOUT_FILENO, "-DBADCHAR ");  /* char is not 1 byte. */
+  if (sizeof(short) != 2) ur4: write_str(STDOUT_FILENO, "-DBADSHORT ");  /* short is not 2 bytes. The C standard allows 2 or more. */
+  if (sizeof(int) != 2 && sizeof(int) != 4) ur5: write_str(STDOUT_FILENO, "-DBADINT ");  /* int is not 2 or 4 bytes. The C standard allows 2 or more. */
   write_str(STDOUT_FILENO,
       sizeof(int ) == 4 ? "-DINT32T=int " :
       sizeof(long) == 4 ? "-DINT32T=long " :
