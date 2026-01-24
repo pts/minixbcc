@@ -149,7 +149,7 @@ char *filename;
     outputname = filename;
     if ((outfd = creat(filename, CREAT_PERMS)) == ERR)
 	outputerror("cannot open");
-    if (fstat(outfd, &statbuf) != 0) 
+    if (fstat(outfd, &statbuf) != 0)  /* This seems to work with owcc on Linux, but wihout `-I"$WATCOM"/lh'. */
 	outputerror("cannot stat");
     outputperms = statbuf.st_mode;
     chmod(filename, outputperms & ~EXEC_PERMS);
