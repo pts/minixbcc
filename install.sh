@@ -30,7 +30,7 @@ done
 
 # Quick test 1.
 echo '#include <stdio.h>' >h.c || exit "$?"
-echo 'int main() { PRINT_F("Hello, World!\n"); return 0; }' >>h.c || exit "$?"
+echo 'int main() { PRINT_F("Hello, World!%c", 10); return 0; }' >>h.c || exit "$?"
 rm -f h
 /usr/bin/bbcc -v -O -UBLAH -D PRINT_F=printf -h9999 -h 8888 -o h h.c || exit "$?"
 ./h || exit "$?"

@@ -54,7 +54,7 @@ typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
 #define ALLOC_UNIT	16	/* allocation unit for arg arrays */
 #define DIRCHAR	'/'
 
-#define TOOL_SIZE  /* Maximum number of bytes in the basename of the tool, including the trailing NUL. */
+#define TOOL_SIZE 15  /* Maximum number of bytes in the basename of the tool, including the trailing NUL. */
 
 struct arg_s
 {
