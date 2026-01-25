@@ -910,6 +910,10 @@ PUBLIC void pwarn()
 PUBLIC void puse16()
 {
     defsize = 2;
+    if (++use16c == 8 && !asld_compatible) {  /* This is the compatibility hack. */
+	asld_compatible = TRUE;
+	initscan();  /* Make `asld_compatible = TRUE' take effect. */
+    }
 }
 
 /* USE16 pseudo-op */
@@ -917,6 +921,7 @@ PUBLIC void puse16()
 PUBLIC void puse32()
 {
     defsize = 4;
+    use16c = 0;
 }
 
 /* show redefined label and error, and set REDBIT */

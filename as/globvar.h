@@ -78,6 +78,7 @@ EXTERN unsigned char pcrflag;	/* OBJ_RMASK set if addressing is PC-relative */
 
 EXTERN opcode_t aprefix;	/* address size prefix or 0 */
 EXTERN bool_t asld_compatible;	/* asld compatibility flag */
+EXTERN opsize_t use16c;		/* number of `use16' invocations in a row */
 EXTERN opsize_t defsize;	/* current default size */
 EXTERN opsize_t idefsize;	/* initial default size */
 EXTERN opcode_t oprefix;	/* operand size prefix or 0 */
