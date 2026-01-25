@@ -18,9 +18,9 @@ _memcpy:
 	mov	bx,si		| save si and di
 	mov	dx,di
 	mov	di,sp
-	mov	cx,6(di)
-	mov	si,4(di)
-	mov	di,2(di)
+	mov	cx,[di+6]
+	mov	si,[di+4]
+	mov	di,[di+2]
 	mov	ax,di		| save a copy of s1
 	jcxz	exit		| early exit if n == 0
 	sub	di,si

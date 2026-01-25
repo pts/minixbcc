@@ -11,6 +11,6 @@ _pokeb:
 	pop	bx
 	pop	ax
 	sub	sp,*6
-	movb	(bx),al
+	movb	[bx],al
 	mov	ds,cx
 	jmp	dx

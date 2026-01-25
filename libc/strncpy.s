@@ -13,12 +13,12 @@ _strncpy:
 	mov	bx,sp
 	push	si
 	push	di
-	mov	cx,6(bx)
+	mov	cx,[bx+6]
 	jcxz	exit		| early exit if n == 0
-	mov	di,2(bx)
-	mov	si,4(bx)
+	mov	di,[bx+2]
+	mov	si,[bx+4]
 	cld
-	cmpb	(si),*0
+	cmpb	[si],*0
 	je	zero_fill	| if s2 has length zero, take a short cut
 	test	si,#1		| align source on word boundary
 	jz	set_length
@@ -65,5 +65,5 @@ zero_bytes:
 exit:
 	pop	di
 	pop	si
-	mov	ax,2(bx)
+	mov	ax,[bx+2]
 	ret

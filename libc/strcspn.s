@@ -11,13 +11,13 @@ _strcspn:
 	mov	bp,sp
 	push	si
 	push	di
-	mov	si,4(bp)
-	mov	di,6(bp)
+	mov	si,[bp+4]
+	mov	di,[bp+6]
 	cld
 	mov	bx,#-1		| set up count (-1 for faster loops)
-	cmpb	(di),*0
+	cmpb	[di],*0
 	jz	s1_length	| if s2 is null, we return length of s1
-	cmpb	1(di),*0
+	cmpb	[di+1],*0
 	jz	find_match	| if s2 has length one, we take a shortcut
 	mov	cx,bx		| find length of s2
 	xorb	al,al
@@ -31,7 +31,7 @@ s1_loop:			| loop over s1 looking for matches with s2
 	inc	bx
 	orb	al,al
 	jz	exit
-	mov	di,6(bp)
+	mov	di,[bp+6]
 	mov	cx,dx
 	repne
 	scab
@@ -48,7 +48,7 @@ s1_length:			| find length of s1
 	mov	bx,cx
 	jmp	exit
 find_match:			| find a match for *s2 in s1
-	movb	dl,(di)
+	movb	dl,[di]
 	test	si,#1		| align source on word boundary
 	jz	word_loop
 	lodb

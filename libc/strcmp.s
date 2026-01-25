@@ -11,8 +11,8 @@ _strcmp:
 	mov	bx,si		| save si and di
 	mov	cx,di
 	mov	di,sp
-	mov	si,2(di)
-	mov	di,4(di)
+	mov	si,[di+2]
+	mov	di,[di+4]
 	xor	ax,ax		| default return is equality
 	cmp	si,di
 	je	exit		| early exit if s1 == s2
@@ -22,7 +22,7 @@ _strcmp:
 	lodb
 	orb	al,al
 	jz	last_byte_test
-	cmpb	al,(di)
+	cmpb	al,[di]
 	jne	last_byte_test
 	inc	di
 setup_loop:
@@ -32,20 +32,20 @@ word_loop:			| loop through string by words
 	add	di,#2
 	orb	al,al
 	jz	last_byte_test
-	cmp	ax,(di)
+	cmp	ax,[di]
 	jne	find_mismatch
 	orb	ah,ah
 	jnz	word_loop
 	xor	ax,ax
 	jmp	exit
 find_mismatch:
-	cmpb	al,(di)
+	cmpb	al,[di]
 	jne	last_byte_test
 	movb	al,ah
 	inc	di
-last_byte_test:			| Expects: (al)=char of s1; (di)->char of s2
+last_byte_test:			| Expects: (al)=char of s1; [di]->char of s2
 	xorb	ah,ah
-	subb	al,(di)
+	subb	al,[di]
 	sbbb	ah,ah
 exit:
 	mov	si,bx		| restore si and di

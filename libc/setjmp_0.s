@@ -14,9 +14,9 @@ _setjmp:
 	pop	bx		| pointer to jmp_buf
 	dec	sp
 	dec	sp
-	mov	BP_OFF(bx),bp
-	mov	SP_OFF(bx),sp
-	mov	IP_OFF(bx),cx
+	mov	[bx+BP_OFF],bp
+	mov	[bx+SP_OFF],sp
+	mov	[bx+IP_OFF],cx
 	xor	ax,ax		| non-jump return
 	jmp	cx
 
@@ -31,6 +31,6 @@ _longjmp:
 | the  setjmp.s  in  MINIX 1.2  backtraces the frame pointers here
 | this can't be done with more efficient nonstandard frames
 
-	mov	bp,BP_OFF(bx)
-	mov	sp,SP_OFF(bx)
-	jmp	@IP_OFF(bx)
+	mov	bp,[bx+BP_OFF]
+	mov	sp,[bx+SP_OFF]
+	jmp	[bx+IP_OFF]

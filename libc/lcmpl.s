@@ -8,14 +8,14 @@
 
 lcmpl:
 lcmpul:
-	sub	bx,2(di)	| don't need to preserve bx
+	sub	bx,[di+2]	| don't need to preserve bx
 	je	LCMP_NOT_SURE
 	ret
 
 	.even
 
 LCMP_NOT_SURE:
-	cmp	ax,(di)
+	cmp	ax,[di]
 	jb	LCMP_B_AND_LT	| b (below) becomes lt (less than) as well
 	jge	LCMP_EXIT	| ge and already ae
 				| else make gt as well as a (above)

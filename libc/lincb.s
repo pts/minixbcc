@@ -7,12 +7,12 @@
 
 lincb:
 lincub:
-	inc	2(bx)
+	inc	[bx+2]
 	je	LINC_HIGH_WORD
 	ret
 
 	.even
 
 LINC_HIGH_WORD:
-	inc	(bx)
+	inc	[bx]
 	ret

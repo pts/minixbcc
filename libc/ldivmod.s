@@ -127,10 +127,10 @@ loop2_over:
 loop2_test:
 	shr	si,*1		| w = w/2
 	rcr	dx,*1
-	cmp	si,b16(bp)	| while w >= b
+	cmp	si,[bp+b16]	| while w >= b
 	ja	loop2
 	jb	zdivu
-	cmp	dx,b0(bp)
+	cmp	dx,[bp+b0]
 	jae	loop2
 
 zdivu:
@@ -143,8 +143,8 @@ zdivu1:
 	mov	dx,ax		| -a = b * q + r ==> a = b * (-q) + (-r)
 	or	dx,bx
 	je	negq		| use if r = 0
-	sub	ax,b0(bp)	| use a = b * (-1 - q) + (b - r)
-	sbb	bx,b16(bp)
+	sub	ax,[bp+b0]	| use a = b * (-1 - q) + (b - r)
+	sbb	bx,[bp+b16]
 	not	cx		| q = -1 - q (same as complement)
 	not	di
 negr:
@@ -165,8 +165,8 @@ zbminus:
 	mov	dx,ax		| a = (-b) * q + r ==> a = b * (-q) + r
 	or	dx,bx
 	je	negq		| use if r = 0
-	sub	ax,b0(bp)	| use a = b * (-1 - q) + (b + r) (b is now -b)
-	sbb	bx,b16(bp)
+	sub	ax,[bp+b0]	| use a = b * (-1 - q) + (b + r) (b is now -b)
+	sbb	bx,[bp+b16]
 	not	cx
 	not	di
 	mov	sp,bp

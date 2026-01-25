@@ -10,7 +10,7 @@ _peekb:
 	pop	ds
 	pop	bx
 	sub	sp,*4
-	movb	al,(bx)
+	movb	al,[bx]
 	subb	ah,ah
 	mov	ds,cx
 	jmp	dx

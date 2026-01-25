@@ -9,8 +9,8 @@
 _strchr:
 	mov	bx,si		| save si
 	mov	si,sp
-	movb	dl,4(si)
-	mov	si,2(si)
+	movb	dl,[si+4]
+	mov	si,[si+2]
 	cld
 	test	si,#1		| align string on word boundary
 	jz	word_loop

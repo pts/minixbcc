@@ -10,10 +10,10 @@ _memchr:
 	mov	bx,di		| save di
 	mov	di,sp
 	xor	dx,dx		| default result is NULL
-	mov	cx,6(di)
+	mov	cx,[di+6]
 	jcxz	exit		| early exit if n == 0
-	movb	al,4(di)
-	mov	di,2(di)
+	movb	al,[di+4]
+	mov	di,[di+2]
 	cld
 	repne
 	scab

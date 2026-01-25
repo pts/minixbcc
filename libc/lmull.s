@@ -9,11 +9,11 @@
 lmull:
 lmulul:
 	mov	cx,ax
-	mul	word ptr 2(di)
+	mul	word ptr [di+2]
 	xchg	ax,bx
-	mul	word ptr (di)
+	mul	word ptr [di]
 	add	bx,ax
-	mov	ax,ptr (di)
+	mov	ax,ptr [di]
 	mul	cx
 	add	bx,dx
 	ret

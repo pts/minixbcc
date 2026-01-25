@@ -21,6 +21,7 @@
 # !! fix sar code generation bug in sc v3 for div2(...), div4(...) etc. in sc v3
 # !! fix suboptimal i386 code generation in ld for `v += (unsigned long) (unsigned char) c;'; this already uses movzx: `v += (unsigned char) c;'
 # !! Add support for -nostdlib in the bbcc driver.
+# !! Move all libc variables from .data to .bss (with .comm).
 # !! everywhere (sc, as, ld, cpp)
 #    ifdef ACKFIX  /* Workaround for the bug in Minix 1.5.10 i86 ACK 3.1 C compiler, which sign-extends the (unsigned char) cast. */
 #    #  define UCHARCAST(c) (unsigned char) ((unsigned) (c) & 0xff)
@@ -417,7 +418,6 @@ ASB='catchsig crtso head idiv idivu imod imodu imul isl isr isru sendrec setjmp'
 
 for a03 in 0 3; do
   if test "$a03" = 0; then  # i86.
-    aflag=-a  # asld compatibility. !! remove it from $STRPASMB $SB $FB $IB $JB $LBB $LLB $GB $MB
     SB='crtso head'  # Minix startup routines, assembly source files (*.s) by Bruce Evans.
     FB='dummy'  # BCC compiler non-support for floating point arithmetic, assembly source files (*.s) by Bruce Evans.
     IB='idiv idivu imod imodu imul isl isr isru'  # BCC compiler support for integer arithmetic, assembly source files (*.s) by Bruce Evans.
@@ -430,7 +430,6 @@ for a03 in 0 3; do
     STRCB=''  # No additional string routines, C source files (*.c) by Bruce Evans.
     STRC2B=''  # No additional string routines, C source files (*.c) from Minix 1.5.10 /usr/src/lib/string .
   else  # i386.
-    aflag=  # No asld compatibility.
     SB='crtso head'  # Minix startup routines, assembly source files (*.s) by Bruce Evans.
     FB='dummy'  # BCC compiler non-support for floating point arithmetic, assembly source files (*.s) by Bruce Evans.
     IB='idiv idivu imod imodu imul isl isr isru'  # BCC compiler support for integer arithmetic, assembly source files (*.s) by Bruce Evans.
@@ -447,20 +446,9 @@ for a03 in 0 3; do
   test -d "$a03" || mkdir "$a03" || exit "$?"
   for b in $ASB; do cp libc/"$b"_"$a03".s libc/"$b".s || exit "$?"; done
 
-  # ($bccstringdir) $STRCB
-  # To force the 8086 version (don't - the Minix asm one is better), use: make CC='bcc -0'
-  # To force the 80386 version, use: make CC='bcc -3'
-  # For a portable version, use: make XCFLAGS=-DC_CODE
-
-  # ($asmstringdir) These are -0 (i86) only.
-  for b in $STRPASMB; do
-    "$as" -"$a03" -w $aflag -o "$a03"/"$b".o libc/"$b".s || exit "$?"
-    "$cmp" "$a03"/"$b".o "$a03"g/"$b".n || exit "$?"  # Compare object file (*.o) to golden file (*.n).
-  done
-
-  # ($bccsupportdir)
-  for b in $SB $FB $IB $JB $LBB $LLB $GB $MB; do  # Assembly source files (*.s) by Bruce Evans.
-    # bcc -v -"$a03" -c -o "$a03"/"$b".o "$b".s || exit "$?"
+  # ($asmstringdir) $STRPASMB These are -0 (i86) only.
+  # ($bccsupportdir) $SB $FB $IB $JB $LBB $LLB $GB $MB
+  for b in $STRPASMB $SB $FB $IB $JB $LBB $LLB $GB $MB; do
     "$as" -"$a03" -w $aflag -o "$a03"/"$b".o libc/"$b".s || exit "$?"
     "$cmp" "$a03"/"$b".o "$a03"g/"$b".n || exit "$?"  # Compare object file (*.o) to golden file (*.n).
   done
@@ -500,7 +488,7 @@ cru="$cr"; case "$cr" in /*) ;; */*) cru="../$cr" ;; esac  # "$cru" is "$cr", bu
 # ("$sc", "$as", "$ld"), but we need the target libc ("$a03"/crtso.o and
 # "$a03"/libc.a).
 
-"$as" -0 -a -w -o 0/lcpps.o cpp/lcpps0.s || exit "$?"  # It will be unused so far.
+"$as" -0 -w -o 0/lcpps.o cpp/lcpps0.s || exit "$?"  # It will be unused so far.
 "$cmp" 0/lcpps.o 0g/lcpps.n || exit "$?"
 for a03 in 0 3; do
   for b in cpp1 cpp2 cpp3 cpp4 cpp5 cpp6; do

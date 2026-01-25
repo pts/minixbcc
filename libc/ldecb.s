@@ -7,14 +7,14 @@
 
 ldecb:
 ldecub:
-	cmp	2(bx),*0
+	cmp	[bx+2],*0
 	je	LDEC_BOTH
-	dec	2(bx)
+	dec	[bx+2]
 	ret
 
 	.even
 
 LDEC_BOTH:
-	dec	2(bx)
-	dec	(bx)
+	dec	[bx+2]
+	dec	[bx]
 	ret

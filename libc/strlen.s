@@ -8,7 +8,7 @@
 _strlen:
 	mov	bx,di		| save di
 	mov	di,sp
-	mov	di,2(di)
+	mov	di,[di+2]
 	mov	cx,#-1
 	xorb	al,al
 	cld

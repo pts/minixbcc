@@ -7,6 +7,6 @@
 
 lsubb:
 lsubub:
-	sub	bx,2(di)
-	sbb	ax,(di)
+	sub	bx,[di+2]
+	sbb	ax,[di]
 	ret

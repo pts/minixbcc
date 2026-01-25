@@ -7,6 +7,6 @@
 
 lsubl:
 lsubul:
-	sub	ax,(di)
-	sbb	bx,2(di)
+	sub	ax,[di]
+	sbb	bx,[di+2]
 	ret

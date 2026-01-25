@@ -7,6 +7,6 @@
 
 lorl:
 lorul:
-	or	ax,(di)
-	or	bx,2(di)
+	or	ax,[di]
+	or	bx,[di+2]
 	ret

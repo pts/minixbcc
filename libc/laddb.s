@@ -7,6 +7,6 @@
 
 laddb:
 laddub:
-	add	bx,2(di)
-	adc	ax,(di)
+	add	bx,[di+2]
+	adc	ax,[di]
 	ret

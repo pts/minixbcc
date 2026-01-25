@@ -1,5 +1,5 @@
 | lmodul.s
-| unsigned bx:ax / 2(di):(di), remainder bx:ax,quotient di:cx, dx not preserved
+| unsigned bx:ax / [di+2]:[di], remainder bx:ax,quotient di:cx, dx not preserved
 
 	.globl	lmodul
 	.extern	ludivmod
@@ -7,6 +7,6 @@
 	.even
 
 lmodul:
-	mov	cx,(di)
-	mov	di,2(di)
+	mov	cx,[di]
+	mov	di,[di+2]
 	jmp	ludivmod	| unsigned bx:ax / di:cx, quot di:cx, rem bx:ax

@@ -7,6 +7,6 @@
 
 leorb:
 leorub:
-	xor	ax,(di)
-	xor	bx,2(di)
+	xor	ax,[di]
+	xor	bx,[di+2]
 	ret

@@ -10,10 +10,10 @@ _strcat:
 	mov	bx,si		| save si and di
 	mov	dx,di
 	mov	si,sp
-	mov	di,2(si)
+	mov	di,[si+2]
 	push	di		| save return value
-	mov	si,4(si)
-	cmpb	(si),*0
+	mov	si,[si+4]
+	cmpb	[si],*0
 	je	exit		| early exit if s2 is the null string
 	cld
 	mov	cx,#-1		| find end of s1

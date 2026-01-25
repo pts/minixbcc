@@ -10,6 +10,6 @@ _peekw:
 	pop	ds
 	pop	bx
 	sub	sp,*4
-	mov	ax,(bx)
+	mov	ax,[bx]
 	mov	ds,cx
 	jmp	dx
