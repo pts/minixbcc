@@ -714,7 +714,11 @@ char **argv;
 #ifdef __MINILIBC686__  /* For old minilibc686. The new one has execv(...) */
 	execve(argv[0], argv, environ);
 #else
+#  ifdef _WCDATA  /* OpenWatcom v2 libc; it has a different type for argv. */
+	execv(argv[0], (void *) argv);
+#  else
 	execv(argv[0], argv);
+#  endif
 #endif
 	tmpargs.argc = 0;  /* Make killtemps() a no-op. The parent will delete the temporary files. */
 	show_who("exec of ");
