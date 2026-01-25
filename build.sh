@@ -414,7 +414,6 @@ ANSIB='abort abs assert atoi atol bsearch ctime ctype errno exit fclose fflush f
 IBMB='peekpoke portio'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/ibm . Patched by Bruce Evans.
 OTHERB='amoeba bcmp bcopy brk bzero call chroot cleanup crypt curses doprintf ffs getdents getopt getpass gtty index ioctl itoa lock lrand lsearch memccpy message mknod mktemp mount nlist popen printdat printk prints ptrace putenv regexp regsub rindex seekdir stb stderr stime stty swab sync syslib telldir termcap umount uniqport vectab'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/other . Patched by Bruce Evans.
 POSIXB='_exit access alarm chdir chmod chown close closedir creat ctermid cuserid dup dup2 exec execlp fcntl fdopen fork fpathconf fstat getcwd getegid geteuid getgid getgrent getlogin getpid getppid getpwent getuid isatty kill link lseek mkdir mkfifo open opendir pathconf pause pipe read readdir rename rewinddir rmdir setgid setuid sleep stat sysconf times ttyname umask unlink utime wait write'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/posix . Patched by Bruce Evans.
-ASB='catchsig crtso head idiv idivu imod imodu imul isl isr isru sendrec setjmp'  # Architecture-specific assembly source files (*.s).
 
 for a03 in 0 3; do
   if test "$a03" = 0; then  # i86.
@@ -444,7 +443,6 @@ for a03 in 0 3; do
   fi
 
   test -d "$a03" || mkdir "$a03" || exit "$?"
-  for b in $ASB; do cp libc/"$b"_"$a03".s libc/"$b".s || exit "$?"; done
 
   # ($asmstringdir) $STRPASMB These are -0 (i86) only.
   # ($bccsupportdir) $SB $FB $IB $JB $LBB $LLB $GB $MB
@@ -463,8 +461,6 @@ for a03 in 0 3; do
 
   # ($earlstdiodir) Not compiling estdio.
   # ($localdir) No directory /usr/src/lib/local .
-
-  for b in $ASB; do rm -f libc/"$b".s || exit "$?"; done
 done
 
 # --- Build the target libc library archive (*.a) files for each system.
