@@ -21,12 +21,12 @@
 .extern _strncpy, _strlen
 _strxfrm:
 	mov	bx,sp		| quick and dirty call to strncpy()
-	push	6(bx)
-	push	4(bx)
-	push	2(bx)
+	push	[bx+6]
+	push	[bx+4]
+	push	[bx+2]
 	call	_strncpy
 	add	sp,#6
-	push	4(bx)		| followed by a call to strlen()
+	push	[bx+4]		| followed by a call to strlen()
 	call	_strlen
 	add	sp,#2
 	ret

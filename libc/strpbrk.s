@@ -11,14 +11,14 @@ _strpbrk:
 	mov	bx,sp
 	push	si
 	push	di
-	mov	si,2(bx)
-	mov	di,4(bx)
+	mov	si,[bx+2]
+	mov	di,[bx+4]
 	mov	bx,di		| save a copy of s2
 	cld
 	xor	ax,ax		| default return value is NULL
-	cmpb	(di),*0
+	cmpb	[di],*0
 	jz	exit		| if s2 has length zero, we are done
-	cmpb	1(di),*0
+	cmpb	[di+1],*0
 	jz	find_match	| if s2 has length one, we take a shortcut
 	mov	cx,#-1		| find length of s2
 	repne
@@ -41,7 +41,7 @@ s1_loop:			| loop through s1 to find matches with s2
 	pop	si
 	ret
 find_match:			| find a match for *s2 in s1
-	movb	dl,(di)
+	movb	dl,[di]
 	test	si,#1		| align source on word boundary
 	jz	word_loop
 	lodb

@@ -6,7 +6,7 @@
 
 .define	_strtok
 .data
-scan:	.word	0
+scan:	.word	0  | !! Move it to .bss with .comm.
 .text
 _strtok:
 	push	bp
@@ -14,14 +14,14 @@ _strtok:
 	push	si
 	push	di
 	cld
-	mov	bx,4(bp)
+	mov	bx,[bp+4]
 	or	bx,bx		| if s != NULL,
 	jnz	s2_length	|   we start a new string
-	mov	bx,scan
+	mov	bx,[scan]
 	or	bx,bx		| if old string exhausted,
 	jz	exit		|   exit early
 s2_length:			| find length of s2
-	mov	di,6(bp)
+	mov	di,[bp+6]
 	mov	cx,#-1
 	xorb	al,al
 	repne
@@ -37,27 +37,27 @@ delim_loop:			| dispose of leading delimiters
 	lodb
 	orb	al,al
 	jz	string_finished
-	mov	di,6(bp)
+	mov	di,[bp+6]
 	mov	cx,dx
 	repne
 	scab
 	je	delim_loop
 
-	lea	bx,-1(si)	| return value is start of token
+	lea	bx,[si-1]	| return value is start of token
 token_loop:			| find end of token
 	lodb
 	orb	al,al
 	jz	string_finished
-	mov	di,6(bp)
+	mov	di,[bp+6]
 	mov	cx,dx
 	repne
 	scab
 	jne	token_loop
-	movb	-1(si),*0	| terminate token
-	mov	scan,si		| set up for next call
+	movb	[si-1],*0	| terminate token
+	mov	[scan],si	| set up for next call
 	jmp	exit
 string_finished:
-	mov	scan,#0		| ensure NULL return in future
+	mov	[scan],#0	| ensure NULL return in future
 exit:
 	mov	ax,bx
 	pop	di

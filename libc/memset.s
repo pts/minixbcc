@@ -9,9 +9,9 @@
 _memset:
 	push	di
 	mov	di,sp
-	mov	cx,8(di)
-	movb	al,6(di)
-	mov	di,4(di)
+	mov	cx,[di+8]
+	movb	al,[di+6]
+	mov	di,[di+4]
 	mov	bx,di		| return value is s
 	jcxz	exit		| early exit if n == 0
 	cld

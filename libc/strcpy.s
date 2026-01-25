@@ -10,8 +10,8 @@ _strcpy:
 	mov	bx,si		| save si and di
 	mov	cx,di
 	mov	di,sp
-	mov	si,4(di)
-	mov	di,2(di)
+	mov	si,[di+4]
+	mov	di,[di+2]
 	mov	dx,di
 	cld
 	test	si,#1		| align source on word boundary

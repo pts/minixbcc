@@ -7,6 +7,6 @@
 
 laddl:
 laddul:
-	add	ax,(di)
-	adc	bx,2(di)
+	add	ax,[di]
+	adc	bx,[di+2]
 	ret

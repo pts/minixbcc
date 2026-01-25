@@ -11,8 +11,8 @@ _strncat:
 	mov	bx,si		| save si and di
 	mov	dx,di
 	mov	si,sp
-	mov	cx,6(si)
-	mov	di,2(si)
+	mov	cx,[si+6]
+	mov	di,[si+2]
 	push	di		| save return value
 	jcxz	exit		| early exit if n == 0
 	cld
@@ -21,15 +21,15 @@ _strncat:
 	repne
 	scab
 	dec	di
-	mov	cx,6(si)
-	mov	si,4(si)
+	mov	cx,[si+6]
+	mov	si,[si+4]
 byte_loop:			| loop to copy bytes
 	lodb
 	stob
 	orb	al,al
 	loopnz	byte_loop
 	jz	exit
-	movb	(di),*0		| add terminating null character
+	movb	[di],*0		| add terminating null character
 exit:
 	mov	si,bx		| restore si and di
 	mov	di,dx

@@ -10,13 +10,13 @@ begtext:
 crtso:
 		sub	bp,bp	| clear for backtrace of core files
 		mov	bx,sp
-		mov	cx,(bx)
+		mov	cx,[bx]
 		add	bx,*2
 		mov	ax,cx
 		inc	ax
 		shl	ax,#1
 		add	ax,bx
-		mov	_environ,ax	| save envp in environ
+		mov	[_environ],ax	| save envp in environ
 		push	ax	| push environ
 		push	bx	| push argv
 		push	cx	| push argc
@@ -28,6 +28,6 @@ crtso:
 .data
 begdata:
 		.zerow 8	| food for null pointer bugs
-_environ:	.word 0
+_environ:	.word 0  | !! Move to .bss with .comm.
 .bss
 begbss:

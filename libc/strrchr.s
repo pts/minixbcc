@@ -9,8 +9,8 @@ _strrchr:
 	mov	bx,di		| save di
 	mov	di,sp
 	xor	dx,dx		| default result is NULL
-	movb	ah,4(di)
-	mov	di,2(di)
+	movb	ah,[di+4]
+	mov	di,[di+2]
 	cld
 	mov	cx,#-1		| find end of string
 	xorb	al,al

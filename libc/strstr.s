@@ -12,10 +12,10 @@ _strstr:
 	sub	sp,#2		| make room for locals
 	push	si
 	push	di
-	mov	si,4(bp)
-	mov	di,6(bp)
+	mov	si,[bp+4]
+	mov	di,[bp+6]
 	mov	bx,si		| default result is s1
-	movb	ah,(di)		| fetch first character of s2
+	movb	ah,[di]		| fetch first character of s2
 	orb	ah,ah
 	je	exit		| if s2 is null, we are done
 	cld
@@ -25,13 +25,13 @@ _strstr:
 	scab
 	not	cx
 	dec	cx
-	mov	-2(bp),cx	| save length of s2
+	mov	[bp-2],cx	| save length of s2
 	mov	cx,#-1		| find length + 1 of s1
 	mov	di,si
 	repne
 	scab
 	not	cx
-	sub	cx,-2(bp)	| |s1| - |s2| + 1 is number of possibilities
+	sub	cx,[bp-2]	| |s1| - |s2| + 1 is number of possibilities
 	jbe	not_found	| if |s1| < |s2|, give up right now
 	mov	dx,cx
 	inc	dx		| set up for faster loop
@@ -40,11 +40,11 @@ s1_loop:
 	dec	dx
 	jz	not_found
 	inc	bx
-	cmpb	ah,(bx)
+	cmpb	ah,[bx]
 	jne	s1_loop		| no match on first character - try another
-	mov	di,6(bp)
+	mov	di,[bp+6]
 	mov	si,bx
-	mov	cx,-2(bp)
+	mov	cx,[bp-2]
 	repe
 	cmpb
 	jne	s1_loop

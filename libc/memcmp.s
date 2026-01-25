@@ -12,10 +12,10 @@ _memcmp:
 	push	si
 	push	di
 	xor	ax,ax		| default return is equality
-	mov	cx,6(bx)
+	mov	cx,[bx+6]
 	jcxz	exit		| early exit if n == 0
-	mov	si,2(bx)
-	mov	di,4(bx)
+	mov	si,[bx+2]
+	mov	di,[bx+4]
 	cmp	si,di
 	je	exit		| early exit if s1 == s2
 	cld
@@ -55,8 +55,8 @@ one_past_mismatch:
 	dec	di
 at_mismatch:
 	xorb	ah,ah
-	movb	al,(si)
-	subb	al,(di)
+	movb	al,[si]
+	subb	al,[di]
 	sbbb	ah,ah
 exit:
 	pop	di

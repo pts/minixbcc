@@ -1,5 +1,5 @@
 | lmodl.s
-| bx:ax % 2(di):(di), remainder bx:ax, quotient di:cx, dx not preserved
+| bx:ax % [di+2]:[di], remainder bx:ax, quotient di:cx, dx not preserved
 
 	.globl	lmodl
 	.extern	ldivmod
@@ -7,6 +7,6 @@
 	.even
 
 lmodl:
-	mov	cx,(di)
-	mov	di,2(di)
+	mov	cx,[di]
+	mov	di,[di+2]
 	jmp	ldivmod		| bx:ax / di:cx, quot di:cx, rem bx:ax

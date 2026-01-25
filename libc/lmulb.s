@@ -8,12 +8,12 @@
 
 lmulb:
 lmulub:
-	mul	2(di)
+	mul	[di+2]
 	xchg	ax,bx
 	mov	cx,ax
-	mul	(di)
+	mul	[di]
 	add	bx,ax
-	mov	ax,2(di)
+	mov	ax,[di+2]
 	mul	cx
 	add	bx,dx
 	xchg	ax,bx

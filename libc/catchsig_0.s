@@ -11,17 +11,17 @@ _begsig:
 	push ds
 	push es
 	mov bx,sp
-	mov bx,18(bx)		| bx = signal number
+	mov bx,[bx+18]		| bx = signal number
 	mov ax,bx		| ax = signal number
 	dec bx			| __vectab[0] is for sig 1
 	add bx,bx		| pointers are two bytes on 8088
-	mov bx,___vectab(bx)	| bx = address of routine to call
-	push __M+mtype		| push status of last system call
+	mov bx,[bx+___vectab]	| bx = address of routine to call
+	push [__M+mtype]	| push status of last system call
 	push ax			| func called with signal number as arg
 	call bx
 back:
 	pop ax			| get signal number off stack
-	pop __M+mtype		| restore status of previous system call
+	pop [__M+mtype]		| restore status of previous system call
 	pop es			| signal handling finished
 	pop ds
 	pop bp

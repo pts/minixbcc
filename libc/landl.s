@@ -7,6 +7,6 @@
 
 landl:
 landul:
-	and	ax,(di)
-	and	bx,2(di)
+	and	ax,[di]
+	and	bx,[di+2]
 	ret

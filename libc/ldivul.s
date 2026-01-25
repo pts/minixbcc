@@ -1,5 +1,5 @@
 | ldivul.s
-| unsigned bx:ax / 2(di):(di), quotient bx:ax,remainder di:cx, dx not preserved
+| unsigned bx:ax / [di+2]:[di], quotient bx:ax,remainder di:cx, dx not preserved
 
 	.globl	ldivul
 	.extern	ludivmod
@@ -7,8 +7,8 @@
 	.even
 
 ldivul:
-	mov	cx,(di)
-	mov	di,2(di)
+	mov	cx,[di]
+	mov	di,[di+2]
 	call	ludivmod	| unsigned bx:ax / di:cx, quot di:cx, rem bx:ax
 	xchg	ax,cx
 	xchg	bx,di
