@@ -1,54 +1,72 @@
 #ifndef _AUTOC_H  /* Autodetects INT32T, INTPTRT, ALIGNBYTES and NOPORTALIGN if needed. */
 #define _AUTOC_H 1
 
-#ifdef __GNUC__  /* Also true for Clang and PCC (__PCC__). */
-#  if defined(__SIZEOF_INT__) || defined(__SIZEOF_LONG__) || defined(__SIZEOF_POINTER__)  /* Since GCC 4.2. */
-#    if !defined(__SIZEOF_INT__) || !defined(__SIZEOF_LONG__) || !defined(__SIZEOF_POINTER__)
-#      error Only some of __SIZEOF_INT__, __SIZEOF_LONG__ and __SIZEOF_POINTER__ defined.
-#    endif
-#  else  /* GCC <=4.1.x */
-#    if defined(__ILP32__) && defined(__LP64__)
+#if __SIZEOF_INT__ || __SIZEOF_LONG__ || __SIZEOF_POINTER__  /* Since GCC 4.2. */
+#  undef  _AUTOC_H
+#  define _AUTOC_H 2
+#  if __SIZEOF_INT__ == 0 || __SIZEOF_LONG__ == 0 || __SIZEOF_POINTER__ == 0
+#    error Only some of __SIZEOF_INT__, __SIZEOF_LONG__ and __SIZEOF_POINTER__ defined.
+#  endif
+#else
+#  ifdef __LP64__  /* GCC, but typically not defined even in non-multiarch GCC 4.9. */
+#    ifdef __ILP32__  /* GCC, but typically not defined even in non-multiarch GCC 4.9. */
 #      error Both __ILP32__ and __LP64__ are defined.
 #    endif
-#    if !defined(__ILP32__) && !defined(__LP64__)
-#      if defined(__sparc_v9__) || (defined(__sparc__) && defined(__arch64__)) || defined(__x86_64__) || defined(__s390x__) || defined(__PPC64__) || defined(__ppc64__) || defined(__ia64__) || defined(__alpha__)
-#        define __LP64__ 1
+#    undef  __LP64__
+#    define __LP64__ 1
+#  else
+#    ifdef __ILP32__  /* GCC, but typically not defined even in non-multiarch GCC 4.9. */
+#      undef  __ILP32__
+#      define __ILP32__ 1
+#    else
+#      ifdef __GNUC__  /* Also true for Clang and PCC (__PCC__). */  /* GCC <=4.1.x */
+#        if defined(__sparc_v9__) || (defined(__sparc__) && defined(__arch64__)) || defined(__x86_64__) || defined(__s390x__) || defined(__PPC64__) || defined(__ppc64__) || defined(__ia64__) || defined(__alpha__)
+#          define __LP64__ 1
+#        else
+#          ifdef __mips__
+#            if defined(__mips_n64) || defined(__mips64__) || (defined(_MIPS_SIM) && defined(_ABI64) && _MIPS_SIM == _ABI64) || (defined(_MIPS_SZLONG) && _MIPS_SZLONG == 64)
+#              define __LP64__ 1
+#            endif
+#          endif  /* else for GCC <=4.1.x: if defined(__i386__) || defined(__vax__) || defined(__sparc__) || defined(__s390__) || defined(__powerpc__) || defined(__m68k__) || defined(__hppa__) || defined(__arm__) */
+#        endif
+#        ifndef __LP64__
+#          define __ILP32__ 1
+#        endif
 #      else
-#        ifdef __mips__
-#          if defined(__mips_n64) || defined(__mips64__) || (defined(_MIPS_SIM) && defined(_ABI64) && _MIPS_SIM == _ABI64) || (defined(_MIPS_SZLONG) && _MIPS_SZLONG == 64)
-#            define __LP64__ 1
+#        ifdef __BCC__
+#          ifdef __AS386_32__
+#            define __ILP32__ 1
 #          endif
-#        endif  /* else for GCC <=4.1.x: if defined(__i386__) || defined(__vax__) || defined(__sparc__) || defined(__s390__) || defined(__powerpc__) || defined(__m68k__) || defined(__hppa__) || defined(__arm__) */
+#        else
+#          ifdef __WATCOMC__
+#            if defined(__386__) && defined(__FLAT__)
+#              define __ILP32__ 1
+#            endif
+#          endif
+#        endif
 #      endif
-#      ifndef __LP64__
-#        define __ILP32__
-#      endif
-#    endif  /* Now exactly one of __ILP32__ and __LP64__ is defined. */
-#    ifdef __LP64__
-#      define __SIZEOF_INT__ 4
-#      define __SIZEOF_LONG__ 8
-#      define __SIZEOF_POINTER__ 8
-#    else  /* ifdef __ILP32__ */
-#      define __SIZEOF_INT__ 4
-#      define __SIZEOF_LONG__ 4
-#      define __SIZEOF_POINTER__ 4
 #    endif
 #  endif
 #endif
 
-#ifdef __BCC__
-#  if __AS386_16__ + __AS386_32__
-#    undef __SIZEOF_INT__
-#    undef __SIZEOF_LONG__
-#    undef __SIZEOF_POINTER__
-#    ifdef __AS386_32__
+#if __SIZEOF_INT__ == 0
+#  if __LP64__  /* Now exactly one of __ILP32__ and __LP64__ is defined. */
+#    define __SIZEOF_INT__ 4
+#    define __SIZEOF_LONG__ 8
+#    define __SIZEOF_POINTER__ 8
+#  else
+#    if __ILP32__
 #      define __SIZEOF_INT__ 4
 #      define __SIZEOF_LONG__ 4
 #      define __SIZEOF_POINTER__ 4
-#    else  /* ifdef __AS386_16__ */
-#      define __SIZEOF_INT__ 2
-#      define __SIZEOF_LONG__ 4
-#      define __SIZEOF_POINTER__ 2
+#    else
+#      ifdef __BCC__
+#        ifdef __AS386_16__
+#          define __SIZEOF_INT__ 2
+#          define __SIZEOF_LONG__ 4
+#          define __SIZEOF_POINTER__ 2
+#        endif
+#      endif
 #    endif
 #  endif
 #endif
@@ -102,7 +120,7 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 
 #ifndef NOPORTALIGN
 #  ifdef __BCC__
-#    if __AS386_16__ + __AS386_32__
+#    if __AS386_16__ || __AS386_32__
 #      define NOPORTALIGN 1
 #    endif
 #  endif
