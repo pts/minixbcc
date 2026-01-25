@@ -10,14 +10,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define FALSE	0
-#define FORWARD	static
-#ifndef NULL
-#define NULL	0
+#ifdef NOCROSS
+#  define CROSS 0
+#  define GET_PATH_TOOL(tool_name) (strcpy(path_tool.tool, tool_name), path_tool.libdir)
+#  define GET_PATH_INCLUDE() flag_include.flag
+#  define GET_PATH_TARGET_CRTSO() path_crtso.libdir
+#  define GET_PATH_TARGET_LIBCA() path_libca.libdir
+#else
+#  define CROSS 1
+#  define GET_PATH_TOOL(tool_name) get_cross_path_tool((tool_name))
+#  define GET_PATH_INCLUDE() get_cross_flag_include()
+#  define GET_PATH_TARGET_CRTSO() get_cross_path_target(CRTSO, &target_CRTSO)
+#  define GET_PATH_TARGET_LIBCA() get_cross_path_target(LIBCA, &target_LIBCA)
 #endif
+
+#define FALSE	0
+#define TRUE	1
+
+#define FORWARD	static
 #define PRIVATE	static
 #define PUBLIC
-#define TRUE	1
 
 #if __STDC__
 #define P(x)	x
@@ -42,6 +54,8 @@ typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
 #define ALLOC_UNIT	16	/* allocation unit for arg arrays */
 #define DIRCHAR	'/'
 
+#define TOOL_SIZE  /* Maximum number of bytes in the basename of the tool, including the trailing NUL. */
+
 struct arg_s
 {
     int argc;
@@ -58,12 +72,75 @@ PRIVATE bool_t verbose;		/* = FALSE */
 
 #define IS_HOST_BITS32 (sizeof(char *) >= 4)
 
+PRIVATE char bits32_arg[3] = "-?";  /*The '?' will be replaced with '0' or '3'. */
+
+#if 0  /* We use these functions. */
+  int chmod P((const char *name, int mode));
+  int execv P((char *name, char **argv));
+  void exit P((int status));
+  int fork P((void));
+  int getpid P((void));
+  void *malloc P((unsigned));
+  char *mktemp P((void));
+  void *realloc P((void *ptr, unsigned size));
+  void (*signal P((int sig, void (*func) P((int sig))))) P((int sig));
+  char *strcpy P((char *target, const char *source));
+  size_t strlen P((const char *s));
+  char *strrchr P((const char *s, int c));
+  int unlink P((const char *name));
+  int wait P((int *status));
+  int write P((int fd, char *buf, unsigned int nbytes));
+#endif
+
+FORWARD void addarg P((register struct arg_s *argp, char *arg));
+FORWARD void fatal P((void));
+FORWARD void killtemps P((void));
+FORWARD void *my_malloc P((unsigned size, char *where));
+FORWARD char *my_mktemp P((void));
+FORWARD void my_unlink P((char *name));
+FORWARD void outofmemory P((char *where));
+FORWARD int execute P((char **argv));
+FORWARD int run P((char *prog, char *arg1, char *arg2, struct arg_s *argp));
+FORWARD void set_trap P((void));
+FORWARD void show_who P((char *message));
+FORWARD void startarg P((struct arg_s *argp));
+FORWARD char *stralloc P((char *s));
+FORWARD void trap P((int signum));
+FORWARD void unsupported P((char *option, char *message));
+FORWARD void writen P((void));
+FORWARD void writes P((char *s));
+FORWARD void writesn P((char *s));
+FORWARD bool_t is_tool P((char *s));
+FORWARD void trap_signal P((int signum));
+
+#if CROSS
+PRIVATE char *driverdir;  /* Directory of this driver program (from its argv[0]). */
+PRIVATE unsigned driverdirlen;  /* Number of valid bytes starting at driverdir. */
+PRIVATE char *path_tool_;
+PRIVATE char *flag_include_;
+PRIVATE char *target_CRTSO;
+PRIVATE char *target_LIBCA;
+PRIVATE void init_driverdir P((void));
+FORWARD char *get_cross_path_tool P((char *tool_name));
+FORWARD char *get_cross_flag_include P((void));
+FORWARD char *get_cross_path_target P((char *file_name, char **file_cache));
+#else
+/* We need this workaround since many old C compilers, including BCC con't support string literal concatenation in:
+ * char flag_include[] = "-I" LIBDIR INCLUDE;
+ */
+PRIVATE struct
+{
+    char flag[2];
+    char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
+    char include[sizeof(INCLUDE)];
+} flag_include = { {'-', 'I'}, LIBDIR, INCLUDE };
+
 PRIVATE struct
 {
     char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
     char host;  /* '0' or '3' */
     char slash;  /* '/' */
-    char tool[15];  /* 4 would be enough for cpp, but being generous with 15 for custom tools. */
+    char tool[TOOL_SIZE];  /* 4 would be enough for cpp, but being generous with 15 for custom tools. */
 } path_tool = { LIBDIR, IS_HOST_BITS32 ? '3' : '0', '/', "??" };
 typedef char assert_path_tool_size[sizeof(path_tool.tool) >= sizeof(SC) && sizeof(path_tool.tool) >= sizeof(AS) && sizeof(path_tool.tool) >= sizeof(LD) ? 1 : -1];
 
@@ -82,56 +159,9 @@ PRIVATE struct
     char slash;  /* '/' */
     char crtso[sizeof(LIBCA)];
 } path_libca = { LIBDIR, '?', '/', LIBCA };
+#endif
 
-/* We need this workaround since many old C compilers, including BCC con't support string literal concatenation in:
- * char path_include[] = "-I" LIBDIR INCLUDE;
- */
-PRIVATE struct
-{
-    char flag[2];
-    char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
-    char include[sizeof(INCLUDE)];
-} path_include = { {'-', 'I'}, LIBDIR, INCLUDE };
-
-PRIVATE char bits32_arg[3] = "-?";  /*The '?' will be replaced with '0' or '3'. */
-
-/* Who can say if the standard headers declared these? */
-int chmod P((const char *name, int mode));
-int execv P((char *name, char **argv));
-void exit P((int status));
-int fork P((void));
-int getpid P((void));
-void *malloc P((unsigned));
-char *mktemp P((void));
-void *realloc P((void *ptr, unsigned size));
-void (*signal P((int sig, void (*func) P((int sig))))) P((int sig));
-char *strcpy P((char *target, const char *source));
-size_t strlen P((const char *s));
-char *strrchr P((const char *s, int c));
-int unlink P((const char *name));
-int wait P((int *status));
-int write P((int fd, char *buf, unsigned int nbytes));
-
-FORWARD void addarg P((register struct arg_s *argp, char *arg));
-FORWARD void fatal P((void));
-FORWARD void killtemps P((void));
-FORWARD void *my_malloc P((unsigned size, char *where));
-FORWARD char *my_mktemp P((void));
-FORWARD void my_unlink P((char *name));
-FORWARD void outofmemory P((char *where));
-FORWARD int execute P((char **argv));
-FORWARD void printargvn P((char **argv));
-FORWARD int run P((char *prog, char *arg1, char *arg2, struct arg_s *argp));
-FORWARD void set_trap P((void));
-FORWARD void show_who P((char *message));
-FORWARD void startarg P((struct arg_s *argp));
-FORWARD char *stralloc P((char *s));
-FORWARD void trap P((int signum));
-FORWARD void unsupported P((char *option, char *message));
-FORWARD void writen P((void));
-FORWARD void writes P((char *s));
-FORWARD void writesn P((char *s));
-FORWARD bool_t is_tool P((char *s));
+PUBLIC int main P((int argc, char **argv));
 
 PUBLIC int main(argc, argv)
 int argc;
@@ -139,12 +169,11 @@ char **argv;
 {
     register char *arg;
     int argcount = argc;
-    bool_t *argdone = my_malloc((unsigned) argc * sizeof *argdone, "argdone");
+    bool_t *argdone = (bool_t *) my_malloc((unsigned) argc * sizeof *argdone, "argdone");
     bool_t as_only = FALSE;
     char *basename;
     bool_t bits32 = IS_HOST_BITS32;
     bool_t sc_only = FALSE;
-    bool_t debug = FALSE;
     bool_t echo = FALSE;
     unsigned errcount = 0;
     char ext;
@@ -161,14 +190,21 @@ char **argv;
     int status = 0;
     char *argval;
 
-    path_tool.libdir[sizeof(path_tool.libdir) - 1] =
-        path_crtso.libdir[sizeof(path_crtso.libdir) - 1] =
-        path_libca.libdir[sizeof(path_libca.libdir) - 1] =
-        path_include.libdir[sizeof(path_include.libdir) - 1] = '/';
     progname = argv[0];
+#if CROSS
+    init_driverdir();
+#else
+    path_tool.libdir[sizeof(path_tool.libdir) - 1] =
+        flag_include.libdir[sizeof(flag_include.libdir) - 1] =
+        path_crtso.libdir[sizeof(path_crtso.libdir) - 1] =
+        path_libca.libdir[sizeof(path_libca.libdir) - 1] = '/';
+#endif
 
     if (is_tool(arg = argv[1]))  /* Example: bbcc ld -3 -o foo.o foo.s */
     { runtool:
+#if CROSS
+	*++argv = get_cross_path_tool(arg);
+#else
 	if (strlen(arg) > sizeof(path_tool.tool) - 1)
 	{
 		show_who("tool name too long: ");
@@ -177,6 +213,7 @@ char **argv;
 	}
 	strcpy(path_tool.tool, arg);
 	*++argv = path_tool.libdir;
+#endif
 	status = execute(argv);
 	return WIFEXITED(status) ? WEXITSTATUS(status) : 126;
     }
@@ -216,7 +253,7 @@ char **argv;
 		unsupported(arg, "preprocess");
 		break;
 	    case 'O':
-		/* unsupported( arg, "optimize" ); */  /* Ignore, BCC doesn't support optimizatoin. */
+		/* unsupported( arg, "optimize" ); */  /* Ignore, BCC doesn't support optimization. */
 		break;
 	    case 'S':
 		sc_only = TRUE;
@@ -232,7 +269,7 @@ char **argv;
 		unsupported(arg, "float emulation");
 		break;
 	    case 'g':
-		debug = TRUE;	/* unsupported( arg, "debug" ); */
+		/* debug = TRUE; */	/* unsupported( arg, "debug" ); */
 		break;
 	    case 'o':
 		if (--argc < 1)
@@ -268,7 +305,7 @@ char **argv;
 		{ missing_parameter:
 		    ++errcount;
 		    show_who("missing value for ");
-		    writen(arg);
+		    writesn(arg);
 		    break;
 		}
 		addarg(&scargs, arg);
@@ -373,12 +410,15 @@ char **argv;
     if (errcount != 0)
 	exit(1);
 
-    path_crtso.target = path_libca.target = bits32_arg[1] = bits32 ? '3' : '0';
+#if CROSS==0
+    path_crtso.target = path_libca.target =
+#endif
+        bits32_arg[1] = bits32 ? '3' : '0';
     addarg(&scargs, bits32_arg);
-    addarg(&scargs, path_include.flag);  /* Add after -I... args above, so that it has lower priority. */
+    addarg(&scargs, GET_PATH_INCLUDE());  /* Add after -I... args above, so that it has lower priority. */
     addarg(&asargs, bits32_arg);
     addarg(&ldargs, bits32_arg);
-    addarg(&ldargs, path_crtso.libdir);  /* !! Don't add if -nostdlib is specified. */
+    addarg(&ldargs, GET_PATH_TARGET_CRTSO());  /* !! Don't add if -nostdlib is specified. */
     addarg(&asargs, "-n");
     if (ncsfiles < 2)
 	echo = FALSE;
@@ -400,7 +440,7 @@ char **argv;
 		    writes(arg);
 		    writesn(":");
 		}
-		if ((basename = strrchr(arg, DIRCHAR)) == NULL)
+		if ((basename = strrchr(arg, DIRCHAR)) == (char*) 0)
 		    basename = arg;
 		else
 		    ++basename;
@@ -421,7 +461,7 @@ char **argv;
 		    else
 			s_out = my_mktemp();
 		    addarg(&scargs, arg);
-		    if (run((strcpy(path_tool.tool, SC), path_tool.libdir), "-o", s_out, &scargs) != 0)
+		    if (run(GET_PATH_TOOL(SC), "-o", s_out, &scargs) != 0)
 		    {
 			--scargs.argc;
 			status = 1;
@@ -451,7 +491,7 @@ char **argv;
 		    arg[length - 1] = 's';
 		    addarg(&asargs, arg);
 		    addarg(&asargs, s_out);
-		    if (run((strcpy(path_tool.tool, AS), path_tool.libdir), "-o", o_out, &asargs) != 0)
+		    if (run(GET_PATH_TOOL(AS), "-o", o_out, &asargs) != 0)
 			status = 1;
 		    asargs.argc -= 2;
 		    if (ext == 'c')
@@ -471,12 +511,80 @@ char **argv;
 
     if (!sc_only && !as_only && status == 0)
     {
-	addarg(&ldargs, path_libca.libdir);  /* !! Don't add if -nostdlib is specified. */
-	status = run((strcpy(path_tool.tool, LD), path_tool.libdir), "-o", f_out, &ldargs) != 0;
+	addarg(&ldargs, GET_PATH_TARGET_LIBCA());  /* !! Don't add if -nostdlib is specified. */
+	status = run(GET_PATH_TOOL(LD), "-o", f_out, &ldargs) != 0;
     }
     killtemps();
     return status;
 }
+
+#if CROSS
+#define LIBEXECPATH "/../libexec/"
+#define TARGETPATH "/../?/"
+#define INCLUDEDIR  "/../include"
+PRIVATE void init_driverdir()
+{
+    register char *p, *q;
+
+    for (driverdir = p = progname, q = p + strlen(p); q != p && q[-1] != '/'; --q) {}
+    if (q == p) {
+	show_who("missing directory in argv[0]");  /* !! Look up argv[0] on $PATH, get the directory from there. */
+	writen();
+	fatal();
+    }
+    for (; q != p && q[-1] == '/'; --q) {}
+    driverdirlen = q - p;
+}
+PRIVATE char *get_cross_path_tool(tool_name)
+char *tool_name;
+{
+    register char *p;
+
+    if (strlen(tool_name) > (unsigned) (TOOL_SIZE - 1)) {
+	show_who("tool name too long: ");
+	writesn(tool_name);
+	fatal();
+    }
+    if (!(p = path_tool_)) {
+	path_tool_ = p = (char*) my_malloc(driverdirlen + sizeof(LIBEXECPATH) + TOOL_SIZE - 1, "tool");
+	memcpy(p, driverdir, driverdirlen);
+	memcpy(p += driverdirlen, LIBEXECPATH, sizeof(LIBEXECPATH) - 1);
+    } else {  /* Reuse the same path_tool_ buffer. */
+	p += driverdirlen;
+    }
+    strcpy(p + sizeof(LIBEXECPATH) - 1, tool_name);
+    return path_tool_;
+}
+PRIVATE char *get_cross_flag_include()
+{
+    register char *p;
+
+    if (!(p = flag_include_)) {
+	flag_include_ = p = (char*) my_malloc(2 + driverdirlen + sizeof(INCLUDEDIR), "include flag");
+	*p++ = '-'; *p++ = 'I';
+	memcpy(p, driverdir, driverdirlen);
+	memcpy(p + driverdirlen, INCLUDEDIR, sizeof(INCLUDEDIR) - 1);
+	p = flag_include_;
+    }
+    return p;
+}
+PRIVATE char *get_cross_path_target(file_name, file_cache)
+char *file_name;
+char **file_cache;
+{
+    register char *p;
+
+    if (!(p = *file_cache)) {
+	*file_cache = p = (char*) my_malloc(driverdirlen + sizeof(TARGETPATH) + strlen(file_name), "target-specific file");
+	memcpy(p, driverdir, driverdirlen);
+	memcpy(p += driverdirlen, TARGETPATH, sizeof(TARGETPATH) - 1);
+	p += sizeof(TARGETPATH) - 1; p[-2] = bits32_arg[1];  /* Replace the '?' in the copy of TARGETPATH with target-specific '0' or '3'. */
+	strcpy(p, file_name);
+	p = *file_cache;
+    }
+    return p;
+}
+#endif
 
 PRIVATE void addarg(argp, arg)
 register struct arg_s *argp;
@@ -484,12 +592,12 @@ char *arg;
 {
     if (argp->size == 0)
 	startarg(argp);
-    if (++argp->argc >= argp->size &&
-	(argp->argv = realloc(argp->argv, (argp->size += ALLOC_UNIT) *
-			      sizeof *argp->argv)) == NULL)
+    if (++argp->argc >= (int) argp->size &&
+	(argp->argv = (char **) realloc(argp->argv, (argp->size += ALLOC_UNIT) *
+			      sizeof *argp->argv)) == (char **) 0)
 	outofmemory("addarg");
     argp->argv[argp->argc - 1] = arg;
-    argp->argv[argp->argc] = NULL;
+    argp->argv[argp->argc] = (char*) 0;
 }
 
 PRIVATE void fatal()
@@ -510,11 +618,12 @@ char *where;
 {
     void *block;
 
-    if ((block = (void *) malloc(size)) == NULL)
+    if ((block = (void *) malloc(size)) == (void*) 0)  /* !! Implement a much simpler, no-free() allocator for Minix host. */  /* !! Use smaller malloc() for minilibc686. */
 	outofmemory(where);
     return block;
 }
 
+/* !! Be much smarter and safer on the host. */
 PRIVATE char *my_mktemp()
 {
     register char *p;
@@ -549,6 +658,8 @@ PRIVATE char *my_mktemp()
 PRIVATE void my_unlink(name)
 char *name;
 {
+    struct stat st;
+
     if (verbose)
     {
 	show_who("unlinking ");
@@ -556,8 +667,10 @@ char *name;
     }
     if (unlink(name) < 0 && verbose)
     {
-	show_who("error unlinking ");
-	writesn(name);
+	if (stat(name, &st) == 0) {
+	    show_who("error unlinking ");
+	    writesn(name);
+	}
     }
 }
 
@@ -588,23 +701,20 @@ char **argv;
     case -1:
 	show_who("fork failed\n");
 	fatal();
-    case 0:
-	execv(argv[0], argv);
+	/* Fallthrough. */  /* Not reached. */
+    case 0:  /* Child. */
+	execv(argv[0], argv);  /* !! minicc doesn't have execv(3) or signal(2); with _POSIX_SOURCE, it should provide posix_signal(...). */
+	tmpargs.argc = 0;  /* Make killtemps() a no-op. The parent will delete the temporary files. */
 	show_who("exec of ");
 	writes(argv[0]);
 	writes(" failed\n");
 	fatal();
+	/* Fallthrough. */  /* Not reached. */
     default:
 	wait(&status);
 	return status;
     }
 }
-
-PRIVATE void printargvn(argv)
-char **argv;
-{
-}
-
 
 PRIVATE int run(prog, arg1, arg2, argp)
 char *prog;
@@ -612,8 +722,6 @@ char *arg1;
 char *arg2;
 register struct arg_s *argp;
 {
-    int i;
-
     if (argp->size == 0)
 	startarg(argp);
     argp->argv[0] = prog;
@@ -622,13 +730,27 @@ register struct arg_s *argp;
     return execute(argp->argv);
 }
 
+PRIVATE void trap_signal(signum)
+int signum;
+{
+    if (signal(signum, SIG_IGN) != SIG_IGN)
+	signal(signum, trap);
+}
+
 PRIVATE void set_trap()
 {
-    int signum;
-
-    for (signum = 0; signum <= _NSIG; ++signum)
-	if (signal(signum, SIG_IGN) != SIG_IGN)
-	    signal(signum, trap);
+#ifdef SIGHUP
+    trap_signal(SIGHUP);
+#endif
+#ifdef SIGINT
+    trap_signal(SIGINT);
+#endif
+#ifdef SIGQUIT
+    trap_signal(SIGQUIT);
+#endif
+#ifdef SIGQUIT
+    trap_signal(SIGTERM);
+#endif
 }
 
 PRIVATE void show_who(message)
@@ -642,16 +764,15 @@ char *message;
 PRIVATE void startarg(argp)
 struct arg_s *argp;
 {
-    argp->argv = my_malloc((argp->size = ALLOC_UNIT) * sizeof *argp->argv,
-			   "startarg");
+    argp->argv = (char **) my_malloc((argp->size = ALLOC_UNIT) * sizeof *argp->argv, "startarg");
     argp->argc = 3;
-    argp->argv[3] = NULL;
+    argp->argv[3] = (char*) 0;
 }
 
 PRIVATE char *stralloc(s)
 char *s;
 {
-    return strcpy(my_malloc(strlen(s) + 1, "stralloc"), s);
+    return strcpy((char *) my_malloc(strlen(s) + 1, "stralloc"), s);
 }
 
 PRIVATE void trap(signum)
@@ -682,7 +803,7 @@ PRIVATE void writen()
 PRIVATE void writes(s)
 char *s;
 {
-    write(2, s, strlen(s));
+    (void)!write(2, s, strlen(s));
 }
 
 PRIVATE void writesn(s)
