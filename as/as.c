@@ -17,6 +17,7 @@
 #include "const.h"
 #include "type.h"
 #include "macro.h"
+#include "scan.h"
 #undef EXTERN
 #define EXTERN
 #include "file.h"
@@ -30,12 +31,15 @@ PRIVATE struct schain_s hid_mcpar[MACPSIZ];	/* MACRO params */
 PRIVATE struct macro_s hid_macstak[MAXBLOCK];	/* macro stack */
 PRIVATE struct sym_s *hid_spt[SPTSIZ];	/* hash table */
 
+FORWARD void set_osid P((int new_osid));
 FORWARD void initp1 P((void));
 FORWARD int my_creat P((char *name, char *message));
 FORWARD void process_args P((int argc, char **argv));
 FORWARD void summary P((fd_t fd));
 FORWARD void summ_number P((unsigned num));
 FORWARD void usage P((void));
+FORWARD void set_label_abs P((char *name, offset_t value));
+FORWARD void initblabels P((void));
 
 PUBLIC int main(argc, argv)
 int argc;
@@ -48,10 +52,12 @@ char **argv;
     initbin();
     initobj();
     initsource();		/* only nec to init for unsupported mem file */
+    initblabels();  /* Must be called before process_args() to create symbols. -- why?. */
     typeconv_init();
     warn.global = TRUE;		/* constant */
     process_args(argc, argv);
     initscan();
+    initblabels();  /* Call agan to set the final values of the symbols. */
 
     assemble();			/* doesn't return, maybe use setjmp */
 
@@ -82,11 +88,44 @@ PUBLIC void finishup()
     exit(toterr != 0 ? 1 : 0);	/* should close output files and check */
 }
 
+PRIVATE void set_osid(new_osid)
+register int new_osid;
+{
+	osid = new_osid;
+	idefsize = defsize = 2 + ((new_osid & 1) << 1);  /* 2 if osid == 0; or 4 if osid == 3. */
+}
+
+PRIVATE void set_label_abs(name, value)
+char *name;
+offset_t value;
+{
+    register struct sym_s *symptr;
+    char *old_lineptr;
+    /* char *old_symname; */
+
+    old_lineptr = lineptr;
+    /* old_symname = symname; */
+    lineptr = (symname = name) + strlen(name);  /* Symbol name for lookup() below. */
+    (symptr = lookup())->type = LABIT | VARBIT;  /* Adding VARBIT here so that objheader(...) will omit it from the symbol list. */
+    /* symptr->data = 0; */  /* Default: absolute value. */
+    symptr->value_reg_or_op.value = value;
+    /* symname = old_symname; */  /* No need to restore. */
+    lineptr = old_lineptr;  /* Must be restored. */
+}
+
+/* initialise builtin labels (absolute symbols with constant value) */
+
+PRIVATE void initblabels()
+{
+    set_label_abs("__IBITS__", (offset_t) (idefsize << 3));  /* 16 or 32. This is the initial bits, not the current one. */
+    set_label_abs("__OSID__", (offset_t) osid);  /* 0 (for as -0: Minix i86) or 3 (for as -3: Minix i386). */
+}
+
 /* initialise constant nonzero values */
 
 PRIVATE void initp1()
 {
-    idefsize = defsize = sizeof (char *) > 2 ? 4 : 2;
+    set_osid(sizeof(char *) > 2 ? 3 : 0);
     lstfil = STDOUT;
     mapnum = 15;		/* default map number for symbol table */
     spt_top = (spt = hid_spt) + SPTSIZ;
@@ -153,10 +192,8 @@ char **argv;
 	    switch (arg[1])
 	    {
 	    case '0':
-		idefsize = defsize = 0x2;
-		break;
 	    case '3':
-		idefsize = defsize = 0x4;
+		set_osid(arg[1] - '0');  /* osid 0 if arg[1] == '0'; or 3 if arg[1] == '3'. */
 		break;
 	    case 'a':
 		asld_compatible = TRUE;
