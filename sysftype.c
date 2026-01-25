@@ -5,7 +5,7 @@
 
 #include <sys/types.h>  /* Minix 1.5.10 needs this before <unistd.h>. */
 #include <fcntl.h>
-#include <stdlib.h>
+/* #include <stdlib.h> */  /* We need it for exit(...). Not including it to prevent BCC sc v0 from displaying an error: function returning structure is illegal */
 #include <string.h>
 #include <unistd.h>
 
@@ -32,8 +32,8 @@ CONST char *msg;
   if (*msg != '\0') (void)!write(2, msg, strlen(msg));
 }
 
-static void fatal2 P((CONST char *msg1, CONST char *msg2));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-static void fatal2(msg1, msg2)
+static void fatal_msg P((CONST char *msg1, CONST char *msg2));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static void fatal_msg(msg1, msg2)
 CONST char *msg1;
 CONST char *msg2;
 {
@@ -44,7 +44,6 @@ CONST char *msg2;
     write_err(msg2);
   }
   write_err("\n");
-  exit(2);
 }
 
 static char header[32];
@@ -61,11 +60,15 @@ char **argv;
   CONST char *filename;
 
   (void)argc;
-  if (!argv[0] || !(filename = argv[1])) fatal2("missing command-line argument: the filename of an executable", (CONST char*)0);
-  if (argv[2]) fatal2("too many command-line arguments", (CONST char*)0);
-  if ((fd = open(filename, O_RDONLY)) < 0) fatal2("error opening executable file", filename);
+  if (!argv[0] || !(filename = argv[1])) {
+    fatal_msg("missing command-line argument: the filename of an executable", (CONST char*)0);
+   fatal:
+    return 2;
+  }
+  if (argv[2]) { fatal_msg("too many command-line arguments", (CONST char*)0); goto fatal; }
+  if ((fd = open(filename, O_RDONLY)) < 0) { fatal_msg("error opening executable file", filename); goto fatal; }
   for (p = header; p < header + sizeof(header); ) {
-    if ((got = read(fd, p, header + sizeof(header) - p)) < 0) fatal2("error reading header", filename);
+    if ((got = read(fd, p, header + sizeof(header) - p)) < 0) { fatal_msg("error reading header", filename); goto fatal; }
     if (got == 0) {
       for (p = header; p < header + sizeof(header); *p++ = '\0') {}
       break;
