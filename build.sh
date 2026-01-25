@@ -4,6 +4,8 @@
 # by pts@fazekas.hu at Thu Jan  8 15:51:45 CET 2026
 #
 # !! make it work with `minicc --gcc=4.2' (missing memcpy), `minicc --pcc' (missing prototypes for cpp; code generation difference in sc), `minicc --tcc' (missing memcpy) and `minicc --utcc' (ld.cross segfaults)
+# !! Does sc v3 support function returning struct (i.e. no error: function returning structure is illegal) ? Yes, with memcpy! Modify include/stdlib.h etc.
+# !! remove default -0 and -3 from cross-compiler sc, as, ld, cc
 # !! add driver tool command-line
 # !! add driver flag -E to invoke CPP
 # !! test isatty implementations, espacially the assembly implementation in sc
@@ -12,12 +14,13 @@
 # !! (after porting to ack) Remove the `t' symbols from `nm as.mx' etc. added by the assembler; use symbols starting with . instead?
 # !! Make the `bcc -i` and `ld -i` (separate I&D) default independent of the BCC driver version.
 # !! Add patch to /usr/include to add `#ifndef __BCC__' for functions returning a struct.
-# !! Is the `j' jump output of bcc3 compatible with as0? (as0 expects jmp as short jump.)
+# !! Is the `j' jump output of sc v3 compatible with as0? (as0 expects jmp as short jump.)
 # !! Add the remaining patches to cpp.
 # !! strtol -1 / 2 sign incompatibility with the i86 /local/bin/sc (== -1); the other one returns 0.
 # !! replace divisions with right shifts (BCC is not smart enough to optimize it, it also means something different)
-# !! fix sar code generation bug in bcc3 for div2(...), div4(...) etc. in bcc3
+# !! fix sar code generation bug in sc v3 for div2(...), div4(...) etc. in sc v3
 # !! fix suboptimal i386 code generation in ld for `v += (unsigned long) (unsigned char) c;'; this already uses movzx: `v += (unsigned char) c;'
+# !! Add support for -nostdlib in the bbcc driver.
 # !! everywhere (sc, as, ld, cpp)
 #    ifdef ACKFIX  /* Workaround for the bug in Minix 1.5.10 i86 ACK 3.1 C compiler, which sign-extends the (unsigned char) cast. */
 #    #  define UCHARCAST(c) (unsigned char) ((unsigned) (c) & 0xff)
@@ -40,20 +43,21 @@
 test "$ZSH_VERSION" && set -y 2>/dev/null  # SH_WORD_SPLIT for zsh(1). It's an i nvalid option in bash(1), and it's harmful (prevents echo) in ash(1).
 # test "$0" = "${0%/*}" || cd "${0%/*}" || exit "$?"
 
-if test x"$1" = x--overwrite-golden; then
+test "$1" || set auto $@  # Default: autodetect the compiler.
+if test "$1" = --overwrite-golden; then
   cmp=cp; diff=cp; tcmp="$cmp"; tdiff="$diff"; shift  # Overwrite golden files (*r, *.n, *.d). This is dangerous.
   exit 5  # !! Dangerous.
-elif test x"$1" = x--nocmp; then
+elif test "$1" = --nocmp; then
   cmp=true; diff=true; tcmp="$cmp"; tdiff="$diff"; shift  # Ignore golden files.
-elif test x"$1" = x--notoolscmp; then
+elif test "$1" = --notoolscmp; then
   cmp=cmp; diff=diff; tcmp=true; tdiff=true; shift  # Ignore golden files for tools, compare generated files to non-tools golden files.
-elif test x"$1" = x--toolsecho; then  # This works with Linux /bin/sh, but not with Minix /bin/sh.
+elif test "$1" = --toolsecho; then  # This works with Linux /bin/sh, but not with Minix /bin/sh.
   cmp=true; diff=true; tcmp=tcmp; tdiff=tdiff; shift  # Compare generated files to non-tools golden files.
   : >tools.diff || exit "$?"
-elif test x"$1" = x--toolscp; then  # This works with Linux /bin/sh, but not with Minix /bin/sh.
+elif test "$1" = --toolscp; then  # This works with Linux /bin/sh, but not with Minix /bin/sh.
   cmp=true; diff=true; tcmp=cp; tdiff=cp; shift  # Compare generated files to non-tools golden files. Overwrite golden files (*.r, *.n, *.d) for tools, which is dangerous.
   : >tools.diff || exit "$?"
-elif test x"$1" = x--cmp; then
+elif test "$1" = --cmp; then
   cmp=cmp; diff=diff; tcmp="$cmp"; tdiff="$diff"; shift  # Compare generated files to golden files.
 else
   cmp=cmp; diff=diff; tcmp="$cmp"; tdiff="$diff"   # !! Change this default to `cmp=true; diff=true' later.
@@ -71,77 +75,18 @@ done
 
 # --- Build the host tools or cross-compilation tools: "$sc", "$as", "$ld", "$cr".
 
-if test x"$1" = x"" || test "$1" = auto; then  # Autodetect the system and the C compiler.
-  test "$#" = 0 || shift
+if test "$1" = auto; then  # Detect if our best bet is cross-compilation with GCC.
   rm -f sysftype
-  test -f sysftype.c || exit "$?"
-  cc -O -o sysftype sysftype.c || exit "$?"
-  h="`./sysftype ./sysftype`"
-  if test "$h" = 0; then  # Minix i86.
-    if bcc -O -o sysftype sysftype.c && test "`./sysftype ./sysftype`" = 3; then  # !! Try with bbcc first.
-      set bcc0 "$@"
-    else
-      set dcc0 "$@"
-    fi
-  elif test "$h" = 3; then  # Minix i386.
-    if bcc -O -o sysftype sysftype.c && test "`./sysftype ./sysftype`" = 3; then
-      set bcc3 "$@"
-    else
-      set dcc3 "$@"
-    fi
-  else
-    h=cross  # Host system is a cross-compiler. Other values: h=0 means Minix i86; h=3 means Minix i386.
-    rm -f t2
-    if gcc -s -O2 -Wall -W -Dfoo -o t2 sysftype.c && ./t2 t2; then
-      set gcc "$@"
-    else
-      set cc "$@"
-    fi
-    rm -f t2
-  fi
-  h=; rm -f sysftype
+  gcc -s -O2 -Wall -W -Dfoo -o sysftype sysftype.c && test "`./sysftype ./sysftype`" = "?" && shift && set gcc $@ -s -O2
 fi
 
-# !! Add support for mxbcc, mxbcc0 and mxbcc3.
-# !! Add support for -nostdlib in the mxbcc driver.
-if test "$1" = bcc; then  # Autodetect the system for bcc.
-  test "$#" = 0 || shift
-  rm -f sysftype
-  cc -O -o sysftype sysftype.c || exit "$?"
-  h="`./sysftype ./sysftype`"
-  if test "$h" = 0; then set bcc0 "$@"  # Minix i86.
-  elif test "$h" = 3; then set bcc3 "$@"  # Minix i386.
-  else
-    : "fatal: Minix host system needed for bcc"
-    exit 1
-  fi
-  h=; rm -f sysftype
-fi
-
-if test "$1" = dcc0 || test "$1" = dcc3; then  # On Minix i86 or i386, autodetect whether cc is the ACK C compiler, the ACK ANSI C compiler, BCC or anything else.
-  cc=cc
-  # Doing it in a subshell to avoid `argument list too long' errors later. This may be a bug in Minix 1.5.10 /bin/sh.
-  ( echo "int main() { return 0; }" >t.c || exit "$?"  # !! Avoid warning from the ANSI C compiler: 'main' old-fashioned function definition
-    m=cc; rm -f t.out  # The default is using cc as a cross-compiler.
-    "$cc" -v -o t t.c 2>&1 | (while read acmd arest; do  # Use `-v' to see which commands cc runs.
-      case "$acmd" in
-       */asld) test "$1" = dcc0 && m=ack0 ;;
-       */ncpp | *.ansi) if test "$1" = dcc0; then m=acka0; else m=acka3; fi ;;  # In Minix 1.7.0 i386, the preprocessor is /usr/lib/em_cemcom.ansi.
-       */sc | */bcc-*) if test "$1" = dcc0; then m=bcc0; else m=bcc3; fi ;;
-      esac
-    done; echo "$m" >t.out))
-  m="`cat t.out`" || exit "$?"
-  rm -f t.c t.out
-  test "$m" || exit 2
-  shift; set "$m" "$@"
-fi
-
-if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minicc || test "$1" = bbcc || test "$1" = cc | test "$1" = zig; then  # For cross-compiling with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, minilibc686 minicc on Linux, or a generic Unix C compiler (cc) on Unix.
+# Cross-compilation with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, minilibc686 minicc on Linux, or a generic Unix C compiler (cc) on Unix.
+if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minicc || test "$1" = bbcc || test "$1" = cross || test "$1" = zig; then
   # GCC is known to work with GCC 4.3--4.9 and GCC 7.5.0.
   # Clang is known to work with Clang 6.0.0.
   # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc
   # Example invocation with zig cc Clang on Linux: ./build.sh zig cc
-  # Example invocation with bbcc (itself) on Minix i386 or cross-compiling on Linux: ./build.sh bbcc
+  # Example invocation with bbcc (itself) on Minix i386 or cross-compilation on Linux: ./build.sh bbcc
   # Example strict mode invocations:
   # * GCC on modern Unix-like systems: .  /build.sh gcc   -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -ansi -pedantic
   # * Clang on modern Unix-like systems: ./build.sh clang -s -O2 -DDEBUG_SIZE_NOPAD -W -Wall -Werror -Wstrict-prototypes -Wno-maybe-uninitialized -Wno-deprecated-non-prototype -Wno-unknown-warning-option -Wno-unused-command-line-argument -ansi -pedantic
@@ -160,89 +105,130 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # * There is 140 KiB of virtual memory for each process (total of: .text, .rodata, .data, .bss, stack). This doesn't hold for ELKS and Minix i86.
   # * malloc(...) can allocate 192 KiB on top of that. This doesn't hold for ELKS and Minix i86.
   # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used. !! Autodetect this.
-  # !! make new enough GCC and Clang work without sysdet, e.g. with __SIZEOF_INT__, __SIZEOF_LONG__, __UINTPTR_TYPE__, __i386__ or __code_model_small__ etc. for -DNOPORTALIGN=1
-  rm -f sysdet
-  cc2=
-  if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-unused-command-line-argument -Wno-strict-prototypes -fno-lto"  # Example: ./build.sh zig cc
-  elif test "$1" = clang; then cc="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-strict-prototypes"  # Example: ./build.sh clang
-  elif test "$1" = minicc; then cc="$1"; shift; cflags=  # It optimizes for size better by default than with -O.
-  elif test "$1" = bbcc; then cc="$1"; shift; cflags="-O -DMINIX_HEAP"  # This works only on Minix i386. !! Use bbcc0 for Minix i86.
-  else cc="$1"; shift; cflags=-O
+  # Doing it in a subshell to avoid `argument list too long' errors later. This may be a bug in Minix 1.5.10 /bin/sh.
+  rm -f h.out
+  ( rm -f sysdet
+    cc2=
+    if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-unused-command-line-argument -Wno-strict-prototypes -fno-lto"  # Example: ./build.sh zig cc
+    elif test "$1" = clang; then cc="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-strict-prototypes"  # Example: ./build.sh clang
+    elif test "$1" = minicc; then cc="$1"; shift; cflags=  # It optimizes for size better by default than with -O.
+    elif test "$1" = cross; then cc=cc; shift; cflags=-O  # A generic Unix C compiler named `cc'.
+    else cc="$1"; shift; cflags=-O
+    fi
+    test "$1" = -O0 && shift && cflags=  # Cancel the -O, in case the C compiler doesn't support it.
+    # "$@" would be correct, but Minix 1.5.10 /bin/sh doesn't do word splitting on it. So we just use $@, with forced word splitting.
+    "$cc" $cc2 $cflags $@ -o sysdet sysdet.c || exit "$?"
+    sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DNOPORTALIGN=0"  # !! Add -DMINALIGNBYTES=1
+    test "$?" = 0 || exit 2
+    rm -f sysdet
+    case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac
+    case "$sysdet" in
+     *-DOSID=3*) h=3 ;;
+     *-DOSID=0*) h=0 ;;
+     *) h=cross  # Host system is a cross-compiler.
+    esac
+    echo "$h" >h.out || exit "$?"
+    test "$h" = 0 && exit 0   # Targeting Minix i86 this way won't work, because the code size (a_text) of sc would be too large (> 0xff00) with the default libc.
+    # !! Autodetect the -DACKFIX etc. flags in $sysdet in case acka is used as cc.
+    test -d libexec || mkdir libexec || exit "$?"
+    rm -f libexec/sc libexec/as libexec/ld libexec/cr bin/bbcc libexec/cpp
+    "$cc" $cc2 $cflags $sysdet $@ -o libexec/sc sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+    "$cc" $cc2 $cflags $sysdet $@ -o libexec/as as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+    "$cc" $cc2 $cflags $sysdet $@ -o libexec/ld ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+    "$cc" $cc2 $cflags $sysdet $@ -o libexec/cr cr/cr.c || exit "$?"
+    "$cc" $cc2 $cflags $sysdet $@ -o bin/bbcc cc/cc.c || exit "$?"
+    "$cc" $cc2 $cflags $@ -o libexec/cpp cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  ) || exit "$?"
+  h="`cat h.out`"
+  test "$h" || exit "$?"
+  if test "$h" != 0; then
+    set cross  # For subsequent `test "$1" = ...'.
+    sc=libexec/sc
+    as=libexec/as
+    ld=libexec/ld
+    cr=libexec/cr
   fi
-  test "$1" = -O0 && shift && cflags=  # Cancel the -O, in case the C compiler doesn't support it.
-  # "$@" would be correct, but Minix 1.5.10 /bin/sh doesn't do word splitting on it. So we just use $@, with forced word splitting.
-  "$cc" $cc2 $cflags $@ -o sysdet sysdet.c || exit "$?"
-  sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DNOPORTALIGN=0"  # !! Add -DMINALIGNBYTES=1
-  test "$?" = 0 || exit 2
-  rm -f sysdet
-  case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac
-  # !! Autodetect the -DACKFIX etc. flags in $sysdet in case acka3 is used as cc.
-  test -d bin || mkdir bin || exit "$?"
-  test -d libexec || mkdir libexec || exit "$?"
-  rm -f libexec/sc libexec/as libexec/ld libexec/cr bin/bbcc libexec/cpp
-
-  "$cc" $cc2 $cflags $sysdet $@ -o libexec/sc sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  "$cc" $cc2 $cflags $sysdet $@ -o libexec/as as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  "$cc" $cc2 $cflags $sysdet $@ -o libexec/ld ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  "$cc" $cc2 $cflags $sysdet $@ -o libexec/cr cr/cr.c || exit "$?"
-  "$cc" $cc2 $cflags $sysdet $@ -o bin/bbcc cc/cc.c || exit "$?"
-  "$cc" $cc2 $cflags $@ -o libexec/cpp cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
-
-  set cc  # For subsequent `test "$1" = ...'.
-  sc=libexec/sc
-  as=libexec/as
-  ld=libexec/ld
-  cr=libexec/cr
-  # h=cross  # Host system is a cross-compiler. Other values: h=0 means Minix i86; h=3 means Minix i386. Don't change it here, it is already correct.
-
-  case "$sysdet" in
-   *-DOSID=3*)
-    chmem =150000 libexec/sc  || exit "$?"  # C compiler backend.
-    chmem =192480 libexec/as  || exit "$?"  # Assembler.
-    chmem =150000 libexec/ld  || exit "$?"  # Linker.
-    chmem  =40000 libexec/cr  || exit "$?"  # Library builder.
-    chmem =150000 libexec/cpp || exit "$?"  # C preprocessor.
-    h=3r ;;
-   *-DOSID=0*) # Never true, this is not supported above yet.
-    h=0r ;;
-   *) h=cross
-  esac
 fi
-
-if test "$1" = localbin || test "$1" = bccbin; then  # Use /local/bin/{sc,as,ld} v0 from BCC v0 bccbin16.tar.Z or bccbin32.tar.Z on Minix to build the tools.
-  # !! Also add support for "$1" = bccbin16 or bccbin32 etc.
-  if test "$1" = localbin; then
+if test "$1" != cross; then
+  rm -f sc.mx as.mx ld.mx cr.mx cpp.mx
+  cc="$1"
+  if test "$1" = bbcc || test "$1" = bcc || test "$1" = cc || test "$1" = auto; then  # Autodetect the C compiler and the Minix host system.
+    test "$1" = auto && cc="bbcc bcc cc"
+    h=
+    for cc in $cc; do  # Find first working compiler.
+      rm -f sysftype
+      "$cc" -O -o sysftype sysftype.c || continue
+      h="`./sysftype ./sysftype`"
+      test "$h" = 0 && break
+      test "$h" = 3 && break
+    done
+    rm -f sysftype
+    test "$h" = 0 || test "$h" = 3 || exit 6  # Cross-compilation (h="??") is not supported here (see above).
+    if test "$cc" = cc; then  # Running on Minix x86 host, targeting Minix x86, using `cc' as the C compiler. Detect which C compiler it actually is.
+      # Now: "$1" == "cc" or "$1" == auto.
+      # Doing it in a subshell to avoid `argument list too long' errors later. This may be a bug in Minix 1.5.10 /bin/sh.
+      ( m=cc; rm -f t t.out  # The default is using cc as a cross-compiler.
+        "$cc" -v -o t sysftype.c 2>&1 | (while read acmd arest; do  # Use `-v' to see which commands cc runs.
+          case "$acmd" in
+           */asld) m=acko ;;
+           */ncpp | *.ansi) m=acka ;;  # In Minix 1.7.0 i386, the preprocessor is /usr/lib/em_cemcom.ansi.
+           */sc | */bcc-*) m=bcc ;;  # bcc or bbcc. We don't care.
+          esac
+        done; echo "$m" >t.out))
+      m="`cat t.out`" || exit "$?"
+      rm -f t t.out
+      test "$m" || exit 2
+      test "$m" = cc && exit 2  # Failed to autodetect the actual C compiler.
+      set "$m"  # $1 := "$m" (acko, acka or bcc). Keep "$cc" == "cc".
+    elif test "$1" = auto; then
+      set "$cc"  # "bbcc" or "bcc".
+    fi
+  elif test "$1" = acko || test "$1" = acka; then  # Autodetect the Minix host system.
+    cc=cc
+    rm -f sysftype
+    "$cc" -O -o sysftype sysftype.c || exit "$?"
+    h="`./sysftype ./sysftype`"
+    rm -f sysftype
+    test "$h" = 0 || test "$h" = 3 || exit 6  # Cross-compilation (h="??") is not supported here (see above).
+  elif test "$1" = localbin; then  # Autodetect the Minix host system.
     sc=/local/bin/sc
     as=/local/bin/as
     ld=/local/bin/ld
-    rm -f true0 true0.o true3 true3.o
     "$as" -3 -o true3.o true3.s || exit "$?"
     "$ld" -3 -i -o true3 true3.o || exit "$?"
     test -x true3 || exit "$?"
     if ./true3; then  # Minix i386.
-      h=3r  # Host system is Minix i386.
+      h=3  # Host system is Minix i386.
     else
       "$as" -0 -o true0.o true0.s || exit "$?"
       "$ld" -0 -i -o true0 true0.o || exit "$?"
       ./true0 || exit "$?"  # Neither Minix i86 nor Minix i386 detected.
-      h=0r  # Host system is Minix i86.
+      h=0  # Host system is Minix i86.
     fi
-  elif test -f bccbin32/sc && test -x bccbin32/sc && bccbin32/sc </dev/null >/dev/null; then
-    sc=bccbin32/sc
-    as=bccbin32/as
-    ld=bccbin32/ld
-    h=3r
-  elif test -f bccbin16/sc && test -x bccbin16/sc && bccbin16/sc </dev/null >/dev/null; then
-    sc=bccbin16/sc
-    as=bccbin16/as
-    ld=bccbin16/ld
-    h=0r
+  elif test "$1" = bccbin; then  # Autodetect the Minix host system.
+    if test -f bccbin32/sc && test -x bccbin32/sc && bccbin32/sc </dev/null >/dev/null; then
+      sc=bccbin32/sc
+      as=bccbin32/as
+      ld=bccbin32/ld
+      h=3
+    elif test -f bccbin16/sc && test -x bccbin16/sc && bccbin16/sc </dev/null >/dev/null; then
+      sc=bccbin16/sc
+      as=bccbin16/as
+      ld=bccbin16/ld
+      h=0
+    else
+      : "fatal: bccbin tools not found"; exit 2
+    fi
   else
-    : "fatal: bccbin tools not found"; exit 2
+    : "unknown Minix C compilation method: $1"; exit 7
   fi
-  cr=  # Will be set later.
+fi
 
-  if test "$h" = 3r; then
+case "$h" in [03]) ;; cross) test "$1" = cross || exit 8 ;; *) exit 9 ;; esac  # Just a sanity check. Unknown host system.
+
+if test "$1" = localbin || test "$1" = bccbin; then  # Use /local/bin/{sc,as,ld} v0 from BCC v0 bccbin16.tar.Z or bccbin32.tar.Z on Minix to build the tools.
+  # "$sc", "$as", "$ld" and "$h" are already set correctly.
+  if test "$h" = 3; then
     sh toolsb.sh 3 "$sc" "$as" "$ld" "" true true i || exit "$?"
   else
     cp ld/globvar.h ld/globvar  # sc v0 i86 (but not i386) has a bug: it can't find #include files with basenames this long when included from ld/io.c. We work it around by using a copy with -DGLOBVARI.
@@ -252,38 +238,29 @@ if test "$1" = localbin || test "$1" = bccbin; then  # Use /local/bin/{sc,as,ld}
   mv as.tool as.mx || exit "$?"
   mv ld.tool ld.mx || exit "$?"
   rm -f cr.tool
-  sc=./sc.mx
-  as=./as.mx
-  ld=./ld.mx
 fi
 
-if test "$1" = ack0; then  # Minix 1.5.10 i86 ACK 3.1 C compiler with either the old (1990-06-01) or the new asld (1994-03-29).
-  cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4"
-  rm -f sc.mx as.mx ld.mx cr.mx cpp.mx
-  # -i for separate I&D (BCC has it by default)
-  # -s for adding symbols (opposite meaning as in BCC bcc and GCC gcc)
-  cc -i    -O $cflags -DOPEN00 -DNOUNIONINIT -DACKFIX -DSBRK -DLIBCH -DMXMALLOC -c sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  # This old asld (but not the new asld) would run out of memory if we used the Minix 1.5.10 libc (/usr/lib/crtso.c ... /usr/lib/libc.a /usr/lib/end.s).
-  # We work it around by using a small, custom libc tailored for sc (lsca.s bcc-cc1. ... lsce.s).
-  asld -i -o sc.mx sc/lsca.s bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s sc/lsce.s || exit "$?"
-  rm -f bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s
-  cc -i -s -O $cflags -DMINIXHEAP -DBRKSIZE -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  cc -i -s -O $cflags -DMINIXHEAP -DBRKSIZE -DACKFIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  cc -i -s -O $cflags -o cr.mx cr/cr.c || exit "$?"
-  # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
-  cc -i -s -O -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
-
-  sc=./sc.mx
-  as=./as.mx
-  ld=./ld.mx
-  h=0r  # Host system is Minix i86.
-fi
-
-if test "$1" = acka0 || test "$1" = acka3; then  # Minix >=1.7.0 i86 ACK ANSI C compiler (1.202 on Minix 2.0.4).  !! Autodetect acka.
-  if test "$1" = acka0; then cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4"  # For Minix i86.
-  else                       cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4"  # For Minix i386.
+if test "$1" = acko; then  # Minix 1.5.10 i86 old (traditional, pre-ANSI) ACK 3.1 C compiler with either the old (1990-06-01) or the new asld (1994-03-29).
+  if test "$h" = 0; then
+    cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4"
+    # -i for separate I&D (BCC has it by default)
+    # -s for adding symbols (opposite meaning as in BCC bcc and GCC gcc)
+    "$cc" -i    -O $cflags -DOPEN00 -DNOUNIONINIT -DACKFIX -DSBRK -DLIBCH -DMXMALLOC -c sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+    # This old asld (but not the new asld) would run out of memory if we used the Minix 1.5.10 libc (/usr/lib/crtso.c ... /usr/lib/libc.a /usr/lib/end.s).
+    # We work it around by using a small, custom libc tailored for sc (lsca.s bcc-cc1. ... lsce.s).
+    asld -i -o sc.mx sc/lsca.s bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s sc/lsce.s || exit "$?"
+    rm -f bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s
+    "$cc" -i -s -O $cflags -DMINIXHEAP -DBRKSIZE -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+    "$cc" -i -s -O $cflags -DMINIXHEAP -DBRKSIZE -DACKFIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+    "$cc" -i -s -O $cflags -o cr.mx cr/cr.c || exit "$?"
+    # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
+    "$cc" -i -s -O -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
   fi
-  rm -f sc.mx
+fi
+
+if test "$1" = acka; then  # Minix >=1.7.0 i86 or i386 ACK ANSI C compiler (1.202 on Minix 2.0.4).
+  cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4"  # For Minix i386.
+  test "$h" = 0 && cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4"  # For Minix i86.
   # There is a bug in the cfile(...) function in /usr/src/commands/i86/cc.c
   # (both Minix 1.7.0 and 2.0.4): if the source file name starts with `',
   # the `cc' tool skips the invocation of the `irrel' tool, which causes the
@@ -299,130 +276,89 @@ if test "$1" = acka0 || test "$1" = acka3; then  # Minix >=1.7.0 i86 ACK ANSI C 
   # frontend (/usr/src/commands/i86/cc.c).
   #
   # /usr/lib/ncpp -D_EM_WSIZE=2 -D_EM_PSIZE=2 -D_EM_SSIZE=2 -D_EM_LSIZE=4 -D_EM_FSIZE=4 -D_EM_DSIZE=8 -D__ACK__ -D__minix -D__i86 hello.c >/tmp/cc230000.i
-  (cd sc && cc -i -s -O -m $cflags -DACKFIX -o ../sc.mx bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
-  (cd as && cc -i -s -O -m $cflags -DMINIXHEAP -o ../as.mx as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
-  (cd ld && cc -i -s -O -m $cflags -DMINIXHEAP -DACKFIX -o ../ld.mx dumps.c heap.c io.c ld.c readobj.c table.c typeconv.c writebin.c) || exit "$?"
-  (cd cr && cc -i -s -O -m $cflags -o ../cr.mx cr.c) || exit "$?"
+  (cd sc && "$cc" -i -s -O -m $cflags -DACKFIX -o ../sc.mx bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
+  (cd as && "$cc" -i -s -O -m $cflags -DMINIXHEAP -o ../as.mx as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
+  (cd ld && "$cc" -i -s -O -m $cflags -DMINIXHEAP -DACKFIX -o ../ld.mx dumps.c heap.c io.c ld.c readobj.c table.c typeconv.c writebin.c) || exit "$?"
+  (cd cr && "$cc" -i -s -O -m $cflags -o ../cr.mx cr.c) || exit "$?"
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
   # -wo is specified to omit the ACK ANSI C compiler 1.202 warnings: ... old-fashioned function declaration; ... old-fashioned function definition
-  (cd cpp && cc -i -s -O -m -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"
-
-  h=0r  # Host system is Minix i86.
-  sc=./sc.mx
-  as=./as.mx
-  ld=./ld.mx
+  (cd cpp && "$cc" -i -s -O -m -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"
   cr=  # Will be set later.
-  if test "$1" = acka3; then
-    h=3r  # Host system is Minix i386.
-    chmem =150000 sc.mx || exit "$?"  # C compiler backend.
-    chmem =192480 as.mx || exit "$?"  # Assembler.
-    chmem =150000 ld.mx || exit "$?"  # Linker.
-    chmem  =40000 cr.mx || exit "$?"  # Library builder.
+fi
+
+if test "$1" = bcc || test "$1" = bbcc; then  # BCC (v0 or v3) on Minix x86, targeting Minix x86.
+  if test "$h" = 0; then  # Host system is Minix i86.
+    # Try to find the linker filename (typically fld=/local/bin/ld) and the host Minix kernel architecture (f03=-0 for i86 or f03=-3 for i386).
+    # !! Simplify for bbcc: fld="bbcc ld" (and use it as $fld, without the quotes)
+    # Doing it in a subshell to avoid `argument list too long' errors later. This may be a bug in Minix 1.5.10 /bin/sh.
+    ( echo "int main() { return 0; }" >t.c || exit "$?"
+      fld=; f03=; rm -f t.out
+      "$cc" -v -o t t.c 2>&1 | (while read ald ao at ai a03 arest; do
+        if test "$ao $at" = "-o t"; then  # Example line: /local/bin/ld -o t -i -0
+          fld="$ald"; f03="$a03"; test "$ai" = -i || f03="$ai"
+        fi
+      done; echo "f03='$f03'; fld='$fld'" >t.out)
+      eval `cat t.out` || exit "$?"  # Sets f03=... and fld=... .
+      test "$fld" || exit "$?"  # Linker not found.
+      test x"$f03" = x-0 || test x"$f03" = x-3 || exit "$?"  # Architecture found.
+      "$fld" -h 2>&1 | grep "^usage: " || exit "$?"  # Linker does not display the `usage: ...` message.
+      ) || exit "$?"
+    eval `cat t.out` || exit "$?"   # Sets f03=... and fld=... .
+    rm -f t.out
+    test "$fld" || exit "$?"
+    test "$f03" = -0 || exit "$?"
+    test -f "$fld" || exit "$?"
+    test -x "$fld" || exit "$?"
+    cp ld/globvar.h ld/globvar  # sc v0 i86 (but not i386) has a bug: it can't find #include files with basenames this long when included from ld/io.c. We work it around by using a copy with -DGLOBVARI.
+    # This would create an executable sc.mx which crashes at startup time because it contains too much code: its a.out a_text header value is >0xff00:
+    #   "$cc" -i -0 -DSMALLMEM -DLIBCH -o sc.mx sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+    # We work it around by using a custom, smaller libc (lscs0.s and *malloc.c) instead of the default libc.a.
+    sco="lscs0i.o bcc-cc1.o assign.o codefrag.o debug.o declare.o express.o exptree.o floatop.o function.o gencode.o genloads.o glogcode.o hardop.o input.o label.o loadexp.o longop.o output.o preproc.o preserve.o scan.o softop.o state.o table.o type.o"
+    rm -f $sco
+    sed "s/^include.*//" <sc/lscs0.s >lscs0i.s || exit "$?"  # as v0 abort()s on the include pseudo-op, so we manually process it with sed+cat.
+    cat libt0.si >>lscs0i.s || exit "$?"
+
+    cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4"
+    "$cc" -i -0 $cflags -DOPEN00 -DSBRK -DMXMALLOC -DLIBCH -c lscs0i.s sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+    "$fld" -0 -i -o sc.mx $sco || exit "$?"
+    rm -f $sco
+    sco=
+    # In BCC driver v0, `"$cc" -i' (separate I&D) and `"$cc"' default both run `ld -i' separate I&D.
+    "$cc" -i -0 $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+    "$cc" -i -0 $cflags -DMINIXHEAP -DBRKSIZE -DGLOBVARI -DLIBCH -DLIBCHMINIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+    "$cc" -i -0 $cflags -DLIBCH -o cr.mx cr/cr.c || exit "$?"
+    # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
+    "$cc" -i -0 -DNOSTDLIBH -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  elif test "$h" = 3; then  # Host system is Minix i386.
+    # !! Add support for compilation on Minix-386vm and Minix-vmd as h=5.
+    # !! Add support for Minix-386vm and Minix-vmd as targets of ld. Is it just `ld -z', or some more? Adjust behavior of `ld -z'.
+    cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4"
+    "$cc" -i $cflags -DLIBCH -o sc.mx sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+    # In BCC driver v0, `"$cc" -i' (separate I&D) and `"$cc"' default both run `ld -i' separate I&D.
+    "$cc" -i $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+    "$cc" -i $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -DLIBCHMINIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+    "$cc" -i $cflags -DLIBCH -o cr.mx cr/cr.c || exit "$?"
+    # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
+    "$cc" -i -DNOSTDLIBH -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
   fi
 fi
 
-if test "$1" = bcc0; then  # BCC (v0 or v3) on Minix i86, targeting Minix i86: sc, as and ld from bccbin16.tar.Z by Bruce Evans.
-  bcc=bcc
-  rm -f sc.mx as.mx ld.mx cr.mx cpp.mx
-  # Try to find the linker filename (typically fld=/local/bin/ld) and the host Minix kernel architecture (f03=-0 for i86 or f03=-3 for i386).
-  # Doing it in a subshell to avoid `argument list too long' errors later. This may be a bug in Minix 1.5.10 /bin/sh.
-  ( echo "int main() { return 0; }" >t.c || exit "$?"
-    fld=; f03=; rm -f t.out
-    "$bcc" -v -o t t.c 2>&1 | (while read ald ao at ai a03 arest; do
-      if test "$ao $at" = "-o t"; then  # Example line: /local/bin/ld -o t -i -0
-        fld="$ald"; f03="$a03"; test "$ai" = -i || f03="$ai"
-      fi
-    done; echo "f03='$f03'; fld='$fld'" >t.out)
-    eval `cat t.out` || exit "$?"  # Sets f03=... and fld=... .
-    test "$fld" || exit "$?"  # Linker not found.
-    test x"$f03" = x-0 || test x"$f03" = x-3 || exit "$?"  # Architecture found.
-    "$fld" -h 2>&1 | grep "^usage: " || exit "$?"  # Linker does not display the `usage: ...` message.
-    )
-  eval `cat t.out` || exit "$?"   # Sets f03=... and fld=... .
-  rm -f t.out
-  test "$fld" || exit "$?"
-  test "$f03" = -0 || exit "$?"
-  test -f "$fld" || exit "$?"
-  test -x "$fld" || exit "$?"
-  cp ld/globvar.h ld/globvar  # sc v0 i86 (but not i386) has a bug: it can't find #include files with basenames this long when included from ld/io.c. We work it around by using a copy with -DGLOBVARI.
-  # This would create an executable sc.mx which crashes at startup time because it contains too much code: its a.out a_text header value is >0xff00:
-  #   "$bcc" -i -0 -DSMALLMEM -DLIBCH -o sc.mx sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  # We work it around by using a custom, smaller libc (lscs0.s and *malloc.c) instead of the default libc.a.
-  sco="lscs0i.o bcc-cc1.o assign.o codefrag.o debug.o declare.o express.o exptree.o floatop.o function.o gencode.o genloads.o glogcode.o hardop.o input.o label.o loadexp.o longop.o output.o preproc.o preserve.o scan.o softop.o state.o table.o type.o"
-  rm -f $sco
-  sed "s/^include.*//" <lscs0.s >lscs0i.s || exit "$?"  # as v0 abort()s on the include pseudo-op, so we manually process it with sed+cat.
-  cat libt0.si >>lscs0i.s || exit "$?"
-
-  cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4"
-  "$bcc" -i -0 $cflags -DOPEN00 -DSBRK -DMXMALLOC -DLIBCH -c lscs0i.s sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  "$fld" -0 -i -o sc.mx $sco || exit "$?"
-  rm -f $sco
-  sco=
-  # In BCC driver v0, `"$bcc" -i' (separate I&D) and `"$bcc"' default both run `ld -i' separate I&D.
-  "$bcc" -i -0 $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  "$bcc" -i -0 $cflags -DMINIXHEAP -DBRKSIZE -DGLOBVARI -DLIBCH -DLIBCHMINIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  "$bcc" -i -0 $cflags -DLIBCH -o cr.mx cr/cr.c || exit "$?"
-  # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
-  "$bcc" -i -0 -DNOSTDLIBH -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
-
-  h=0r  # Host system is Minix i86.
-  sc=./sc.mx
-  as=./as.mx
-  ld=./ld.mx
-  cr=  # Will be set later.
-fi
-
-if test "$1" = bcc3; then  # BCC (v0 or v3) on Minix i386, targeting Minix i386: sc, as and ld from bccbin16.tar.Z by Bruce Evans.
-  # !! Add support for compiling on Minix-386vm and Minix-vmd as h=5.
-  # !! Add support for Minix-386vm and Minix-vmd as targets of ld. Is it just `ld -z', or some more? Adjust behavior of `ld -z'.
-  bcc=bcc
-  rm -f sc.mx as.mx ld.mx cr.mx cpp.mx
-  cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4"
-  "$bcc" -i $cflags -DLIBCH -o sc.mx sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  # In BCC driver v0, `"$bcc" -i' (separate I&D) and `"$bcc"' default both run `ld -i' separate I&D.
-  "$bcc" -i $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  "$bcc" -i $cflags -DMINIXHEAP -DBRKSIZE -DLIBCH -DLIBCHMINIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  "$bcc" -i $cflags -DLIBCH -o cr.mx cr/cr.c || exit "$?"
-  chmem =150000 sc.mx || exit "$?"  # C compiler backend.
-  chmem =192480 as.mx || exit "$?"  # Assembler.
-  chmem =150000 ld.mx || exit "$?"  # Linker.
-  chmem =40000 cr.mx || exit "$?"  # Library builder.
-
-  # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
-  "$bcc" -i -DNOSTDLIBH -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
-  chmem =150000 cpp.mx || exit "$?"  # C preprocessor.
-
-  h=3r  # Host system is Minix i386.
-  sc=./sc.mx
-  as=./as.mx
-  ld=./ld.mx
-  cr=  # Will be set later.
-fi
-
-test "$h" || exit "$?"  # Unknown compilation method.
-
 # --- Rebuild the tools if supported by the host system.
 
-if test "$h" = 0r; then  # Rebuild the host tools (sc, as, ld etc.) using "$sc", "$as" and "$ld" etc. for Minix i86.
-  sh toolsb.sh 0 "$sc" "$as" "$ld" "" "$tcmp" "$tdiff" "" || exit "$?"
+if test "$h" != cross; then  # Rebuild the host tools (sc, as, ld etc.) using "$sc", "$as" and "$ld" etc. for Minix i86 and i386.
+  test -f sc.mx || exit "$?"
+  if test "$h" = 3; then
+    chmem =150000 sc.mx  || exit "$?"  # C compiler backend.
+    chmem =192480 as.mx  || exit "$?"  # Assembler.
+    chmem =150000 ld.mx  || exit "$?"  # Linker.
+    chmem  =40000 cr.mx  || exit "$?"  # Library builder.
+    chmem =150000 cpp.mx || exit "$?"  # C preprocessor.
+  fi
+  sh toolsb.sh "$h" ./sc.mx ./as.mx ./ld.mx "" "$tcmp" "$tdiff" "" || exit "$?"
   mv sc.tool sc.host || exit "$?"
   mv as.tool as.host || exit "$?"
   mv ld.tool ld.host || exit "$?"
   mv cr.tool cr.host || exit "$?"
-  h=0
-  sc=./sc.host
-  as=./as.host
-  ld=./ld.host
-  cr=./cr.host
-fi
-
-if test "$h" = 3r; then  # Rebuild the host tools (sc, as, ld etc.) using "$sc", "$as" and "$ld" etc. for Minix i386.
-  sh toolsb.sh 3 "$sc" "$as" "$ld" "" "$tcmp" "$tdiff" "" || exit "$?"
-  mv sc.tool sc.host || exit "$?"
-  mv as.tool as.host || exit "$?"
-  mv ld.tool ld.host || exit "$?"
-  mv cr.tool cr.host || exit "$?"
-  h=3
   sc=./sc.host
   as=./as.host
   ld=./ld.host
@@ -471,8 +407,6 @@ mv cr.tool 3/cr || exit "$?"
 # -u  take undefined symbols as imported-with-unspecified segment
 # -w  don't print warnings
 
-idirflag=-Iinclude  # !! Make a copy, add patches (s.sh), use it as bccinclude: idirflag=include
-
 ANSIB='abort abs assert atoi atol bsearch ctime ctype errno exit fclose fflush fgetc fgets fopen fprintf fputc fputs fread freopen fseek ftell fwrite getenv gets malloc perror puts qsort rand scanf setbuf signal sprintf strerror strtol strtoul system time tmpnam ungetc vsprintf'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/ansi . Patched by Bruce Evans.
 IBMB='peekpoke portio'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/ibm . Patched by Bruce Evans.
 OTHERB='amoeba bcmp bcopy brk bzero call chroot cleanup crypt curses doprintf ffs getdents getopt getpass gtty index ioctl itoa lock lrand lsearch memccpy message mknod mktemp mount nlist popen printdat printk prints ptrace putenv regexp regsub rindex seekdir stb stderr stime stty swab sync syslib telldir termcap umount uniqport vectab'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/other . Patched by Bruce Evans.
@@ -481,7 +415,7 @@ ASB='catchsig crtso head idiv idivu imod imodu imul isl isr isru sendrec setjmp'
 
 for a03 in 0 3; do
   if test "$a03" = 0; then  # i86.
-    aflag=-a  # asld compatibility.
+    aflag=-a  # asld compatibility. !! remove it from $STRPASMB $SB $FB $IB $JB $LBB $LLB $GB $MB
     SB='crtso head'  # Minix startup routines, assembly source files (*.s) by Bruce Evans.
     FB='dummy'  # BCC compiler non-support for floating point arithmetic, assembly source files (*.s) by Bruce Evans.
     IB='idiv idivu imod imodu imul isl isr isru'  # BCC compiler support for integer arithmetic, assembly source files (*.s) by Bruce Evans.
@@ -524,14 +458,14 @@ for a03 in 0 3; do
 
   # ($bccsupportdir)
   for b in $SB $FB $IB $JB $LBB $LLB $GB $MB; do  # Assembly source files (*.s) by Bruce Evans.
-    # "$bcc" -v -"$a03" -c -o "$a03"/"$b".o "$b".s || exit "$?"
+    # bcc -v -"$a03" -c -o "$a03"/"$b".o "$b".s || exit "$?"
     "$as" -"$a03" -w $aflag -o "$a03"/"$b".o libc/"$b".s || exit "$?"
     "$cmp" "$a03"/"$b".o "$a03"g/"$b".n || exit "$?"  # Compare object file (*.o) to golden file (*.n).
   done
 
   for b in $ANSIB $IBMB $OTHERB $POSIXB $STRCB $STRC2B; do
-    # "$bcc" -v -"$a03" -c -O -D_MINIX -D_POSIX_SOURCE -o "$a03"/"$b".o "$b".c
-    "$sc" -"$a03" $idirflag -D_MINIX -D_POSIX_SOURCE -o "$a03"/"$b".s libc/"$b".c || exit "$?"
+    # bcc -v -"$a03" -c -O -D_MINIX -D_POSIX_SOURCE -o "$a03"/"$b".o "$b".c
+    "$sc" -"$a03" -Iinclude -D_MINIX -D_POSIX_SOURCE -o "$a03"/"$b".s libc/"$b".c || exit "$?"
     "$as" -"$a03" -u -w -o "$a03"/"$b".o "$a03"/"$b".s || exit "$?"
     "$cmp" "$a03"/"$b".o "$a03"g/"$b".n || exit "$?"  # Compare object file (*.o) to the relavant v3 golden file (*.m).
     rm -f "$a03"/"$b".s || exit "$?"
@@ -548,6 +482,7 @@ done
 # We don't need the target tools for this, because we use the host tools ("$cr").
 
 cru="$cr"; case "$cr" in /*) ;; */*) cru="../$cr" ;; esac  # "$cru" is "$cr", but it works from one directory lower.
+# !! When rebuilding with bbcc0, we now get here: argument list too long
 # !! Increment typestamp because of changes in isatty.c etc.
 # !! Redo both in alphabetic order.
 (cd 0 && "$cru" -o libc.a -t @644973285 _exit.o abort.o abs.o access.o alarm.o amoeba.o assert.o atoi.o atol.o bcmp.o bcopy.o brk.o brksize.o bsearch.o bzero.o call.o catchsig.o chdir.o chmod.o chown.o chroot.o cleanup.o close.o closedir.o creat.o crypt.o ctermid.o ctime.o ctype.o curses.o cuserid.o doprintf.o dummy.o dup.o dup2.o errno.o exec.o execlp.o exit.o fclose.o fcntl.o fdopen.o fflush.o ffs.o fgetc.o fgets.o fopen.o fork.o fpathconf.o fprintf.o fputc.o fputs.o fread.o freopen.o fseek.o fstat.o ftell.o fwrite.o getcwd.o getdents.o getegid.o getenv.o geteuid.o getgid.o getgrent.o getlogin.o getopt.o getpass.o getpid.o getppid.o getpwent.o gets.o getuid.o gtty.o idiv.o idivu.o imod.o imodu.o imul.o index.o ioctl.o isatty.o isl.o isr.o isru.o itoa.o kill.o laddl.o landl.o lcmpl.o lcoml.o ldecl.o ldivl.o ldivmod.o ldivul.o leorl.o lincl.o link.o lmodl.o lmodul.o lmull.o lnegl.o lock.o lorl.o lrand.o lsearch.o lseek.o lsll.o lsrl.o lsrul.o lsubl.o ltstl.o malloc.o memccpy.o memchr.o memcmp.o memmove.o memset.o message.o mkdir.o mkfifo.o mknod.o mktemp.o mount.o nlist.o open.o opendir.o pathconf.o pause.o peekpoke.o perror.o pipe.o popen.o portio.o printdat.o printk.o prints.o ptrace.o putenv.o puts.o qsort.o rand.o read.o readdir.o regexp.o regsub.o rename.o rewinddir.o rindex.o rmdir.o scanf.o seekdir.o sendrec.o setbuf.o setgid.o setjmp.o setuid.o signal.o sleep.o sprintf.o stat.o stb.o stderr.o stime.o strcat.o strchr.o strcmp.o strcoll.o strcpy.o strcspn.o strerror.o strlen.o strncat.o strncmp.o strncpy.o strpbrk.o strrchr.o strspn.o strstr.o strtok.o strtol.o strtoul.o strxfrm.o stty.o swab.o sync.o sysconf.o syslib.o system.o telldir.o termcap.o time.o times.o tmpnam.o ttyname.o umask.o umount.o ungetc.o uniqport.o unlink.o utime.o vectab.o vsprintf.o wait.o write.o) || exit "$?"
@@ -567,7 +502,7 @@ cru="$cr"; case "$cr" in /*) ;; */*) cru="../$cr" ;; esac  # "$cru" is "$cr", bu
 "$cmp" 0/lcpps.o 0g/lcpps.n || exit "$?"
 for a03 in 0 3; do
   for b in cpp1 cpp2 cpp3 cpp4 cpp5 cpp6; do
-    "$sc" -"$a03" "$idirflag" -o "$a03"/cpp"$b".s cpp/"$b".c || exit "$?"
+    "$sc" -"$a03" -Iinclude -o "$a03"/cpp"$b".s cpp/"$b".c || exit "$?"
     "$diff" "$a03"/cpp"$b".s "$a03"g/cpp"$b".r || exit "$?"
     "$as" -"$a03" -u -w -o "$a03"/cpp"$b".o "$a03"/cpp"$b".s || exit "$?"
     "$cmp"  "$a03"/cpp"$b".o "$a03"g/cpp"$b".n || exit "$?"
@@ -580,7 +515,7 @@ for a03 in 0 3; do
 
   # !! Add "$cmp" for cc.
   for b in cc; do
-    "$sc" -"$a03" "$idirflag" -DNOCROSS -o "$a03"/cc"$b".s cc/cc.c || exit "$?"
+    "$sc" -"$a03" -Iinclude -DNOCROSS -o "$a03"/cc"$b".s cc/cc.c || exit "$?"
     "$as" -"$a03" -u -w -o "$a03"/cc"$b".o "$a03"/cc"$b".s || exit "$?"
   done
   "$ld" -"$a03" -i -h 10000   -o "$a03"/cc "$a03"/crtso.o "$a03"/cc"$b".o "$a03"/libc.a || exit "$?"  # No BSS. -h 10000 leaves >=9 KiB for the command-line arguments and environment.
