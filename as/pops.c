@@ -274,15 +274,18 @@ pfv func;
 	ifstak->elseflag = elseflag;
 	elseflag = FALSE;	/* prepare */
 	if ((ifstak->ifflag = ifflag) != FALSE)
-	    /* else not assembling before, so not now & no ELSE's */
 	{
-	    (*func) ();
+	    (*func) ();  /* Parse the argument of this IF or IFC, put the result to lastexp. */
 	    if (!(lastexp.data & UNDBIT) && lastexp.offset == 0)
-		/* else expression invalid or FALSE, don't change flags */
 	    {
 		ifflag = FALSE;	/* not assembling */
 		elseflag = TRUE;/* but ELSE will change that */
 	    }
+	    /* else {} */  /* IF expression invalid or FALSE, don't change flags. */
+	}
+	else  /* not assembling before, so not now & no ELSE's */
+	{
+	    skipline();  sym = EOLSYM;  /* Ignore the argument of this IF or IFC. */
 	}
     }
 }
