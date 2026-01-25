@@ -174,18 +174,22 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   rm -f sysdet
   case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac
   # !! Autodetect the -DACKFIX etc. flags in $sysdet in case acka3 is used as cc.
+  test -d bin || mkdir bin || exit "$?"
+  test -d libexec || mkdir libexec || exit "$?"
+  rm -f libexec/sc libexec/as libexec/ld libexec/cr bin/bbcc libexec/cpp
 
-  "$cc" $cc2 $cflags $sysdet "$@" -o sc.cross sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  "$cc" $cc2 $cflags $sysdet "$@" -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
-  "$cc" $cc2 $cflags $sysdet "$@" -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
-  "$cc" $cc2 $cflags $sysdet "$@" -o cr.cross cr/cr.c || exit "$?"
-  "$cc" $cc2 $cflags "$@" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o libexec/sc sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o libexec/as as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o libexec/ld ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o libexec/cr cr/cr.c || exit "$?"
+  "$cc" $cc2 $cflags $sysdet "$@" -o bin/bbcc cc/cc.c || exit "$?"
+  "$cc" $cc2 $cflags "$@" -o libexec/cpp cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
 
   set cc  # For subsequent `test "$1" = ...'.
-  sc=./sc.cross
-  as=./as.cross
-  ld=./ld.cross
-  cr=./cr.cross
+  sc=libexec/sc
+  as=libexec/as
+  ld=libexec/ld
+  cr=libexec/cr
   h=cross  # Host system is a cross-compiler. Other values: h=0 means Minix i86; h=3 means Minix i386.
 fi
 
@@ -560,14 +564,13 @@ for a03 in 0 3; do
 
   # !! Add "$cmp" for cc.
   for b in cc; do
-    "$sc" -"$a03" -Iinclude   -o "$a03"/cc"$b".s cc/cc.c || exit "$?"
-    "$as" -"$a03" -u -w       -o "$a03"/cc"$b".o "$a03"/cc"$b".s || exit "$?"
+    "$sc" -"$a03" "$idirflag" -DNOCROSS -o "$a03"/cc"$b".s cc/cc.c || exit "$?"
+    "$as" -"$a03" -u -w -o "$a03"/cc"$b".o "$a03"/cc"$b".s || exit "$?"
   done
   "$ld" -"$a03" -i -h 10000   -o "$a03"/cc "$a03"/crtso.o "$a03"/cc"$b".o "$a03"/libc.a || exit "$?"  # No BSS. -h 10000 leaves >=9 KiB for the command-line arguments and environment.
 done
 
-rm -f bin/cc
-case "$h" in [0-9]) cp "$h"/cc bin/bbcc ;; esac  # !! Preserve mtime when copying with `cp -p'. The Minix 1.5.10 `cp' tool doesn't support `-p'. Build our own cp if needed, or use tar?
+case "$h" in [0-9]) rm -f bin/bbcc; cp "$h"/cc bin/bbcc ;; esac  # !! Preserve mtime when copying with `cp -p'. The Minix 1.5.10 `cp' tool doesn't support `-p'. Build our own cp if needed, or use tar?
 
 # --- Remove temporary ?/*.[os] files.
 
