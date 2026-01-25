@@ -79,8 +79,9 @@ EXTERN unsigned char pcrflag;	/* OBJ_RMASK set if addressing is PC-relative */
 EXTERN opcode_t aprefix;	/* address size prefix or 0 */
 EXTERN bool_t asld_compatible;	/* asld compatibility flag */
 EXTERN opsize_t use16c;		/* number of `use16' invocations in a row */
-EXTERN opsize_t defsize;	/* current default size */
-EXTERN opsize_t idefsize;	/* initial default size */
+EXTERN opsize_t osid;		/* operating system identifier: 0 (for as -0: Minix i86) or 3 (for as -3: Minix i386). */
+EXTERN opsize_t defsize;	/* current default size: 2 or 4 */
+EXTERN opsize_t idefsize;	/* initial default size: 2 or 4 */
 EXTERN opcode_t oprefix;	/* operand size prefix or 0 */
 EXTERN opcode_t sprefix;	/* segment prefix or 0 */
 EXTERN opcode_t sib;		/* scale-index-base byte */
