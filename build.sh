@@ -414,29 +414,25 @@ ANSIB='abort abs assert atoi atol bsearch ctime ctype errno exit fclose fflush f
 IBMB='peekpoke portio'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/ibm . Patched by Bruce Evans.
 OTHERB='amoeba bcmp bcopy brk bzero call chroot cleanup crypt curses doprintf ffs getdents getopt getpass gtty index ioctl itoa lock lrand lsearch memccpy message mknod mktemp mount nlist popen printdat printk prints ptrace putenv regexp regsub rindex seekdir stb stderr stime stty swab sync syslib telldir termcap umount uniqport vectab'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/other . Patched by Bruce Evans.
 POSIXB='_exit access alarm chdir chmod chown close closedir creat ctermid cuserid dup dup2 exec execlp fcntl fdopen fork fpathconf fstat getcwd getegid geteuid getgid getgrent getlogin getpid getppid getpwent getuid isatty kill link lseek mkdir mkfifo open opendir pathconf pause pipe read readdir rename rewinddir rmdir setgid setuid sleep stat sysconf times ttyname umask unlink utime wait write'  # C source files (*.c) from Minix 1.5.10 /usr/src/lib/posix . Patched by Bruce Evans.
+SB='crtso head'  # Minix startup routines, assembly source files (*.s) by Bruce Evans.
+FB='dummy'  # BCC compiler non-support for floating point arithmetic, assembly source files (*.s) by Bruce Evans.  !! Remove this.
+IB='idiv idivu imod imodu imul isl isr isru'  # BCC compiler support for integer arithmetic, assembly source files (*.s) by Bruce Evans.
+MB='brksize catchsig sendrec setjmp'  # Minix library routines, assembly source files (*.s) by Bruce Evans.
 
 for a03 in 0 3; do
   if test "$a03" = 0; then  # i86.
-    SB='crtso head'  # Minix startup routines, assembly source files (*.s) by Bruce Evans.
-    FB='dummy'  # BCC compiler non-support for floating point arithmetic, assembly source files (*.s) by Bruce Evans.
-    IB='idiv idivu imod imodu imul isl isr isru'  # BCC compiler support for integer arithmetic, assembly source files (*.s) by Bruce Evans.
-    JB='inport inportb outport outportb peekb peekw pokeb pokew'  # miscellaneous obsolete i86 junk, assembly source files (*.s) by Bruce Evans. !! Are these files needed? Probably not, remove them.
-    LBB='laddb landb lcmpb lcomb ldecb ldivb ldivub leorb lincb lmodb lmodub lmulb lnegb lorb lslb lsrb lsrub lsubb ltstb'  # BCC compiler support for long arithmetic on big-endian (words-swapped) longs, assembly source files (*.s) by Bruce Evans.
-    LLB='laddl landl lcmpl lcoml ldecl ldivl ldivul leorl lincl lmodl lmodul lmull lnegl lorl lsll lsrl lsrul lsubl ltstl'  # BCC compiler support for long arithmetic on little-endian (normal) longs, assembly source files (*.s) by Bruce Evans.
+    JB='inport inportb outport outportb peekb peekw pokeb pokew'  # miscellaneous obsolete i86 junk, assembly source files (*.s) by Bruce Evans. !! Are these files needed? Probably not, remove them.  !! Remove these.
+    LBB='laddb landb lcmpb lcomb ldecb ldivb ldivub leorb lincb lmodb lmodub lmulb lnegb lorb lslb lsrb lsrub lsubb ltstb'  # BCC compiler support for long arithmetic on big-endian (word-swapped) longs, assembly source files (*.s) by Bruce Evans.  !! Remove these.
+    LLB='laddl landl lcmpl lcoml ldecl ldivl ldivul leorl lincl lmodl lmodul lmull lnegl lorl lsll lsrl lsrul lsubl ltstl'  # BCC compiler support for long arithmetic on little-endian (x86) longs, assembly source files (*.s) by Bruce Evans.
     GB='ldivmod'  # BCC compiler support for integer arithmetic (common long arithmetic), assembly source files (*.s) by Bruce Evans.
-    MB='brksize catchsig sendrec setjmp'  # Minix library routines, assembly source files (*.s) by Bruce Evans.
     STRPASMB='memchr memcmp memmove memset strcat strchr strcmp strcoll strcpy strcspn strlen strncat strncmp strncpy strpbrk strrchr strspn strstr strtok strxfrm'  # Minix library string routines, assembly sourcefiles (*.s) created manually from to-be-preprecessed assembly source files (*.x) from Minix 1.5.10 /usr/src/lib/string . Patched by Bruce Evans.
     STRCB=''  # No additional string routines, C source files (*.c) by Bruce Evans.
     STRC2B=''  # No additional string routines, C source files (*.c) from Minix 1.5.10 /usr/src/lib/string .
   else  # i386.
-    SB='crtso head'  # Minix startup routines, assembly source files (*.s) by Bruce Evans.
-    FB='dummy'  # BCC compiler non-support for floating point arithmetic, assembly source files (*.s) by Bruce Evans.
-    IB='idiv idivu imod imodu imul isl isr isru'  # BCC compiler support for integer arithmetic, assembly source files (*.s) by Bruce Evans.
     JB=''
     LBB=''
     LLB=''
-    GB='divsi3'  # GCC compiler support for integer arithmetic, assembly source files (*.s) by Bruce Evans.
-    MB='brksize catchsig sendrec setjmp'  # Minix library routines, assembly source files (*.s) by Bruce Evans.
+    GB='divsi3'  # GCC compiler support for integer arithmetic, assembly source files (*.s) by Bruce Evans.  !! Remove this.
     STRPASMB=''  # No additional Minix library string routines. These functions are implemented in STRCB and STRC2B instead.
     STRCB='memcmp memcpy memset strcmp strcpy strcspn strlen strncat strncmp strncpy strpbrk'  # Minix library string routines, C source files (*.c) with i386 inline assembly by Bruce Evans.
     STRC2B='memchr memmove strcat strchr strcoll strrchr strspn strstr strtok strxfrm'  # Minix library string routines, C source files (*.c) without assembly from Minix 1.5.10 /usr/src/lib/string . Patched by Bruce Evans.
