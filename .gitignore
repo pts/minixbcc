@@ -5,6 +5,8 @@ tags
 /hd.img
 /[03]/
 /[03]g/
+/libexec/
+/bin/
 /mk.p/
 /p/
 /tools.diff
@@ -12,6 +14,8 @@ tags
 /sysdet
 /sysftype
 /sysdet.exe
+/h.c
+/h
 
 /cpp/cpp
 /cpp/cpp.host
@@ -63,10 +67,3 @@ tags
 /cr/cr.m64
 /cr/cr.pts
 /cr/cr.exe
-
-# Cross-compiler executables built by build.sh.
-/as.cross
-/cpp.cross
-/cr.cross
-/ld.cross
-/sc.cross
