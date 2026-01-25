@@ -1,6 +1,6 @@
 |
-| libt3.si: part of the Minix libc implemented in 8086 (i386) assembly, As86 (non-asld) syntax
-| based on libt3.si, which is based on Minix 1.5.10 libc and Minix 1.5.10 BCC libc source files
+| libt3.si: part of the Minix libc implemented in 8086 (i386) assembly, BCC as (non-asld) special syntax
+| based on libt0.si, which is based on Minix 1.5.10 libc and Minix 1.5.10 BCC libc source files: crtso.s sendrec.s brksize.s idiv.s idivu.s imul.s laddl.s landl.s lcmpl.s lcoml.s ldecl.s ldivl.s ldivmod.s ldivul.s leorl.s lincl.s lmodl.s lmodul.s lmull.s lnegl.s lorl.s lsll.s lsrl.s lsrul.s lsubl.s ltstl.s
 | modified and size-optimized by pts@fazekas.hu at Sat Jan 17 02:13:52 CET 2026
 |
 | The Minix 1.5.10 i386 calling convention is the following:
@@ -13,6 +13,20 @@
 | * The callee can use EAX, EBX, ECX, EDX and EFLAGS as scratch registers (but must set DF := 0). It must restore all other registers (including ESI, EDI, EBP, DS, ES).
 | * The callee returns the value in EAX (sign-extended or zero-extended if needed).
 |
+| Assembly syntax compatibility of this file:
+|
+| * asld (auto -0):  no, because asld supports i86 (-a) target only, and asld doesn't support .comm
+| * v0 as -0:        yes
+| * v0 as -0 -a:     yes
+| * v0 as -3:        yes
+| * v0 as -3 -a:     yes
+| * v1 as -0:        yes
+| * v1 as -0 -a:     no
+| * v1 as -3:        yes
+| * v1 as -3 -a:     no
+|
+
+use32
 
 .data
 .zerow 2*2  | food for null pointer bugs

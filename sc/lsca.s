@@ -2,6 +2,18 @@
 | lcsa.c: libc good enough for linking sc compiled with the Minix 1.5.10 i86 ACK 3.1 C compiler, asld syntax
 | by pts@fazekas.hu at Fri Jan 16 00:49:30 CET 2026
 |
+| Assembly syntax compatibility of this file:
+|
+| * asld (auto -0):  yes
+| * v0 as -0:        no
+| * v0 as -0 -a:     ? (only partially possible, because .bss has a different meaning)
+| * v0 as -3:        no
+| * v0 as -3 -a:     no
+| * v1 as -0:        no
+| * v1 as -0 -a:     ? (only partially possible, because .bss has a different meaning)
+| * v1 as -3:        no
+| * v1 as -3 -a:     no
+|
 
 .globl crtso
 .globl begtext, begdata, begbss

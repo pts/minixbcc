@@ -1,6 +1,6 @@
 |
-| libt0.si: part of the Minix libc implemented in 8086 (i86) assembly, As86--asld syntax
-| based on Minix 1.5.10 libc and Minix 1.5.10 BCC libc source files: crtso.s sendrec_0.s brksize.s idiv.s idivu.s imul.s laddl.s landl.s lcmpl.s lcoml.s ldecl.s ldivl.s ldivmod.s ldivul.s leorl.s lincl.s lmodl.s lmodul.s lmull.s lnegl.s lorl.s lsll.s lsrl.s lsrul.s lsubl.s ltstl.s memmove.x memset.x strcat.x strcmp.x strcpy.x strlen.x strrchr.x
+| libt0.si: part of the Minix libc implemented in 8086 (i86) assembly, BCC as (non-asld) special syntax
+| based on Minix 1.5.10 libc and Minix 1.5.10 BCC libc source files: crtso.s sendrec.s brksize.s idiv.s idivu.s imul.s laddl.s landl.s lcmpl.s lcoml.s ldecl.s ldivl.s ldivmod.s ldivul.s leorl.s lincl.s lmodl.s lmodul.s lmull.s lnegl.s lorl.s lsll.s lsrl.s lsrul.s lsubl.s ltstl.s
 | modified and size-optimized by pts@fazekas.hu at Mon Jan 12 22:25:29 CET 2026
 |
 | The Minix 1.5.10 i86 calling convention is the following:
@@ -13,6 +13,27 @@
 | * The callee can use AX, BX, CX, DX and FLAGS as scratch registers (but must set DF := 0). It must restore all other registers (including SI, DI, BP, DS, ES).
 | * The callee returns the value in AX (sign-extended or zero-extended if needed), it returns long and unsigned long values in DX:AX.
 |
+| Assembly syntax compatibility of this file:
+|
+| * asld (auto -0):  no, because it uses .comm
+| * v0 as -0:        yes
+| * v0 as -0 -a:     yes
+| * v0 as -3:        yes
+| * v0 as -3 -a:     yes
+| * v1 as -0:        yes, see compatibility hack below
+| * v1 as -0 -a:     yes
+| * v1 as -3:        yes
+| * v1 as -3 -a:     yes
+|
+
+use16  | compatibility hack: by specifying use16 8 times in a row, we enable asld_compatible (as -a) mode in as v1, which actually adds compatibility with as v0 (with or without -a), for this file. It makes the effective address in `mov ax, 2(bx)' etc. work.
+use16  | Manual syntax conversion (`mov ax, 2(bx)' --> `mov ax, [bx+2]'): perl -pe 's@((?:-?\d+)?)\((bx|si|di|bp)\)@[$2+$1]@g and s@[+]([-\]])@$1@g'
+use16
+use16
+use16
+use16
+use16
+use16
 
 .data
 .zerow 2  | food for null pointer bugs
@@ -689,6 +710,7 @@ divzero:   | return q = 0 and r = a
 	test dl, dl
 	jns return
 	j negr  | a initially minus, restore it
+
 divlarge:
 	push dx  | remember sign bytes
 	mov si, di  | w in si:dx, initially b from di:cx
