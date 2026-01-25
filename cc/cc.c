@@ -1,6 +1,9 @@
 /* cc.c - driver for minixbcc (v3) BCC (Bruce's C compiler) */
 
-#define _POSIX_SOURCE
+#define _POSIX_SOURCE  /* For the Minix libc. */
+#define _BSD_SOURCE  /* For glibc <=2.19 and minilibc686 reliable signal(...). */
+#define _DEFAULT_SOURCE  /* For glibc >=2.19 and minilibc686 reliable signal(...). */
+#define CONFIG_SIGNAL_BSD  /* For olde minilibc686 reliable signal(...) (bsd_signal(...)). */
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -76,7 +79,8 @@ PRIVATE char bits32_arg[3] = "-?";  /*The '?' will be replaced with '0' or '3'. 
 
 #if 0  /* We use these functions. */
   int chmod P((const char *name, int mode));
-  int execv P((char *name, char **argv));
+  int execv P((char *name, char *argv[]));
+  int execve P((char *name, char *argv[], char *envp[]));
   void exit P((int status));
   int fork P((void));
   int getpid P((void));
@@ -682,6 +686,10 @@ char *where;
     fatal();
 }
 
+#ifdef __MINILIBC686__  /* For old minilibc686. The new one has execv(...) */
+extern char **environ;
+#endif
+
 PRIVATE int execute(argv)
 char **argv;
 {
@@ -703,7 +711,11 @@ char **argv;
 	fatal();
 	/* Fallthrough. */  /* Not reached. */
     case 0:  /* Child. */
-	execv(argv[0], argv);  /* !! minicc doesn't have execv(3) or signal(2); with _POSIX_SOURCE, it should provide posix_signal(...). */
+#ifdef __MINILIBC686__  /* For old minilibc686. The new one has execv(...) */
+	execve(argv[0], argv, environ);
+#else
+	execv(argv[0], argv);
+#endif
 	tmpargs.argc = 0;  /* Make killtemps() a no-op. The parent will delete the temporary files. */
 	show_who("exec of ");
 	writes(argv[0]);
@@ -733,7 +745,7 @@ register struct arg_s *argp;
 PRIVATE void trap_signal(signum)
 int signum;
 {
-    if (signal(signum, SIG_IGN) != SIG_IGN)
+    if (signal(signum, SIG_IGN) != SIG_IGN)  /* !! use sigaction instead if available, i.e. #ifdef SA_RESTART (which Minix doesn't have) */
 	signal(signum, trap);
 }
 
