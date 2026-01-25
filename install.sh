@@ -9,7 +9,8 @@
 
 set -x
 
-cp bin/bbcc /usr/bin/bbcc || exit "$?"  # !! Preserve mtime, everywhere. Preserve mtime when copying with `cp -p'. The Minix 1.5.10 `cp' tool doesn't support `-p'. Build our own cp if needed, or use tar?
+# Don't copy bin/bbcc, that's the cross-compiler.
+cp bin/bbcc.inst /usr/bin/bbcc || exit "$?"  # !! Preserve mtime, everywhere. Preserve mtime when copying with `cp -p'. The Minix 1.5.10 `cp' tool doesn't support `-p'. Build our own cp if needed, or use tar?
 
 libdir=/usr/minixbcc
 test -d "$libdir" || mkdir "$libdir" || exit "$?"

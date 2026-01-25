@@ -71,7 +71,10 @@ static char osid[] = "-DOSID=? ";  /* '?', '0' for Minix i86, '3' for Minix i386
  * medium memory models, false for the large, compact and huge memory
  * models.
  */
-int alignptrcheck(char *cp) {
+int alignptrcheck P((char *cp));
+int alignptrcheck(cp)
+char *cp;
+{
 #ifdef ALIGNPTRCHECK
   (void)cp;
 
