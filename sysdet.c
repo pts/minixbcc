@@ -64,8 +64,8 @@ static char osid[] = "-DOSID=? ";  /* '?', '0' for Minix i86, '3' for Minix i386
 #  endif
 #endif
 
-#define AU ((unsigned) 1 << (sizeof(unsigned ) * 8 - 1))
-#define AUL ((unsigned long) 1 << (sizeof(unsigned long) * 8 - 1))
+#define AU (((char *) 2 - (char *) 1) << (sizeof(unsigned) * 8 - 1))
+#define AUL (((char *) 2 - (char *) 1) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2 - 1))
 /* Returns bool indicating whether pointer arithmetics is linear. True on
  * most systems with a flat memory model. True on DOS for the small and
  * medium memory models, false for the large, compact and huge memory
@@ -120,6 +120,7 @@ char **argv;
   register int got;
   char *p;
   CONST char *filename;
+  unsigned u;
 
   (void)argc;
 
@@ -131,7 +132,8 @@ char **argv;
   if (argc < -1) goto ur1;
 
   if ((int) ~(unsigned) 0 != -1 || (-1 & 3) != 3) ur1: write_str(STDOUT_FILENO, "-DBADSIGNED ");  /* int is not two's complement. */
-  if (((unsigned) 1 << (sizeof(unsigned) * 8 - 1)) == 0 || ((unsigned) 1 << (sizeof(unsigned) * 4) << (sizeof(unsigned) * 4))) ur2: write_str(STDOUT_FILENO, "-DBADBYTE ");  /* 1 bytes is not 8 bits. */
+  u = (unsigned) 1 << (sizeof(unsigned) * 4);  /* Separate assignment to avoid warning in Minix 1.5.10 i86 ACK 3.1 C compiler: overflow in unsigned constant expression. */
+  if (((unsigned) 1 << (sizeof(unsigned) * 8 - 1)) == 0 || (u << (sizeof(unsigned) * 4))) ur2: write_str(STDOUT_FILENO, "-DBADBYTE ");  /* 1 byte is not 8 bits. */
   if (sizeof(char) != 1) ur3: write_str(STDOUT_FILENO, "-DBADCHAR ");  /* char is not 1 byte. */
   if (sizeof(short) != 2) ur4: write_str(STDOUT_FILENO, "-DBADSHORT ");  /* short is not 2 bytes. The C standard allows 2 or more. */
   if (sizeof(int) != 2 && sizeof(int) != 4) ur5: write_str(STDOUT_FILENO, "-DBADINT ");  /* int is not 2 or 4 bytes. The C standard allows 2 or more. */
