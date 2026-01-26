@@ -56,7 +56,12 @@ typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
 #define CRTSO	"crtso.o"
 #define LIBCA	"libc.a"
 
-#define TMPNAME	"/tmp/bbccXXXXXXXX"
+#if CROSS
+#  define TMPDIRDEFAULT "/tmp"
+#  define TMPBASEPATH "/bbccXXXXXXXX"
+#else
+#  define TMPNAME "/tmp/bbccXXXXXXXX"
+#endif
 
 #define ALLOC_UNIT	16	/* allocation unit for arg arrays */
 #define DIRCHAR	'/'
@@ -667,11 +672,20 @@ PRIVATE char *my_mktemp()
     char *tmpfilename;
     static unsigned long tmpnum;
     static char is_tmpnum_valid;
+#if CROSS
+    static char *tmpdir;
+#endif
     time_t ts;
     int fd;
     int tries_remaining;
 
+#if CROSS
+    if (!tmpdir && (!(tmpdir = getenv("TMPDIR")) || tmpdir[0] == '\0')) tmpdir = TMPDIRDEFAULT;
+    strcpy(tmpfilename = p = (char*) my_malloc(strlen(tmpdir) + sizeof(TMPBASEPATH), "temporary file"), tmpdir);
+    memcpy(p + strlen(p), TMPBASEPATH, sizeof(TMPBASEPATH));
+#else
     tmpfilename = stralloc(TMPNAME);
+#endif
     if (!is_tmpnum_valid) {
         time(&ts);
         /* !! Use even better techniques to add entropy in https://github.com/pts/minilibc686/blob/master/tools/mktmpf.c */
