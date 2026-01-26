@@ -7,6 +7,9 @@
 .define	_strstr
 .text
 _strstr:
+if __IBITS__ = 32
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	push	bp
 	mov	bp,sp
 	sub	sp,#2		| make room for locals
@@ -57,4 +60,5 @@ exit:
 	pop	si
 	mov	sp,bp
 	pop	bp
+endif
 	ret

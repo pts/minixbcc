@@ -8,6 +8,9 @@
 
 lcmpl:
 lcmpul:
+if __IBITS__ = 32
+error unneeded
+else  | Based on assembly source file (*.s) by Bruce Evans.
 	sub	bx,[di+2]	| don't need to preserve bx
 	je	LCMP_NOT_SURE
 	ret
@@ -27,4 +30,5 @@ LCMP_EXIT:
 
 LCMP_B_AND_LT:
 	dec	bx		| clear ov, set mi and ne for less than
+endif
 	ret

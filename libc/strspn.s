@@ -7,6 +7,9 @@
 .define	_strspn
 .text
 _strspn:
+if __IBITS__ = 32
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	push	bp
 	mov	bp,sp
 	push	si
@@ -53,4 +56,5 @@ exit:
 	pop	si
 	mov	sp,bp
 	pop	bp
+endif
 	ret

@@ -9,6 +9,9 @@
 scan:	.word	0  | !! Move it to .bss with .comm.
 .text
 _strtok:
+if __IBITS__ = 32
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	push	bp
 	mov	bp,sp
 	push	si
@@ -64,4 +67,5 @@ exit:
 	pop	si
 	mov	sp,bp
 	pop	bp
+endif
 	ret

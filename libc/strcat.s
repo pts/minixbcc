@@ -7,6 +7,9 @@
 .define _strcat
 .text
 _strcat:
+if __IBITS__ = 32
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	mov	bx,si		| save si and di
 	mov	dx,di
 	mov	si,sp
@@ -38,4 +41,5 @@ exit:
 	mov	si,bx
 	mov	di,dx
 	pop	ax
+endif
 	ret

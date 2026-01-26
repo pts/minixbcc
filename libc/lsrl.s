@@ -6,6 +6,10 @@
 	.even
 
 lsrl:
+if __IBITS__ = 32
+error unneeded
+	ret
+else  | Based on assembly source file (*.s) by Bruce Evans.
 	mov	cx,di
 	jcxz	LSR_EXIT
 	cmp	cx,*32
@@ -22,3 +26,4 @@ LSR_EXIT:
 LSR_SIGNBIT:
 	mov	cx,*32		| equivalent to +infinity in this context
 	j	LSR_LOOP
+endif

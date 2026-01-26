@@ -1,14 +1,11 @@
+.define _begsig
+
 if __IBITS__ = 32
-| catchsig.s
-
-	.define _begsig
-
 FIRSTARGINREG	=	0		| nonzero if first arg is in eax
 
 MTYPE		=	4		| offset of m_type in message struct
 PSIZE		=	4		| size of pointers in functions
 
-	.text
 	.align	4
 _begsig:
 	pushad				| save registers (32 bytes)
@@ -38,7 +35,6 @@ endif
 	.extern	___vectab
 	.extern	__M
 else  | if __IBITS__ = 32
-.define _begsig
 mtype = 2			| _M+mtype = &_M.m_type
 _begsig:
 	push ax			| after interrupt, save all regs

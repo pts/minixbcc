@@ -8,6 +8,9 @@
 
 lsll:
 lslul:
+if __IBITS__ = 32
+error unneeded
+else  | Based on assembly source file (*.s) by Bruce Evans.
 	mov	cx,di
 	jcxz	LSL_EXIT
 	cmp	cx,*32
@@ -24,4 +27,5 @@ LSL_EXIT:
 LSL_ZERO:
 	xor	ax,ax
 	mov	bx,ax
+endif
 	ret

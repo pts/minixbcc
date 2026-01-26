@@ -7,6 +7,9 @@
 .define	_memchr
 .text
 _memchr:
+if __IBITS__ = 32
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	mov	bx,di		| save di
 	mov	di,sp
 	xor	dx,dx		| default result is NULL
@@ -23,4 +26,5 @@ _memchr:
 exit:
 	mov	di,bx		| restore di
 	mov	ax,dx
+endif
 	ret

@@ -8,6 +8,9 @@
 
 lmull:
 lmulul:
+if __IBITS__ = 32
+error unneeded
+else  | Based on assembly source file (*.s) by Bruce Evans.
 	mov	cx,ax
 	mul	word ptr [di+2]
 	xchg	ax,bx
@@ -16,4 +19,5 @@ lmulul:
 	mov	ax,ptr [di]
 	mul	cx
 	add	bx,dx
+endif
 	ret

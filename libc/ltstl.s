@@ -8,6 +8,9 @@
 
 ltstl:
 ltstul:
+if __IBITS__ = 32
+error unneeded
+else  | Based on assembly source file (*.s) by Bruce Evans.
 	test	bx,bx
 	je	LTST_NOT_SURE
 	ret
@@ -23,4 +26,5 @@ LTST_NOT_SURE:
 
 LTST_FIX_SIGN:
 	inc	bx		| clear ov and mi, set ne for greater than
+endif
 	ret
