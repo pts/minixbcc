@@ -9,6 +9,32 @@
 .define	_strncmp
 .text
 _strncmp:
+if __IBITS__ = 32  | Based on i386 inline assembly code (#asm .. #endasm) in a C source file by Bruce Evans.
+.s1 = 4
+.s2 = 8
+.n = 12
+	mov	edx,edi
+	push	esi
+	mov	esi,4+.s1[esp]
+	mov	edi,4+.s2[esp]
+	mov	ecx,4+.n[esp]
+	sub	eax,eax		| prepare for various exits
+	jecxz	.SNCMP_1EXIT
+.SNCMP_LOOP:
+	lodsb
+	or	al,al
+	je	.SNCMP_EXIT
+	scasb
+	loopz	.SNCMP_LOOP
+	dec	edi
+.SNCMP_EXIT:
+	sub	al,[edi]
+	sbb	ah,#0
+	cwde
+.SNCMP_1EXIT:
+	pop	esi
+	mov	edi,edx
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	mov	bx,sp
 	push	si
 	push	di
@@ -65,4 +91,5 @@ last_byte_test:			| Expects: (al)=char of s1; [di]->char of s2
 exit:
 	pop	di
 	pop	si
+endif
 	ret

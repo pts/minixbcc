@@ -10,6 +10,28 @@
 .define	_strncpy
 .text
 _strncpy:
+if __IBITS__ = 32  | Based on i386 inline assembly code (#asm .. #endasm) in a C source file by Bruce Evans.
+.s1 = 4
+.s2 = 8
+.n = 12
+	mov	edx,edi
+	push	esi
+	mov	edi,4+.s1[esp]
+	mov	esi,4+.s2[esp]
+	mov	ecx,4+.n[esp]
+	jecxz	.STNCPY_EXIT
+.STNCPY_LOOP:
+	lodsb
+	stosb
+	test	al,al
+	loopnz	.STNCPY_LOOP
+	rep
+	stosb
+.STNCPY_EXIT:
+	mov	eax,4+.s1[esp]
+	pop	esi
+	mov	edi,edx
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	mov	bx,sp
 	push	si
 	push	di
@@ -66,4 +88,5 @@ exit:
 	pop	di
 	pop	si
 	mov	ax,[bx+2]
+endif
 	ret

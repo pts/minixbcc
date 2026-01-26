@@ -7,6 +7,9 @@
 .define	_strcspn
 .text
 _strcspn:
+if __IBITS__ = 32  | Based on i386 inline assembly code (#asm .. #endasm) in a C source file by Bruce Evans.
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	push	bp
 	mov	bp,sp
 	push	si
@@ -75,4 +78,5 @@ exit:
 	pop	si
 	mov	sp,bp
 	pop	bp
+endif
 	ret

@@ -8,6 +8,9 @@
 .define	_strncat
 .text
 _strncat:
+if __IBITS__ = 32  | Based on i386 inline assembly code (#asm .. #endasm) in a C source file by Bruce Evans.
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	mov	bx,si		| save si and di
 	mov	dx,di
 	mov	si,sp
@@ -34,4 +37,5 @@ exit:
 	mov	si,bx		| restore si and di
 	mov	di,dx
 	pop	ax
+endif
 	ret

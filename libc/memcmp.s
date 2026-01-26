@@ -8,6 +8,49 @@
 .define	_memcmp
 .text
 _memcmp:
+if __IBITS__ = 32  | Based on i386 inline assembly code (#asm .. #endasm) in a C source file by Bruce Evans.
+BYTE_LIMIT	=	7	| if n is above this, work with dwords
+	push	esi
+	push	edi
+	mov	esi,4+4+4[esp]
+	mov	edi,4+4+4+4[esp]
+	mov	edx,4+4+4+4+4[esp]
+	sub	eax,eax		| provisional return value
+	cmp	esi,edi
+	je	exit		| early exit if s1 == s2
+	cmp	edx,#BYTE_LIMIT
+	jbe	byte_compare
+	mov	ecx,esi		| align source, hope target is too
+	neg	ecx
+	and	ecx,#3		| count for alignment
+	sub	edx,ecx		| remainder
+	cmp	ecx,ecx		| set equals flags in case rep is null
+				| to avoid jump in likely aligned case
+	rep
+	cmpsb
+	jnz	result_in_flags
+	mov	ecx,edx
+	and	edx,#3		| new remainder
+	shr	ecx,#2		| count of dwords (known to be nonzero)
+	rep
+	cmpsd
+	jz	byte_compare
+	mov	edx,#4		| new remainder
+	sub	esi,edx		| back to the dword with the difference
+	sub	edi,edx
+byte_compare:
+	xchg	ecx,edx		| remainder in ecx, trash in edx
+	cmp	ecx,ecx		| avoid jump as above
+	rep
+	cmpsb
+result_in_flags:
+	seta	al		| eax = 1 if s1 > s2, else 0 (eax was 0)
+	setb	cl		| ecx = 1 if s1 < s2, else 0 (ecx was 0-3)
+	sub	eax,ecx
+exit:
+	pop	edi
+	pop	esi
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	mov	bx,sp
 	push	si
 	push	di
@@ -61,4 +104,5 @@ at_mismatch:
 exit:
 	pop	di
 	pop	si
+endif
 	ret
