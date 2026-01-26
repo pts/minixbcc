@@ -56,7 +56,7 @@ typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
 #define CRTSO	"crtso.o"
 #define LIBCA	"libc.a"
 
-#define TMPNAME	"/tmp/bccYYYYXXXXXXX"  /* 'X' for the PID hex etc., 'Y' for the file ID hex (autoincrement). 14 is the maximum basename length supported by the Minix v1 filesystem. */
+#define TMPNAME	"/tmp/bbccXXXXXXXX"
 
 #define ALLOC_UNIT	16	/* allocation unit for arg arrays */
 #define DIRCHAR	'/'
@@ -659,54 +659,42 @@ unsigned long key;
     return key & (unsigned long) 0xffffffffL;
 }
 
-/* Small odd primes, used for stepping the temporary file counter. */
-PRIVATE CONST unsigned tmpsteps[16] = { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59 };
-
-/* !! Use even better techniques in https://github.com/pts/minilibc686/blob/master/tools/mktmpf.c */
 PRIVATE char *my_mktemp()
 {
     register char *p;
     unsigned digit;
     unsigned long digits;
     char *tmpfilename;
-    static unsigned tmpnum;
-    static unsigned tmpnum0;
-    static unsigned tmpstep;  /* For stepping tmpnum. */
-    static char is_ts_valid;
-    static time_t ts;
-    static unsigned long pidts;
+    static unsigned long tmpnum;
+    static char is_tmpnum_valid;
+    time_t ts;
     int fd;
+    int tries_remaining;
 
-    p = tmpfilename = stralloc(TMPNAME);
-    p += strlen(p);
-    if (is_ts_valid) { again:
-	if ((tmpnum = (tmpnum + tmpstep) & (unsigned) 0xffff) == tmpnum0)
-	{
-	    show_who("too many temporary files, stopped at ");
-	    writesn(p);
-	    fatal();
-        }
-    } else {
+    tmpfilename = stralloc(TMPNAME);
+    if (!is_tmpnum_valid) {
         time(&ts);
-        pidts = mix3(mix3(getpid())) ^ mix3(mix3(ts));  /* !! Use a better 32-bit mixing function. */
-        /* !! Add more entropy (such as argv[0] pointer and data) to pidts, see mktmpf.c for inspiration.  */
-        tmpnum0 = tmpnum = ((unsigned) pidts + (unsigned) mix3(ts)) & (unsigned) 0xffff;
-        tmpstep = tmpsteps[(unsigned) mix3(pidts) & 15];
-        ++is_ts_valid;
+        /* !! Use even better techniques to add entropy in https://github.com/pts/minilibc686/blob/master/tools/mktmpf.c */
+        tmpnum = mix3(mix3(getpid())) + mix3(ts);
+        ++is_tmpnum_valid;
     }
-    /* !! Use 1 32-bit random number, not 11 hex digits of 2 components. And then generate the next with mix3(...). */
-    for (digits = pidts; *--p == 'X'; digits >>= 4)
+    tries_remaining = 1024;
+  again:
+    digits = tmpnum = mix3(tmpnum);  /* Generate next temporary filename to try. */
+    for (p = tmpfilename, p += strlen(p); *--p == 'X'; digits >>= 4)
     {
-	*p   = ((digit = (unsigned) digits & 15) > 9) ? digit + 'A' - 10 : digit + '0';
+	*p = ((digit = (unsigned) digits & 15) > 9) ? digit + 'A' - 10 : digit + '0';
     }
-    for (digits = tmpnum; *p == 'Y'; digits >>= 4)
-    {
-	*p-- = ((digit = (unsigned) digits & 15) > 9) ? digit + 'A' - 10 : digit + '0';
-    }
-
     p = tmpfilename;
     /* Like creat(p), but with `| O_EXCL' added for safety, i.e. to avoid the data race with another process. */
-    if ((fd = open(p, O_CREAT | O_WRONLY | O_TRUNC | O_EXCL, 0666)) < 0) goto again;
+    if ((fd = open(p, O_CREAT | O_WRONLY | O_TRUNC | O_EXCL, 0666)) < 0) {
+	if (tries_remaining-- == 0) {
+	    show_who("error creating temporary files, stopped at ");
+	    writesn(p);
+	    fatal();
+	}
+	goto again;
+    }
     close(fd);
     addarg(&tmpargs, p);
     return p;
