@@ -293,15 +293,17 @@ unsigned count;
 
 #if __STDC__
 #  define cast_lseek_offset(offset) (offset)
+#  define const_lseek_offset(v) ((INT32T) (v))  /* Without the cast, it would be broken with `cc -m' on Minix 2.0.4 i86, which runs `irrel -m', which strips arguments from function prototypes, thus it would push only 16 bits. */
 #else
 #  define cast_lseek_offset(offset) ((off_t) (offset))  /* We must pass the offset of the correct size, because the K&R C compiler doesn't know the argument type of lseek(...). Compile with -Doff_t=long if needed. */
+#  define const_lseek_offset(v) ((off_t) (v))
 #endif
 
 PUBLIC void seekin(offset)
 unsigned INT32T offset;
 {
     inbufptr = inbufend = inbuf;
-    if ((INT32T) offset < 0 || lseek(infd, cast_lseek_offset((INT32T) offset), SEEK_SET) < 0)
+    if ((INT32T) offset < 0 || lseek(infd, cast_lseek_offset(offset), SEEK_SET) < 0)
 	prematureeof();
 }
 
@@ -309,7 +311,7 @@ PUBLIC void seekout(offset)
 unsigned INT32T offset;
 {
     flushout();
-    if ((INT32T) offset < 0 || lseek(outfd, cast_lseek_offset((INT32T) offset), SEEK_SET) != cast_lseek_offset((INT32T) offset))
+    if ((INT32T) offset < 0 || lseek(outfd, cast_lseek_offset(offset), SEEK_SET) != cast_lseek_offset(offset))
 	outputerror("cannot seek in");
 }
 

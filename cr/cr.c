@@ -32,8 +32,10 @@
 
 #if __STDC__
 #  define cast_lseek_offset(offset) (offset)
+#  define const_lseek_offset(v) ((INT32T) (v))  /* Without the cast, it would be broken with `cc -m' on Minix 2.0.4 i86, which runs `irrel -m', which strips arguments from function prototypes, thus it would push only 16 bits. */
 #else
 #  define cast_lseek_offset(offset) ((off_t) (offset))  /* We must pass the offset of the correct size, because the K&R C compiler doesn't know the argument type of lseek(...). Compile with -Doff_t=long if needed. */
+#  define const_lseek_offset(v) ((off_t) (v))
 #endif
 
 /* Parses an unsigned decimal, hexadecimal or octal number. It doesn't check
@@ -194,10 +196,10 @@ char **argv;
   while ((arg = *argv++) != (char*)0) {
     if ((mfd = open00(arg)) < 0) fatal2("error opening member file", arg);
     /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add cast_lseek_offset(...). */
-    if ((size = lseek(mfd, cast_lseek_offset(0), 2)) == -1) fatal2("error getting member file size", arg);
+    if ((size = lseek(mfd, const_lseek_offset(0), 2)) < 0) fatal2("error getting member file size", arg);
     if ((INT32T) size < 0 || (size >> 15 >> 15 >> 1) != 0) fatal2("member file too large", arg);
     /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add cast_lseek_offset(...). */
-    if (lseek(mfd, cast_lseek_offset(0), 0) != 0) fatal2("error rewinding member file", arg);
+    if (lseek(mfd, const_lseek_offset(0), 0) != 0) fatal2("error rewinding member file", arg);
     for (p = arg + strlen(arg); p != arg && p[-1] != '/'; --p) {}
     if (*p == '\0') fatal2("empty member basename", arg);
     for (hdrp14 = (hdrp = hdrp0) + 14; *p != '\0' && hdrp != hdrp14; *hdrp++ = *p++) {}
