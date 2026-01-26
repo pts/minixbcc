@@ -7,6 +7,9 @@
 .define	_strchr
 .text
 _strchr:
+if __IBITS__ = 32
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	mov	bx,si		| save si
 	mov	si,sp
 	movb	dl,[si+4]
@@ -39,4 +42,5 @@ one_past:
 	dec	si
 	mov	ax,si
 	mov	si,bx		| restore si
+endif
 	ret

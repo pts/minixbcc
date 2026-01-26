@@ -34,6 +34,9 @@
 	.even
 
 ldivmod:
+if __IBITS__ = 32
+error unneeded
+else  | Based on assembly source file (*.s) by Bruce Evans.
 	mov	dx,di		| sign byte of b in dh
 	mov	dl,bh		| sign byte of a in dl
 	test	di,di
@@ -183,4 +186,5 @@ negq:
 	mov	sp,bp
 	pop	si
 	pop	bp
+endif
 	ret

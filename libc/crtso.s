@@ -1,13 +1,11 @@
-if __IBITS__ = 32
 | This is the C run-time start-off routine.
 | Its job is to take the arguments as put on the stack by EXEC, and to set
 | them up the way _main expects them.
 
-	.define	crtso
-	.extern	_exit
-	.extern	_main
+.define	crtso
+.extern _main, _exit
 
-	.text
+if __IBITS__ = 32
 	.align	4
 crtso:
 	sub	ebp,ebp			| clear for backtrace of core files
@@ -30,14 +28,8 @@ crt_oops:
 	.bss
 	.comm	_environ,4
 else  | if __IBITS__ = 32
-| This is the C run-time start-off routine.  It's job is to take the
-| arguments as put on the stack by EXEC, and to parse them and set them up the
-| way _main expects them.
-
-.text
-.extern _main, _exit
-.globl crtso, _environ
-.globl begtext, begdata, begbss
+.globl _environ
+.globl begtext, begdata, begbss  | !! Are these needed?
 begtext:
 crtso:
 		sub	bp,bp	| clear for backtrace of core files

@@ -13,4 +13,4 @@
 .text
 .extern _strcmp
 _strcoll:
-	jmp	_strcmp
+	jmp	_strcmp  | !! Merge this label to libc/strcmp.s.

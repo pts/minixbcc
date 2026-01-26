@@ -20,6 +20,9 @@
 .text
 .extern _strncpy, _strlen
 _strxfrm:
+if __IBITS__ = 32
+error unimplemented
+else  | Based on i86 (8086) to-be-preprocessed assembly source file /usr/src/lib/string/*.x . Patched by Bruce Evans.
 	mov	bx,sp		| quick and dirty call to strncpy()
 	push	[bx+6]
 	push	[bx+4]
@@ -29,4 +32,5 @@ _strxfrm:
 	push	[bx+4]		| followed by a call to strlen()
 	call	_strlen
 	add	sp,#2
+endif
 	ret

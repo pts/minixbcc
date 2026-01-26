@@ -1,4 +1,3 @@
-if __IBITS__ = 32
 | setjmp.s
 | int setjmp(jmp_buf jb);
 | int longjmp(jmp_buf jb, int value);
@@ -6,6 +5,7 @@ if __IBITS__ = 32
 	.define	_setjmp
 	.define	_longjmp
 
+if __IBITS__ = 32
 FIRSTARGINREG	=	0		| nonzero if first arg is in eax
 
 EBP_OFF		=	0
@@ -40,11 +40,6 @@ endif
 	mov	esp,ESP_OFF[edx]
 	jmp	EIP_OFF[edx]
 else  | if __IBITS__ = 32
-| setjmp.s
-
-	.define	_setjmp
-	.define	_longjmp
-
 BP_OFF		=	0
 SP_OFF		=	2
 IP_OFF		=	4

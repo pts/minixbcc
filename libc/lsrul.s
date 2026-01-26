@@ -6,6 +6,9 @@
 	.even
 
 lsrul:
+if __IBITS__ = 32
+error unneeded
+else  | Based on assembly source file (*.s) by Bruce Evans.
 	mov	cx,di
 	jcxz	LSRU_EXIT
 	cmp	cx,*32
@@ -22,4 +25,5 @@ LSRU_EXIT:
 LSRU_ZERO:
 	xor	ax,ax
 	mov	bx,ax
+endif
 	ret
