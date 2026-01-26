@@ -21,12 +21,14 @@
 #  define GET_PATH_INCLUDE() flag_include.flag
 #  define GET_PATH_TARGET_CRTSO() path_crtso.libdir
 #  define GET_PATH_TARGET_LIBCA() path_libca.libdir
+#  define IS_HOST_BITS32 (sizeof(char *) >= 4)
 #else
 #  define CROSS 1
 #  define GET_PATH_TOOL(tool_name) get_cross_path_tool((tool_name))
 #  define GET_PATH_INCLUDE() get_cross_flag_include()
 #  define GET_PATH_TARGET_CRTSO() get_cross_path_target(CRTSO, &target_CRTSO)
 #  define GET_PATH_TARGET_LIBCA() get_cross_path_target(LIBCA, &target_LIBCA)
+#  define IS_HOST_BITS32 1
 #endif
 
 #define FALSE	0
@@ -82,7 +84,6 @@ PRIVATE char *progname;
 PRIVATE struct arg_s tmpargs;	/* = NULL */
 PRIVATE bool_t verbose;		/* = FALSE */
 
-#define IS_HOST_BITS32 (sizeof(char *) >= 4)
 
 PRIVATE char bits32_arg[3] = "-?";  /*The '?' will be replaced with '0' or '3'. */
 
