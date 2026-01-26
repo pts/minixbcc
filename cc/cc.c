@@ -12,6 +12,8 @@
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
+#include <fcntl.h>
 
 #ifdef NOCROSS
 #  define CROSS 0
@@ -35,9 +37,11 @@
 #define PUBLIC
 
 #if __STDC__
-#define P(x)	x
+#  define P(x)	x
+#  define CONST const
 #else
-#define P(x)	()
+#  define P(x)	()
+#  define CONST
 #endif
 
 typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
@@ -52,7 +56,7 @@ typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
 #define CRTSO	"crtso.o"
 #define LIBCA	"libc.a"
 
-#define TMPNAME	"/tmp/bccYYYYXXXX"
+#define TMPNAME	"/tmp/bccYYYYXXXXXXX"  /* 'X' for the PID hex etc., 'Y' for the file ID hex (autoincrement). 14 is the maximum basename length supported by the Minix v1 filesystem. */
 
 #define ALLOC_UNIT	16	/* allocation unit for arg arrays */
 #define DIRCHAR	'/'
@@ -116,6 +120,7 @@ FORWARD void writes P((char *s));
 FORWARD void writesn P((char *s));
 FORWARD bool_t is_tool P((char *s));
 FORWARD void trap_signal P((int signum));
+FORWARD unsigned long mix3 P((unsigned long key));
 
 #if CROSS
 PRIVATE char *driverdir;  /* Directory of this driver program (from its argv[0]). */
@@ -627,36 +632,84 @@ char *where;
     return block;
 }
 
-/* !! Be much smarter and safer on the host. */
+/*
+ * mix3 is a period 2**32-1 PNRG ([13,17,5]).
+ *
+ * https://stackoverflow.com/a/54708697
+ * https://stackoverflow.com/a/70960914
+ *
+ * This xorshift technique is based on the 2003 paper titled ``Xorshift
+ * PRNGs'' by George Marsaglia, published in the Journal of Statistical
+ * Software. It ensures that entropy from high-order bits propagates to
+ * low-order bits and vice versa.
+ *
+ * The iteration count of 10 was chosen empirically by looking at key
+ * values 0..19 and the upper 2 and 3 bits of mixes3(key). Even 6 and 7 are
+ * bad, 9 is much better, 10 is good enough.
+ *
+ * This function uses the low 32 bits of the input, and returns a value less
+ * than 1 << 32.
+ */
+PRIVATE unsigned long mix3(key)
+unsigned long key;
+{
+    key ^= (key << 13);
+    key ^= ((key & (unsigned long) 0xffffffffL) >> 17);
+    key ^= (key << 5);
+    return key & (unsigned long) 0xffffffffL;
+}
+
+/* Small odd primes, used for stepping the temporary file counter. */
+PRIVATE CONST unsigned tmpsteps[16] = { 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47, 53, 59 };
+
+/* !! Use even better techniques in https://github.com/pts/minilibc686/blob/master/tools/mktmpf.c */
 PRIVATE char *my_mktemp()
 {
     register char *p;
     unsigned digit;
-    unsigned digits;
-    char *template;
+    unsigned long digits;
+    char *tmpfilename;
     static unsigned tmpnum;
+    static unsigned tmpnum0;
+    static unsigned tmpstep;  /* For stepping tmpnum. */
+    static char is_ts_valid;
+    static time_t ts;
+    static unsigned long pidts;
+    int fd;
 
-    p = template = stralloc(TMPNAME);
+    p = tmpfilename = stralloc(TMPNAME);
     p += strlen(p);
-    digits = getpid();
-    while (*--p == 'X')
-    {
-	if ((digit = digits % 16) > 9)
-	    digit += 'A' - ('9' + 1);
-	*p = digit + '0';
-	digits /= 16;
+    if (is_ts_valid) { again:
+	if ((tmpnum = (tmpnum + tmpstep) & (unsigned) 0xffff) == tmpnum0)
+	{
+	    show_who("too many temporary files, stopped at ");
+	    writesn(p);
+	    fatal();
+        }
+    } else {
+        time(&ts);
+        pidts = mix3(mix3(getpid())) ^ mix3(mix3(ts));  /* !! Use a better 32-bit mixing function. */
+        /* !! Add more entropy (such as argv[0] pointer and data) to pidts, see mktmpf.c for inspiration.  */
+        tmpnum0 = tmpnum = ((unsigned) pidts + (unsigned) mix3(ts)) & (unsigned) 0xffff;
+        tmpstep = tmpsteps[(unsigned) mix3(pidts) & 15];
+        ++is_ts_valid;
     }
-    digits = tmpnum;
-    while (*p == 'Y')
+    /* !! Use 1 32-bit random number, not 11 hex digits of 2 components. And then generate the next with mix3(...). */
+    for (digits = pidts; *--p == 'X'; digits >>= 4)
     {
-	if ((digit = digits % 16) > 9)
-	    digit += 'A' - ('9' + 1);
-	*p-- = digit + '0';
-	digits /= 16;
+	*p   = ((digit = (unsigned) digits & 15) > 9) ? digit + 'A' - 10 : digit + '0';
     }
-    ++tmpnum;
-    addarg(&tmpargs, template);
-    return template;
+    for (digits = tmpnum; *p == 'Y'; digits >>= 4)
+    {
+	*p-- = ((digit = (unsigned) digits & 15) > 9) ? digit + 'A' - 10 : digit + '0';
+    }
+
+    p = tmpfilename;
+    /* Like creat(p), but with `| O_EXCL' added for safety, i.e. to avoid the data race with another process. */
+    if ((fd = open(p, O_CREAT | O_WRONLY | O_TRUNC | O_EXCL, 0666)) < 0) goto again;
+    close(fd);
+    addarg(&tmpargs, p);
+    return p;
 }
 
 PRIVATE void my_unlink(name)
