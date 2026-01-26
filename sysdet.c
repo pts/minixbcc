@@ -64,45 +64,48 @@ static char osid[] = "-DOSID=? ";  /* '?', '0' for Minix i86, '3' for Minix i386
 #  endif
 #endif
 
-#define AU (((char *) 2 - (char *) 1) << (sizeof(unsigned) * 8 - 1))
-#define AUL (((char *) 2 - (char *) 1) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2 - 1))
+#include <stdio.h>
+
+#define AI (((char *) 2 - (char *) 1) << (sizeof(unsigned) * 8 - 2))  /* `- 2' instead of `- 1' to avoid a signed overflow below. */
+#define AL ((((char *) 2 - (char *) 1) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2) << (sizeof(unsigned long) * 2 - 2)) - 1)  /* `- 2' instead of `- 1' to avoid a signed overflow below. */
 /* Returns bool indicating whether pointer arithmetics is linear. True on
  * most systems with a flat memory model. True on DOS for the small and
  * medium memory models, false for the large, compact and huge memory
  * models.
  */
-int alignptrcheck P((char *cp));
-int alignptrcheck(cp)
+int alignptrcheck P((char *cp, int argc));
+int alignptrcheck(cp, argc)
 char *cp;
+int argc;
 {
+  (void)cp; (void)argc;
 #ifdef ALIGNPTRCHECK
-  (void)cp;
-
   return ALIGNPTRCHECK;
 #else
 #ifdef HAVE_SIZEOF
 #if __SIZEOF_POINTER__ == __SIZEOF_INT__
-  return (char *) ((unsigned) cp + AU) != cp + AU;
+  return (char *) ((unsigned) cp + AI) != cp + AI;  /* This must avoid a signed overflow, because Clang 15.0.7 (-O0 default) would check it and insert a trap. */
 #else
 #if __SIZEOF_POINTER__ == __SIZEOF_LONG__
-  return (char *) ((unsigned long) cp + AUL) != cp + AUL;
+  return (char *) ((unsigned long) cp + AL) != cp + AL;  /* This must avoid a signed overflow, because Clang 15.0.7 (-O0 default) would check it and insert a trap. */
 #else
   return 0;
 #endif
 #endif
 #else
 #if 0  /* This implementation would trigger the GCC warnings -Wpointer-to-int-cast -Wint-to-pointer-cast because of the size mismatch between the pointer and the integer. */
-  return sizeof(char *) == sizeof(int) ? ((char *) ((unsigned) cp + AU) != cp + AU) :
-      sizeof(char *) == sizeof(long) ? ((char *) ((unsigned long) cp + AUL) != cp + AUL) : 0;
+  return sizeof(char *) == sizeof(int) ? ((char *) ((unsigned) cp + AI) != cp + AI) :
+      sizeof(char *) == sizeof(long) ? ((char *) ((unsigned long) cp + AL) != cp + AL) : 0;
 #else  /* Longer implementation, but doesn't trigger warnings. */
   union { unsigned ui; unsigned long ul; char *cp; } u;
   u.cp = cp;
-  if (sizeof(char *) == sizeof(int)) {
-    u.ui += AU;
-    return u.cp != cp + AU;
-  } else if (sizeof(char *) == sizeof(long)) {
-    u.ul += AUL;
-    return u.cp != cp + AUL;
+  if (sizeof(char *) == sizeof(int) || argc == -1) {  /* `|| argc == -1' to avoid the `Unreachable code' warning by OpenWatcom v2. */
+    u.ui += AI;
+    return sizeof((char *) 2 - (char *) 1) < sizeof(char *) || u.cp != cp + AI;
+  } else if (sizeof(char *) == sizeof(long) || argc == -2) {
+    u.ul += AL;
+    printf("%p vs %p 0x%lx s=%d\n", u.cp, cp + AL, (long) AL, sizeof((char *) 2 - (char *) 1));
+    return sizeof((char *) 2 - (char *) 1) < sizeof(char *) || u.cp != cp + AL;
   } else {
     return 0;  /* The result is irrelevant in this case. */
   }
@@ -165,7 +168,7 @@ char **argv;
    * instruction. We don't use `(char *) argc' either, to avoid the GCC and
    * Clang warning -Wint-to-pointer-cast.
    */
-  write_str(STDOUT_FILENO, alignptrcheck((char *) 1) ? "-DNOPORTALIGN=0 " : "-DNOPORTALIGN=1 ");
+  write_str(STDOUT_FILENO, alignptrcheck((char *) 1, argc) ? "-DNOPORTALIGN=0 " : "-DNOPORTALIGN=1 ");
 
   if (argv[0] && (filename = argv[1])) {
     if (argv[2]) fatal2("too many command-line arguments", (CONST char*)0);
