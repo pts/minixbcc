@@ -157,10 +157,12 @@ if test "$1" != cross; then
     h=
     for cc in $cc; do  # Find first working compiler.
       rm -f sysftype
-      "$cc" -O -o sysftype sysftype.c || continue
-      h="`./sysftype ./sysftype`"
-      test "$h" = 0 && break
-      test "$h" = 3 && break
+      if "$cc" -O -o sysftype sysftype.c; then
+        h="`./sysftype ./sysftype`"
+        test "$h" = 0 && break
+        test "$h" = 3 && break
+        h=
+      fi
     done
     rm -f sysftype
     test "$h" = 0 || test "$h" = 3 || exit 6  # Cross-compilation (h="??") is not supported here (see above).
