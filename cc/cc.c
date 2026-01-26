@@ -183,7 +183,7 @@ char **argv;
 {
     register char *arg;
     int argcount = argc;
-    bool_t *argdone = (bool_t *) my_malloc((unsigned) argc * sizeof *argdone, "argdone");
+    bool_t *argdone;
     bool_t as_only = FALSE;
     char *basename;
     bool_t bits32 = IS_HOST_BITS32;
@@ -238,6 +238,7 @@ char **argv;
 	goto runtool;
     }
 
+    argdone = (bool_t *) my_malloc((unsigned) argc * sizeof *argdone, "argdone");
     addarg(&asargs, "-u");
     addarg(&asargs, "-w");
     addarg(&ldargs, "-i");
