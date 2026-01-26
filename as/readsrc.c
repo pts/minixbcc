@@ -117,8 +117,10 @@ char *name;
 
 #if __STDC__
 #  define cast_lseek_offset(offset) (offset)
+#  define const_lseek_offset(v) ((INT32T) (v))  /* Without the cast, it would be broken with `cc -m' on Minix 2.0.4 i86, which runs `irrel -m', which strips arguments from function prototypes, thus it would push only 16 bits. */
 #else
 #  define cast_lseek_offset(offset) ((off_t) (offset))  /* We must pass the offset of the correct size, because the K&R C compiler doesn't know the argument type of lseek(...). Compile with -Doff_t=long if needed. */
+#  define const_lseek_offset(v) ((off_t) (v))
 #endif
 
 /*
@@ -156,8 +158,8 @@ PUBLIC void pget()
 	    --getstak;
 	    getstak->fd = infil;
 	    getstak->line = linum;
-	    if ((fileofs = lseek(infil, cast_lseek_offset(0), 1)) < 0 ||
-	        lseek(infil, cast_lseek_offset(0), 1) != cast_lseek_offset(fileofs))  /* Check for overflow. This could be omitted if sizeof(off_t) == sizeof(fileofs), but we play it compatible in case the libc of some ANSI C compilers (such as Turbo C++ 1.01) doesn't have off_t. */
+	    if ((fileofs = lseek(infil, const_lseek_offset(0), 1)) < 0 ||
+	        lseek(infil, const_lseek_offset(0), 1) != cast_lseek_offset(fileofs))  /* Check for overflow. This could be omitted if sizeof(off_t) == sizeof(fileofs), but we play it compatible in case the libc of some ANSI C compilers (such as Turbo C++ 1.01) doesn't have off_t. */
 	        as_abort("error getting input position");
 	    getstak->fileofs = fileofs - (input.limit - lineptr) - (input.buf - input.first);
 	    ++infiln;
