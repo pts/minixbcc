@@ -44,25 +44,28 @@
 test "$ZSH_VERSION" && set -y 2>/dev/null  # SH_WORD_SPLIT for zsh(1). It's an i nvalid option in bash(1), and it's harmful (prevents echo) in ash(1).
 # test "$0" = "${0%/*}" || cd "${0%/*}" || exit "$?"
 
-test "$1" || set auto $@  # Default: autodetect the compiler.
 if test "$1" = --overwrite-golden; then
   cmp=cp; diff=cp; tcmp="$cmp"; tdiff="$diff"; shift  # Overwrite golden files (*r, *.n, *.d). This is dangerous.
   exit 5  # !! Dangerous.
 elif test "$1" = --nocmp; then
-  cmp=true; diff=true; tcmp="$cmp"; tdiff="$diff"; shift  # Ignore golden files.
+  cmp=:; diff=:; tcmp="$cmp"; tdiff="$diff"; shift  # Ignore golden files.
 elif test "$1" = --notoolscmp; then
-  cmp=cmp; diff=diff; tcmp=true; tdiff=true; shift  # Ignore golden files for tools, compare generated files to non-tools golden files.
+  cmp=cmp; diff=diff; tcmp=:; tdiff=:; shift  # Ignore golden files for tools, compare generated files to non-tools golden files.
 elif test "$1" = --toolsecho; then  # This works with Linux /bin/sh, but not with Minix /bin/sh.
-  cmp=true; diff=true; tcmp=tcmp; tdiff=tdiff; shift  # Compare generated files to non-tools golden files.
+  cmp=:; diff=:; tcmp=tcmp; tdiff=tdiff; shift  # Compare generated files to non-tools golden files.
   : >tools.diff || exit "$?"
 elif test "$1" = --toolscp; then  # This works with Linux /bin/sh, but not with Minix /bin/sh.
-  cmp=true; diff=true; tcmp=cp; tdiff=cp; shift  # Compare generated files to non-tools golden files. Overwrite golden files (*.r, *.n, *.d) for tools, which is dangerous.
+  cmp=:; diff=:; tcmp=cp; tdiff=cp; shift  # Compare generated files to non-tools golden files. Overwrite golden files (*.r, *.n, *.d) for tools, which is dangerous.
   : >tools.diff || exit "$?"
 elif test "$1" = --cmp; then
   cmp=cmp; diff=diff; tcmp="$cmp"; tdiff="$diff"; shift  # Compare generated files to golden files.
-else
-  cmp=cmp; diff=diff; tcmp="$cmp"; tdiff="$diff"   # !! Change this default to `cmp=true; diff=true' later.
+else  # Default: if directories 0g and 3g exist, then use cmd and diff, otherwise ignore comparisons.
+  if test -d 0g && test -d 3g; then cmp=cmp; diff=diff
+  else cmp=:; diff=:  # `cmp=true' would also work.
+  fi
+  tcmp="$cmp"; tdiff="$diff"
 fi
+test "$1" || set auto $@  # Default: autodetect the compiler.
 
 set -x  # Echo all commands run.
 h=  # Host system unnown so far. We also use `test "$h"' below to check if we've recognized "$1".
@@ -442,7 +445,7 @@ case "$h" in [0-9]) rm -f bin/bbcc.inst; cp "$h"/cc bin/bbcc.inst ;; esac  # !! 
 
 # --- Remove temporary ?/*.[os] files.
 
-if test "$cmp","$tcmp" = true,true || test "$cmp","$tcmp" = cmp,cmp ; then
+if test "$cmp","$tcmp" = true,true || test "$cmp","$tcmp" = :,: || test "$cmp","$tcmp" = cmp,cmp ; then
   for a03 in 0 3; do
     mv "$a03"/crtso.o "$a03"/crtso.ok || exit "$?"  # Rename it so it will be kept.
     (rm -f "$a03"/[a-m]*.o) || exit "$?"  # Avoid the `argument list too long' error.
