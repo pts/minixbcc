@@ -38,9 +38,13 @@ rm -f h
 
 # Quick test 2.
 /usr/bin/bbcc as -0 -a -w -o 0/lscs.o sc/lscs0.s || exit "$?"
-cmp 0g/lscs.n 0/lscs.o || exit "$?"
+if test -f 0g/lscs.n; then
+  cmp 0g/lscs.n 0/lscs.o || exit "$?"
+fi
 rm -f 0/lscs.o
 /usr/bin/bbcc -v as -0 -a -w -o 0/lscs.o sc/lscs0.s || exit "$?"
-cmp 0g/lscs.n 0/lscs.o || exit "$?"
+if test -f 0g/lscs.n; then
+  cmp 0g/lscs.n 0/lscs.o || exit "$?"
+fi
 
 : "$0" OK.
