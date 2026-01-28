@@ -416,8 +416,6 @@ sh cross.sh --libc "$sc" "$as" "$cr" "$cmp" || exit "$?"
 # ("$sc", "$as", "$ld"), but we need the target libc ("$a03"/crtso.o and
 # "$a03"/libc.a).
 
-"$as" -0 -w -o 0/lcpps.o cpp/lcpps0.s || exit "$?"  # It will be unused so far.
-"$cmp" 0/lcpps.o 0g/lcpps.n || exit "$?"
 for a03 in 0 3; do
   for b in cpp1 cpp2 cpp3 cpp4 cpp5 cpp6; do
     "$sc" -"$a03" -Iinclude -o "$a03"/cpp"$b".s cpp/"$b".c || exit "$?"
