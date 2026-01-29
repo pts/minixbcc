@@ -17,15 +17,15 @@
 #endif
 
 #if __STDC__
-#  define CONST const
+#  define _CONST const
 #  define P(x) x
 #else
-#  define CONST
+#  define _CONST
 #  define P(x) ()
 #endif
 
 #ifdef OPEN00
-  extern int open00 P((_CONST char *pathname));  /* flags and mode are both 0. */
+  extern int open00 P((const char *pathname));  /* flags and mode are both 0. */
 #else
 #  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
 #endif
@@ -43,9 +43,9 @@
  * garbage. Returns nonzero on success. It produces a twos complement number
  * if the input has a minus sign.
  */
-static int parse_u_arg P((CONST char *s, unsigned INT32T *output));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static int parse_u_arg P((_CONST char *s, unsigned INT32T *output));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static int parse_u_arg(s, output)
-CONST char *s;
+_CONST char *s;
 unsigned INT32T *output;
 {
   register char c;
@@ -91,17 +91,17 @@ unsigned INT32T *output;
   return 1;
 }
 
-static void write_err P((CONST char *msg));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static void write_err P((_CONST char *msg));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static void write_err(msg)
-CONST char *msg;
+_CONST char *msg;
 {
   if (*msg != '\0') (void)!write(2, msg, strlen(msg));
 }
 
-static void fatal2 P((CONST char *msg1, CONST char *msg2));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static void fatal2 P((_CONST char *msg1, _CONST char *msg2));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 static void fatal2(msg1, msg2)
-CONST char *msg1;
-CONST char *msg2;
+_CONST char *msg1;
+_CONST char *msg2;
 {
   write_err("fatal: ");
   write_err(msg1);
@@ -139,10 +139,10 @@ int main(argc, argv)
 int argc;
 char **argv;
 {
-  CONST char *arg;
-  CONST char *p;
+  _CONST char *arg;
+  _CONST char *p;
   char c;
-  CONST char *afn;
+  _CONST char *afn;
   unsigned INT32T mtime;
   unsigned INT32T uid;
   unsigned INT32T gid;
@@ -156,19 +156,19 @@ char **argv;
   int got;
   INT32T size;
 
-  afn = (CONST char*)0;
+  afn = (_CONST char*)0;
   mtime = 1;
   uid = gid = 2;
   mode = 0444;
   (void)argc;
-  for (++argv; (arg = *argv) != (CONST char*)0; ) {
+  for (++argv; (arg = *argv) != (_CONST char*)0; ) {
     if (arg[0] != '-' || arg[1] == '\0') {
       break;
     } else if (arg[2] != '\0') {
       fatal2("flag too long", arg);
     } else if (++argv, (c = arg[1]) == '-') {
       break;
-    } else if ((arg = *argv++) == (CONST char*)0) {
+    } else if ((arg = *argv++) == (_CONST char*)0) {
       fatal2("missing flag argument", argv[-1]);
     } else if (c == 'o') {
       afn = arg;
@@ -185,7 +185,7 @@ char **argv;
       fatal2("unknown command-line flag", arg);
     }
   }
-  if (!afn) fatal2("missing archive filename (-o)", (CONST char*)0);
+  if (!afn) fatal2("missing archive filename (-o)", (_CONST char*)0);
   if ((afd = creat(afn, 0666)) < 0) fatal2("error creating archive file", afn);
   hdrbuf[0] = '\145';  /* '\x65'. Low  byte of MINIXARMAG. */
   hdrbuf[1] = '\377';  /* '\xff'. High byte of MINIXARMAG. */

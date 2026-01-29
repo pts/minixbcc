@@ -47,7 +47,7 @@ int incr;
 
 typedef int malloc_intptr_t;  /* This is architecture-dependent. */
 
-#define BRKSIZE		1024
+#define BRKALIGN		1024
 #define	PTRSIZE		sizeof(char *)
 #define Align(x,a)	(((x) + (a - 1)) & ~(malloc_intptr_t)(a - 1))
 #define NextSlot(p)	(* (char **) ((p) - PTRSIZE))
@@ -77,7 +77,7 @@ unsigned len;
   register char *p;
 
   ASSERT_MALLOC(NextSlot(_top) == 0);
-  p = (char *) Align((malloc_intptr_t) _top + len, BRKSIZE);
+  p = (char *) Align((malloc_intptr_t) _top + len, BRKALIGN);
   if (p < _top || brk(p) != 0) return(0);
   NextSlot(_top) = p;
   NextSlot(p) = 0;

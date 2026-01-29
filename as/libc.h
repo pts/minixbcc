@@ -36,10 +36,13 @@ char *strcat _LIBCP((char *_target, const char *_source));
 int strcmp _LIBCP((const char *_s1, const char *_s2));
 char *strcpy _LIBCP((char *_target, const char *_source));
 unsigned strlen _LIBCP((const char *_s));
+char *strrchr _LIBCP((const char *_s, int _c));
+int strncmp _LIBCP((const char *_s1, const char *_s2, unsigned _nbytes));
+int memcmp _LIBCP((const void *_s1, const void *_s2, unsigned _nbytes));
 
 /* <unistd.h> */
 int read  _LIBCP((int _fd, char *_buf, unsigned _nbytes));
-int write _LIBCP((int _fd, char *_buf, unsigned _nbytes));
+int write _LIBCP((int _fd, const char *_buf, unsigned _nbytes));
 off_t lseek _LIBCP((int _fd, off_t _offset, int _whence));
 int close _LIBCP((int _fd));
 char *brk _LIBCP((char *addr));
