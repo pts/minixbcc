@@ -41,25 +41,46 @@ FORWARD void usage P((void));
 FORWARD void set_label_abs P((char *name, offset_t value));
 FORWARD void initblabels P((void));
 
+#ifdef DEBUG_AS
+#  define D4(msg) (void)!write(2, msg, 4);
+#else
+#  define D4(msg)
+#endif
+
 PUBLIC int main(argc, argv)
 int argc;
 char **argv;
 {
+    D4("M01\n")
     initheap();
+    D4("M02\n")
     initp1();
+    D4("M03\n")
     initp1p2();
+    D4("M04\n")
     inst_keywords();
+    D4("M05\n")
     initbin();
+    D4("M06\n")
     initobj();
+    D4("M07\n")
     initsource();		/* only nec to init for unsupported mem file */
+    D4("M08\n")
     initblabels();  /* Must be called before process_args() to create symbols. -- why?. */
+    D4("M09\n")
     typeconv_init();
+    D4("M10\n")
     warn.global = TRUE;		/* constant */
+    D4("M11\n")
     process_args(argc, argv);
+    D4("M12\n")
     initscan();
+    D4("M13\n")
     initblabels();  /* Call agan to set the final values of the symbols. */
 
+    D4("M14\n")
     assemble();			/* doesn't return, maybe use setjmp */
+    D4("M15\n")
 
     /* NOTREACHED */
     return 0;
@@ -178,10 +199,16 @@ char **argv;
     do
     {
 	arg = *++argv;
+#ifdef DEBUG_AS
+	(void)!write(2, "PARGV0=(", 8); (void)!write(2, arg, strlen(arg)); D4(")..\n");
+	(void)!write(2, "PARGV1=(", 8); (void)!write(2, argv[1], strlen(argv[1])); D4(")..\n");
+#endif
 	if (arg[0] == '-')
 	{
+	    D4("P02\n")
 	    if (arg[2] != 0)
 		usage();	/* no multiple options */
+	    D4("P03\n")
 	    isnextarg = FALSE;
 	    if (argc > 2)
 	    {
@@ -189,16 +216,29 @@ char **argv;
 		if (nextarg[0] != 0 && nextarg[0] != '-')
 		    isnextarg = TRUE;
 	    }
+	    D4("P04\n")
+#ifdef DEBUG_AS
+	    (void)!write(2, "PARGV1=(", 8); (void)!write(2, argv[1], strlen(argv[1])); D4(")..\n");
+#endif
 	    switch (arg[1])
 	    {
 	    case '0':
 	    case '3':
+		D4("P05\n")
+#ifdef DEBUG_AS
+		(void)!write(2, "PARGV1=(", 8); (void)!write(2, argv[1], strlen(argv[1])); D4(")..\n");
+#endif
 		set_osid(arg[1] - '0');  /* osid 0 if arg[1] == '0'; or 3 if arg[1] == '3'. */
+#ifdef DEBUG_AS
+		(void)!write(2, "PARGV1=(", 8); (void)!write(2, argv[1], strlen(argv[1])); D4(")..\n");
+#endif
 		break;
 	    case 'a':
+		D4("P06\n")
 		asld_compatible = TRUE;
 		break;
 	    case 'b':
+		D4("P07\n")
 		if (!isnextarg || binfil != -1)
 		    usage();
 		binfil = my_creat(nextarg, "error creating binary file");
@@ -269,8 +309,13 @@ char **argv;
 	    infil = open_input(strcpy(filnamptr, arg));
 	    infiln = infil0 = 1;
 	}
+	D4("P98\n")
+#ifdef DEBUG_AS
+	(void)!write(2, "PARGV1=(", 8); (void)!write(2, argv[1], strlen(argv[1])); D4(")..\n");
+#endif
     }
     while (--argc != 1);
+    D4("P99\n")
     inidata = (~binaryg & inidata) | (RELBIT | UNDBIT);
 }				/* IMPBIT from inidata unless binaryg */
 
