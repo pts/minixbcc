@@ -26,6 +26,11 @@
 
 typedef long off_t;    /* offsets within a file */
 
+#ifdef __MINIX__
+#  ifndef LIBCHMINIX
+#    define LIBCHMINIX 1
+#  endif
+#endif
 #ifdef LIBCHMINIX  /* Minix-specific <time.h> and <sys/stat.h>. */
   typedef long time_t;
   typedef unsigned short  dev_t;    /* holds (major|minor) device pair */
@@ -47,6 +52,7 @@ typedef long off_t;    /* offsets within a file */
     time_t st_mtime;		/* time of last data modification */
     time_t st_ctime;		/* time of last file status change */
   };
+  int fstat _LIBCP((int _fd, struct stat *_statbuf));
 #endif
 
 /* <sys/stat.h> */
@@ -73,10 +79,11 @@ char *strcat _LIBCP((char *_target, const char *_source));
 int strcmp _LIBCP((const char *_s1, const char *_s2));
 char *strcpy _LIBCP((char *_target, const char *_source));
 unsigned strlen _LIBCP((const char *_s));
+int memcmp _LIBCP((const void *_s1, const void *_s2, unsigned _nbytes));
 
 /* <unistd.h> */
 int read  _LIBCP((int _fd, char *_buf, unsigned _nbytes));
-int write _LIBCP((int _fd, char *_buf, unsigned _nbytes));
+int write _LIBCP((int _fd, const char *_buf, unsigned _nbytes));
 off_t lseek _LIBCP((int _fd, off_t _offset, int _whence));
 int close _LIBCP((int _fd));
 char *brk _LIBCP((char *addr));

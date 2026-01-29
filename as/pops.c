@@ -59,7 +59,7 @@ register struct flags_s *flagptr;
 	else if (newcount >= flagptr->semaphore)
 	{
 	    error(COUNTUN);
-	    newcount = -0x8000;
+	    newcount = (int) -(unsigned) 0x8000;
 	}
 	flagptr->semaphore = newcount;
 	flagptr->current = newcount >= 0;

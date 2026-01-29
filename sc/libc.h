@@ -37,7 +37,7 @@ unsigned strlen _LIBCP((const char *_s));
 
 /* <unistd.h> */
 int read  _LIBCP((int _fd, char *_buf, unsigned _nbytes));
-int write _LIBCP((int _fd, char *_buf, unsigned _nbytes));
+int write _LIBCP((int _fd, const char *_buf, unsigned _nbytes));
 int close _LIBCP((int _fd));
 int isatty _LIBCP((int _fd));
 
