@@ -47,6 +47,27 @@ PRIVATE int trybrk(p) char *p; {
 }
 #endif
 
+#ifdef DEBUG_MINIXHEAP
+PRIVATE char hextable[] = "0123456789abcdef";
+FORWARD void wh16 P((unsigned u));
+PRIVATE void wh16 (u)
+unsigned u;
+{
+    char buf[7];
+    register char *p;
+
+    p  = buf + sizeof(buf);
+    *--p = '\n';
+    *--p = ')';
+    *--p = hextable[u & 15];
+    *--p = hextable[(u >>= 4) & 15];
+    *--p = hextable[(u >>= 4) & 15];
+    *--p = hextable[(u >>= 4) & 15];
+    *--p = '(';
+    (void)!write(2, p, 7);
+}
+#endif
+
 PUBLIC void initheap()
 {
 #ifdef MINIXHEAP
@@ -57,7 +78,7 @@ PUBLIC void initheap()
   /* Use binary search to find the maximum heap size available, and allocate it. */
   heapptr = brksize;
 #ifdef DEBUG_MINIXHEAP
-  (void)!write(2, "I", 1);
+  (void)!write(2, "I", 1); wh16((unsigned INTPTRT) brksize);
 #endif
   for (a = 0, b = 1024, m = MAXHEAPEXPR; heapptr + b > heapptr && trybrk(heapptr + b); ) {
     a = b;
@@ -96,7 +117,9 @@ PUBLIC void initheap()
   }
   heapend = (heapstart = heapptr) + a;
 #ifdef DEBUG_MINIXHEAP
-  (void)!write(2, ".\n", 2);
+  trybrk(brksize - 0x800); heapend = brksize;
+  wh16((unsigned INTPTRT) brksize);
+  wh16((unsigned INTPTRT) heapend); (void)!write(2, ".\n", 2);
 #endif
 #else  /* #ifdef MINIXHEAP */
   char *p;
