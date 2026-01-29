@@ -126,7 +126,7 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 #  endif
 #endif
 #ifndef NOPORTALIGN
-#  ifdef __GCC__
+#  ifdef __GNUC__  /* GCC, Clang, PCC or maybe others. */
 #    if defined(__mips__) || defined(__sparc_v9__) || (defined(__sparc__) && defined(__arch64__)) || defined(__x86_64__) || defined(__s390x__) || defined(__PPC64__)
 #      define NOPORTALIGN 1
 #    else
