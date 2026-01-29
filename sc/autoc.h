@@ -138,6 +138,12 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 #        endif
 #      endif
 #    endif
+#  else
+#    ifdef __WATCOMC__
+#      if defined(_M_I86) || defined(__386__)
+#        define NOPORTALIGN 1
+#      endif
+#    endif
 #  endif
 #endif
 #ifndef NOPORTALIGN
