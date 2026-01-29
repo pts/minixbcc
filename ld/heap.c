@@ -20,17 +20,17 @@
 #  ifdef MINIXHEAP
 #    define MAXHEAP16 0xffff
 #  else
-#    define MAXHEAP16 0xe000  /* Used as MAXHEAP when sizeof(int) == 2. */
+#    define MAXHEAP16 0xe000  /* Used as MAXHEAP when sizeof(char *) == 2. */
 #  endif
 #endif
 #ifndef MAXHEAP32  /* Configurable at compile time: -DMAXHEAP32=...L */
-#  define MAXHEAP32 0x30000L  /* Used as MAXHEAP when sizeof(int) > 2. */
+#  define MAXHEAP32 0x30000L  /* Used as MAXHEAP when sizeof(char *) > 2. */
 #endif
 #ifdef MAXHEAP  /* Configurable at compile time: -DMAXHEAP=... */
 #  define MAXHEAPEXPR ((unsigned) (MAXHEAP))
 #else
   /* The `& ~(unsigned) 0' pacifies the ACK 3.1 warning on Minix 1.5.10: overflow in unsigned constant expression */
-#  define MAXHEAPEXPR (sizeof(int) <= 2 ? (unsigned) (MAXHEAP16) : (unsigned) ((MAXHEAP32) & (unsigned) ~0))
+#  define MAXHEAPEXPR (sizeof(char *) <= 2 ? (unsigned) (MAXHEAP16) : (unsigned) ((MAXHEAP32) & (unsigned) ~0))
 #endif
 
 #ifdef MINIXHEAP  /* Use brk(2) on Minix. It uses less code, and it wastes less data than malloc(3). */
