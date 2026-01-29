@@ -1056,7 +1056,7 @@ _memcmp:
 	mov di, 4(si)  | Argument s2.
 	mov si, 2(si)  | Argument s1.
 	xor ax, ax  | Also sets ZF := 1, which is needed below for the emptry string.
-	rep
+	rep  | Same as repe (continue while equal) for cmpsb.
 	cmpb
 	je memcmpret
 	inc ax

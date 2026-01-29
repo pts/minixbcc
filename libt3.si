@@ -671,7 +671,7 @@ _memcmp:
 	mov edi, [esi+2*6]  | Argument s2.
 	mov esi, [esi+2*4]  | Argument s1.
 	xor eax, eax  | Also sets ZF := 1, which is needed below for the emptry string.
-	rep
+	rep  | Same as repe (continue while equal) for cmpsb.
 	cmpsb  | sc v0 would generate incorrect code for `cmpb' here.
 	je memcmpret
 	inc eax
