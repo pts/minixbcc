@@ -12,6 +12,7 @@
 | * The caller pushes arguments starting with the last (sign-extended or zero-extended if needed first), one word a at a time, does a `call', and then pops the arguments.
 | * The callee can use AX, BX, CX, DX and FLAGS as scratch registers (but must set DF := 0). It must restore all other registers (including SI, DI, BP, DS, ES).
 | * The callee returns the value in AX (sign-extended or zero-extended if needed), it returns long and unsigned long values in DX:AX.
+| * The caller must ensure that ES == .data (same as DS and SS) before the function call.
 |
 | Assembly syntax compatibility of this file:
 |
