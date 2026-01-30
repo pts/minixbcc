@@ -3,6 +3,7 @@
 # build.sh: build the BCC compiler tools, libc and extr tools
 # by pts@fazekas.hu at Thu Jan  8 15:51:45 CET 2026
 #
+# !! update `struct stat' for Minix 2.0.4 -- did the sizeof(st_ino) change?
 # !! make it work with `minicc --gcc=4.2' (missing memcpy), `minicc --pcc' (missing prototypes for cpp; code generation difference in sc), `minicc --tcc' (missing memcpy) and `minicc --utcc' (ld.cross segfaults)
 # !! Does sc v3 support function returning struct (i.e. no error: function returning structure is illegal) ? Yes, with memcpy! Modify include/stdlib.h etc.
 # !! remove default -0 and -3 from cross-compiler sc, as, ld, cc
