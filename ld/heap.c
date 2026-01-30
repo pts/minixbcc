@@ -1,3 +1,15 @@
+#ifndef MINIXHEAP  /* Configurable from the command line. */
+#  ifndef NOMINIXHEAP
+#    ifdef __MINIX__
+#      define MINIXHEAP 1
+#    else
+#      ifdef __MINIX  /* The ACK ANSI C compiler 1.202 in Minix >=1.7.0 defines it. */
+#        define MINIXHEAP 1
+#      endif
+#    endif
+#  endif
+#endif
+
 #ifdef LIBCH
 #  include "libc.h"
 #else
