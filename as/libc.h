@@ -18,7 +18,7 @@ typedef long off_t;    /* offsets within a file */
 
 /* <fcntl.h> */
 int creat _LIBCP((const char *_path, int _mode));
-int open _LIBCP((const char *_path, int _oflag, ...));
+int open _LIBCP((const char *_path, int _oflag, ...));  /* ... is `mode_t _mode' or `unsigned _mode'. */
 
 /* <stdlib.h> */
 void exit _LIBCP((int _status));
