@@ -34,8 +34,12 @@
 #define FALSE	0
 #define TRUE	1
 
-#define FORWARD	static
-#define PRIVATE	static
+#ifndef   FORWARD
+#  define FORWARD static
+#endif
+#ifndef   PRIVATE
+#  define PRIVATE static
+#endif
 #define PUBLIC
 
 #if __STDC__
