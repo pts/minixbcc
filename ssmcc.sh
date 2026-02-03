@@ -11,16 +11,18 @@ set -x  # Print all commands run.
 ssmcc=ssmcc/ssmcc
 ssmccu="$ssmcc"; case "$ssmcc" in /*) ;; */*) ssmccu="../$ssmcc" ;; esac  # "$ssmccu" is "$ssmcc", but it works from one directory lower.
 
-(cd ld && "$ssmccu" -belks -Os -W -Wall -o ../ld.lk dumps.c heap.c io.c ld.c readobj.c table.c typeconv.c writebin.c) || exit "$?"
-(cd sc && "$ssmccu" -belks -Os -W -Wall -o ../sc.lk bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
-(cd as && "$ssmccu" -belks -Os -W -Wall -o ../as.lk as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
-(cd cr && "$ssmccu" -belks -Os -W -Wall -o ../cr.lk cr.c) || exit "$?"
+(cd ld && "$ssmccu" -belks     -Os -W -Wall -o ../ld.lk dumps.c heap.c io.c ld.c readobj.c table.c typeconv.c writebin.c) || exit "$?"
+(cd sc && "$ssmccu" -belks     -Os -W -Wall -o ../sc.lk bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
+(cd as && "$ssmccu" -belks     -Os -W -Wall -o ../as.lk as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
+(cd cr && "$ssmccu" -belks     -Os -W -Wall -o ../cr.lk cr.c) || exit "$?"
+(cd cc && "$ssmccu" -belks     -Os -W -Wall -o ../cc.lk cc.c) || exit "$?"
+#(cd cpp && "$ssmccu" -belks -Os -W -Wall -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"  # There is not enough libc support for this, for example the entire stdio is missing.
 
 (cd sc && "$ssmccu" -bminixi86 -Os -W -Wall -o ../sc.mx bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
 (cd as && "$ssmccu" -bminixi86 -Os -W -Wall -o ../as.mx as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
 (cd ld && "$ssmccu" -bminixi86 -Os -W -Wall -o ../ld.mx dumps.c heap.c io.c ld.c readobj.c table.c typeconv.c writebin.c) || exit "$?"
 (cd cr && "$ssmccu" -bminixi86 -Os -W -Wall -o ../cr.mx cr.c) || exit "$?"
-#(cd cr && "$ssmccu" -bminixi86 -Os -W -Wall -o ../cc.mx cr.c) || exit "$?"  # There is not enough libc support for this yet.
-#(cd cpp && "$ssmccu" -bminixi86 -Os -W -Wall -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"  # There is not enough libc support for this yet.
+(cd cc && "$ssmccu" -bminixi86 -Os -W -Wall -o ../cc.mx cc.c) || exit "$?"
+#(cd cpp && "$ssmccu" -bminixi86 -Os -W -Wall -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"  # There is not enough libc support for this, for example the entire stdio is missing.
 
 : "$0" OK.
