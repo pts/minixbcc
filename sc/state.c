@@ -393,9 +393,7 @@ PRIVATE void dofor()
     else
 	loopexp = expression();	/* remember loop expression */
     rparen();
-#if 0
-    fortestlab = 0;  /* Pacify useless GCC 4.2 warning -Wmaybe-uninitialized. */
-#endif
+    fortestlab = 0;  /* Pacify useless GCC 2.5.8 and 4.2 warning -Wmaybe-uninitialized. */
     if (!(isforevert = isforever(testexp)))
 	jump(fortestlab = getlabel());	/* test at bottom */
     deflabel(forstatlab = getlabel());	/* back here if test succeeds */
