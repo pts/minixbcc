@@ -78,23 +78,22 @@ int alignptrcheck(cp, argc)
 char *cp;
 int argc;
 {
-  (void)cp; (void)argc;
 #ifdef ALIGNPTRCHECK
-  return ALIGNPTRCHECK;
+  (void)cp; (void)argc; return ALIGNPTRCHECK;
 #else
 #ifdef HAVE_SIZEOF
 #if __SIZEOF_POINTER__ == __SIZEOF_INT__
-  return (char *) ((unsigned) cp + AI) != cp + AI;  /* This must avoid a signed overflow, because Clang 15.0.7 (-O0 default) would check it and insert a trap. */
+  (void)cp; (void)argc; return (char *) ((unsigned) cp + AI) != cp + AI;  /* This must avoid a signed overflow, because Clang 15.0.7 (-O0 default) would check it and insert a trap. */
 #else
 #if __SIZEOF_POINTER__ == __SIZEOF_LONG__
-  return (char *) ((unsigned long) cp + AL) != cp + AL;  /* This must avoid a signed overflow, because Clang 15.0.7 (-O0 default) would check it and insert a trap. */
+  (void)cp; (void)argc; return (char *) ((unsigned long) cp + AL) != cp + AL;  /* This must avoid a signed overflow, because Clang 15.0.7 (-O0 default) would check it and insert a trap. */
 #else
-  return 0;
+  (void)cp; (void)argc; return 0;
 #endif
 #endif
 #else
 #if 0  /* This implementation would trigger the GCC warnings -Wpointer-to-int-cast -Wint-to-pointer-cast because of the size mismatch between the pointer and the integer. */
-  return sizeof(char *) == sizeof(int) ? ((char *) ((unsigned) cp + AI) != cp + AI) :
+  (void)argc; return sizeof(char *) == sizeof(int) ? ((char *) ((unsigned) cp + AI) != cp + AI) :
       sizeof(char *) == sizeof(long) ? ((char *) ((unsigned long) cp + AL) != cp + AL) : 0;
 #else  /* Longer implementation, but doesn't trigger warnings. */
   union { unsigned ui; unsigned long ul; char *cp; } u;
