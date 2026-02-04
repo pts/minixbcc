@@ -74,20 +74,20 @@ Running *cross.sh* will build all the components above, more specifically:
 * the C include (header) files: `include/*.h` and `include/*/*.h`,
   no need to compile, files kept intact
 
-If you want to build everything (including the native tools, which run on
+If you want to build the native tools as well (which run on
 Minix), use *build.sh* instead of *cross.sh*. For example: `sh build.sh gcc
--s -O2`. Please note that *build.sh* (unlike *cross.sh*) runs not only on a
-modern Unix-like system, but it also runs on Minix (1.5.10--2.0.4; i86 and
-i386), and uses whatever C compiler (minixbcc, BCC or the ACK C compiler
-which comes with Minix) it can detect.
-
-The native tools are:
+-s -O2`. This builds everything above, plus the native tools:
 
 * the native driver: `0/bbcc` and `3/bbcc`
 * the native frontend--backend: `0/sc` and `3/sc`
 * the native assembler: `0/as` and `3/as`
 * the native linker: `0/ld` and `3/ld`
 * the native preprocessor: `0/cpp` and `3/cpp`
+
+Please note that *build.sh* (unlike *cross.sh*) runs not only on a modern
+Unix-like system, but it also runs on Minix (1.5.10--2.0.4; i86 and i386),
+and uses whatever C compiler (minixbcc, BCC or the ACK C compiler which
+comes with Minix) it can detect.
 
 The `0' directory name indicates the Minix 1.5.10--2.0.4 i86 target, and the
 `3` directory name indicates the Minix 1.5.10--2.0.4 i386 target. Each
@@ -119,6 +119,43 @@ the target directories *0* and *3* are built reproducibly and
 deterministically, and they will be bytewise identical, even if a different
 C compiler (or cross-compiler) was used to build minixbcc, even if the host
 system is of a different architecture.
+
+## How to run the cross-compiler on very old Linux
+
+The minixbcc cross-compiler can be built and run on very old Linux systems
+the same way as on recent Linux systems: just run `sh cross.sh`.
+
+As a specific example, [MCC
+1.0](https://www.ibiblio.org/pub/historic-linux/distributions/MCC-1.0/1.0/)
+is a very old distribution of Linux i386, released on 1994-05-11. It
+contains Linux kernel 1.0.4, GCC 2.5.8, Bash 1.13.1, /lib/libc.so.4.5.21,
+GNU Assembler 2.2, GNU linker 2.2. By default, `gcc` creates a Linux i386 a.out
+ZMAGIC executable dynamically linked against /lib/libc.so.4 using /lib/ld.so.
+`gcc -static` Linux i386 a.out ZMAGIC statically linked executable.
+
+After installing the base system (from
+[nocdboot](https://www.ibiblio.org/pub/historic-linux/distributions/MCC-1.0/1.0/images/nocdboot.gz)
+and
+[root](https://www.ibiblio.org/pub/historic-linux/distributions/MCC-1.0/1.0/images/root.gz))
+to a partition of about 64 MiB, install GCC by copying
+[gcca.tgz](https://www.ibiblio.org/pub/historic-linux/distributions/MCC-1.0/1.0/packages/gcca.tgz)
+and
+[gccb.tgz](https://www.ibiblio.org/pub/historic-linux/distributions/MCC-1.0/1.0/packages/gccb.tgz)
+to the filesystem, run `/tmp/bootinstall` to install them, and then remove
+the *gcca.tgz* and *gccb.tgz* files. Copy the minixbcc source directory to
+the partition, and run `sh cross.sh`. (To get the native tools as well, run
+`sh build.sh gcc -s -O2 -W -Wall -Werror -static` instead, or just `sh
+build.sh`, to get a less optimized build.)
+
+The cross-compiler is ready use, try compiling a hello-world program:
+
+```
+# bin/bbcc -0 -DPRINT_F=printf -o h0 h.c
+# bin/bbcc -3 -DPRINT_F=printf -o h3 h.c
+# ls -l h0 h3
+-rwxrwxr-x 1 root root 3984 Feb  3 22:37 h0
+-rwxrwxr-x 1 root root 3548 Feb  3 22:38 h3
+```
 
 ## How to run the cross-compiler on ELKS
 
