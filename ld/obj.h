@@ -10,7 +10,8 @@
 #  define OMAGIC_I86 0x86A0  /* This is currently unused. The linker expects OMAGIC_I386 for i86 object files as well. */
 #endif
 
-#define roundup( num, boundary, type ) \
+/* In Linux libc 4.5.21, there is a `#define roundup(x, y)' macro in <sys/types.h>, so we rename this. */
+#define ldroundup( num, boundary, type ) \
 	(((num) + ((boundary) - 1)) & (type) ~((boundary) - 1))
 
 #define MAX_OFFSET_SIZE 4

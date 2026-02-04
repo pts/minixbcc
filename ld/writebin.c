@@ -322,7 +322,7 @@ bool_pt arguzp;
 		    else
 		    {
 			{  /* C_MASK: common symbol. */
-			    tempoffset = roundup(symptr->value, 4, offset_t);
+			    tempoffset = ldroundup(symptr->value, 4, offset_t);
 #ifdef DEBUG_SIZE
 			    modptr->modcomsz += tempoffset;
 #endif
@@ -344,8 +344,8 @@ bool_pt arguzp;
 
 		/* adjust sizes to even to get quad boundaries */
 		/* this should be specifiable dynamically */
-		segsz[seg] = roundup(segsz[seg], 4, offset_t);
-		comsz[seg] = roundup(comsz[seg], 4, offset_t);
+		segsz[seg] = ldroundup(segsz[seg], 4, offset_t);
+		comsz[seg] = ldroundup(comsz[seg], 4, offset_t);
 		cptr += sizecount;
 	    }
 	}
@@ -359,7 +359,7 @@ bool_pt arguzp;
     etextpadoff = etextoffset = combase[0] + comsz[0];
     if (sepid)
     {
-	etextpadoff = roundup(etextoffset, 0x10, offset_t);
+	etextpadoff = ldroundup(etextoffset, 0x10, offset_t);
 	segadj[1] += etextpadoff - bdataoffset;
     }
     else if (bdataoffset == 0)
@@ -624,7 +624,7 @@ struct modstruct *modptr;
 
 	/* pad to quad boundary */
 	/* not padding in-between common areas which sometimes get into file */
-	if ((size = roundup(segpos[seg], 4, offset_t) - segpos[seg]) != 0)
+	if ((size = ldroundup(segpos[seg], 4, offset_t) - segpos[seg]) != 0)
 	{
 	    setseg(seg);
 	    writenulls(size);
@@ -636,7 +636,7 @@ struct modstruct *modptr;
     }
 #ifdef DEBUG_SIZE
 #  ifndef DEBUG_SIZE_NOPAD
-    /* This reports the padded size (because roundup has been called above. */
+    /* This reports the padded size, because ldroundup has been called above. */
     /* Please note that a_bss values don't add up, because common symbols (C_MASK, N_COMM) may be defined in multiple modules. */
     fprintf(stderr, "info: module size: a_text=%lu a_data=%lu a_bss=%lu f=%s%s%s\n", (unsigned long) (segpos[0] - segbase[0]), (unsigned long) (segpos[3] - segbase[3]), (unsigned long) modptr->modcomsz, modptr->filename, modptr->archentry ? "//" : "", modptr->archentry ? modptr->archentry : "");
     fflush(stderr);

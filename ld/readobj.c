@@ -111,7 +111,7 @@ char *filename;
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
 	    }
-	    seekin((unsigned INT32T) (filepos += roundup(filelength, 2, offset_t)));
+	    seekin((unsigned INT32T) (filepos += ldroundup(filelength, 2, offset_t)));
 	}
 	break;
     default:
@@ -128,7 +128,7 @@ char *filename;
 		readmodule(stralloc(filename), archentry);
 		modlast->textoffset += filepos;
 	    }
-	    seekin((unsigned INT32T) (filepos += roundup(filelength, 2, offset_t)));
+	    seekin((unsigned INT32T) (filepos += ldroundup(filelength, 2, offset_t)));
 	}
 	break;
     }
