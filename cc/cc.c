@@ -5,15 +5,34 @@
 #define _DEFAULT_SOURCE  /* For glibc >=2.19 and minilibc686 reliable signal(...). */
 #define CONFIG_SIGNAL_BSD  /* For olde minilibc686 reliable signal(...) (bsd_signal(...)). */
 
+
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <sys/wait.h>
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <fcntl.h>
+
+#ifdef __WATCOMC__  /* OpenWatcom v2 or earlier. */
+#  ifdef _WCDATA  /* OpenWatcom v2 libc. */
+#    ifdef __LINUX__  /* owcc -blinux */
+#      define CUSTOMSYSWAITH  /* Workaround for `sh build.sh owcc', without the `-I"$WATCOM"/lh' or `export INCLUDE=$WATCOM/lh', and using (by default) -I"$WATCOM"/h instead of the correct -I"$WATCOM"/lh on Linux. */
+#      define WATCOMLINUXSYSWAITH
+#    endif
+#  endif
+#endif
+#ifndef CUSTOMSYSWAITH
+#  include <sys/wait.h>
+#endif
+
+#ifdef WATCOMLINUXSYSWAITH
+#  define WIFEXITED(s) (((s) & 0377) == 0)
+#  define WEXITSTATUS(s) (((s) >> 8) & 0377)
+  extern pid_t wait(int *_stat_loc);
+  extern pid_t fork(void);
+#endif
 
 #ifdef NOCROSS
 #  define CROSS 0

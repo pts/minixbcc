@@ -3,24 +3,17 @@
 # build.sh: build the BCC compiler tools, libc and extr tools
 # by pts@fazekas.hu at Thu Jan  8 15:51:45 CET 2026
 #
-# !! check what breaks in build.sh and cross.sh if owcc is run without `-I"$WATCOM"/lh'; stdin, fstat etc.; add workround
 # !! update `struct stat' for Minix 2.0.4 -- did the sizeof(st_ino) change?
 # !! make it work with `minicc --gcc=4.2' (missing memcpy), `minicc --pcc' (missing prototypes for cpp; code generation difference in sc), `minicc --tcc' (missing memcpy) and `minicc --utcc' (ld.cross segfaults)
 # !! Does sc v3 support function returning struct (i.e. no error: function returning structure is illegal) ? Yes, with memcpy! Modify include/stdlib.h etc.
 # !! remove default -0 and -3 from cross-compiler sc, as, ld, cc
 # !! add driver tool command-line
 # !! add driver flag -E to invoke CPP
-# !! test isatty implementations, espacially the assembly implementation in sc
 # !! for some systems, set S_ALIGNMENT=1 in ld/config.h
-# !! doc: Minix 1.7.0 has the ANSI C compiler (ncc) as /usr/bin/cc  ; make it work
 # !! (after porting to ack) Remove the `t' symbols from `nm as.mx' etc. added by the assembler; use symbols starting with . instead?
 # !! Make the `bcc -i` and `ld -i` (separate I&D) default independent of the BCC driver version.
-# !! Add patch to /usr/include to add `#ifndef __BCC__' for functions returning a struct.
 # !! Is the `j' jump output of sc v3 compatible with as0? (as0 expects jmp as short jump.)
 # !! Add the remaining patches to cpp.
-# !! strtol -1 / 2 sign incompatibility with the i86 /local/bin/sc (== -1); the other one returns 0.
-# !! replace divisions with right shifts (BCC is not smart enough to optimize it, it also means something different)
-# !! fix sar code generation bug in sc v3 for div2(...), div4(...) etc. in sc v3
 # !! fix suboptimal i386 code generation in ld for `v += (unsigned long) (unsigned char) c;'; this already uses movzx: `v += (unsigned char) c;'
 # !! Add support for -nostdlib in the bbcc driver.
 # !! Move all libc variables from .data to .bss (with .comm).
@@ -41,6 +34,9 @@
 #        const uvalue_t d = (uvalue_t)(an ? -a : a) / (uvalue_t)(bn ? -b : b);
 #        return an == bn ? d : -d;
 #    }
+# !! replace divisions with right shifts (BCC is not smart enough to optimize it, it also means something different)
+#    fix sar code generation bug in sc/codefrag.c diveasy(), see extras/divbug.c
+# !! strtol.c -1 / 2 sign incompatibility with the i86 /local/bin/sc (== -1); the other one returns 0.
 #
 
 test "$ZSH_VERSION" && set -y 2>/dev/null  # SH_WORD_SPLIT for zsh(1). It's an i nvalid option in bash(1), and it's harmful (prevents echo) in ash(1).

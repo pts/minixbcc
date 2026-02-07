@@ -22,11 +22,12 @@
 #  include <stdio.h>
 #  ifdef __WATCOMC__  /* OpenWatcom v2 or earlier. */
 #    ifdef _WCDATA  /* OpenWatcom v2 libc. */
-      /* Hake stderr work even if the owcc driver is run with the incorrect or missing $INCLUDE environment variable, and using (by default) -I"$WATCOM"/h instead of the correct -I"$WATCOM"/lh on Linux.. */
-      FILE *my_stderr_ptr;
-      FILE *my_stderr_get(void) { if (!my_stderr_ptr) my_stderr_ptr = fdopen(2, "w"); return my_stderr_ptr; }
-#      undef  stderr  /* The OpenWatcom v2 libc defines it. */
-#      define stderr my_stderr_get()
+#      ifdef __LINUX__  /* owcc -blinux */
+        FILE *my_stderr_ptr;  /* Workaround for `sh build.sh owcc', without the `-I"$WATCOM"/lh' or `export INCLUDE=$WATCOM/lh', and using (by default) -I"$WATCOM"/h instead of the correct -I"$WATCOM"/lh on Linux. */
+        FILE *my_stderr_get(void) { if (!my_stderr_ptr) my_stderr_ptr = fdopen(2, "w"); return my_stderr_ptr; }
+#        undef  stderr  /* The OpenWatcom v2 libc defines it. */
+#        define stderr my_stderr_get()
+#      endif
 #    endif
 #  endif
 #endif
