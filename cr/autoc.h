@@ -126,7 +126,7 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 #  endif
 #endif
 #ifndef NOPORTALIGN
-#  ifdef __GNUC__  /* GCC, Clang, PCC or maybe others pretending to be GCC. */
+#  ifdef __GNUC__  /* GCC, Clang, PCC or maybe others. */
 #    if defined(__mips__) || defined(__sparc_v9__) || (defined(__sparc__) && defined(__arch64__)) || defined(__x86_64__) || defined(__s390x__) || defined(__PPC64__)
 #      define NOPORTALIGN 1
 #    else
@@ -136,6 +136,12 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 #        if defined(__vax__) || defined(__sparc__) || defined(__s390__) || defined(__powerpc__) || defined(__m68k__) || defined(__hppa__) || defined(__arm__)
 #          define NOPORTALIGN 1
 #        endif
+#      endif
+#    endif
+#  else
+#    ifdef __WATCOMC__
+#      if (defined(_M_I86) || defined(__386__)) && !(defined(__COMPACT__) || defined(__LARGE__) || defined(__HUGE__))
+#        define NOPORTALIGN 1
 #      endif
 #    endif
 #  endif
