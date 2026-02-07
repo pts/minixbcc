@@ -309,7 +309,7 @@ PUBLIC void include()
 #endif
 	}
     }
-    do
+    for (; incptr != (struct inclist*) 0; incptr = incptr->incnext)
     {
 	if (incptr->incdirname == (char*) 0)
 	{
@@ -362,7 +362,6 @@ ts_s_pathname_tot -= strlen(fullnameptr) + 1;
 #endif
 	ourfree(fullnameptr);
     }
-    while ((incptr = incptr->incnext) != (struct inclist*) 0);
     error("cannot find include file");
 #ifdef TS
 ts_s_filename_tot -= charptr - fnameptr;
