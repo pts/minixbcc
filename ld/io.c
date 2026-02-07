@@ -147,14 +147,24 @@ char *filename;
 PUBLIC void openout(filename)
 char *filename;
 {
-    struct stat statbuf;
+#ifdef __WATCOMC__  /* OpenWatcom v2 or earlier. */
+#  ifdef _WCDATA  /* OpenWatcom v2 libc. */
+#    ifdef __LINUX__  /* owcc -blinux */
+#      define STATBUFCOUNT 2  /* Workaround for `sh build.sh owcc', without the `-I"$WATCOM"/lh' or `export INCLUDE=$WATCOM/lh', and using (by default) -I"$WATCOM"/h (smaller struct_stat) instead of the correct -I"$WATCOM"/lh (larger struct_stat) on Linux. */
+#    endif
+#  endif
+#endif
+#ifndef STATBUFCOUNT
+#  define STATBUFCOUNT 1
+#endif
+    struct stat statbufs[STATBUFCOUNT];
 
     outputname = filename;
     if ((outfd = creat(filename, CREAT_PERMS)) == ERR)
 	outputerror("cannot open");
-    if (fstat(outfd, &statbuf) != 0)  /* This seems to work with owcc on Linux, but not without `-I"$WATCOM"/lh'. */
+    if (fstat(outfd, statbufs) != 0)
 	outputerror("cannot stat");
-    outputperms = statbuf.st_mode;
+    outputperms = statbufs[0].st_mode;  /* .st_mode is at the same location within struct_stat in -I"$WATCOM"/h and -I"$WATCOM"/lh */
     chmod(filename, outputperms & ~EXEC_PERMS);
     outbufptr = outbuf;
 }
