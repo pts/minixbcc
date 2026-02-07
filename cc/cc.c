@@ -602,7 +602,7 @@ PRIVATE char *get_cross_flag_include()
 	flag_include_ = p = (char*) my_malloc(2 + driverdirlen + sizeof(INCLUDEDIR), "include flag");
 	*p++ = '-'; *p++ = 'I';
 	memcpy(p, driverdir, driverdirlen);
-	memcpy(p + driverdirlen, INCLUDEDIR, sizeof(INCLUDEDIR) - 1);
+	memcpy(p + driverdirlen, INCLUDEDIR, sizeof(INCLUDEDIR));
 	p = flag_include_;
     }
     return p;
