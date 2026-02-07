@@ -39,7 +39,7 @@ typedef long off_t;    /* offsets within a file */
   typedef unsigned short  mode_t;   /* mode number within an i-node */
   typedef unsigned char   nlink_t;  /* number-of-links field within an i-node */
   typedef unsigned short  uid_t;    /* user id */
-  struct stat {
+  struct stat {  /* Same size for each field in Minix 1.5.10--2.0.4. Minix 3.1 and the Minix v3 filesystem introduces sizeof(ino_t) == 4. */
     dev_t st_dev;		/* major/minor device number */
     ino_t st_ino;		/* i-node number */
     mode_t st_mode;		/* file mode, protection bits, etc. */
