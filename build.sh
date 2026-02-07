@@ -3,11 +3,9 @@
 # build.sh: build the BCC compiler tools, libc and extr tools
 # by pts@fazekas.hu at Thu Jan  8 15:51:45 CET 2026
 #
-# !! update `struct stat' for Minix 2.0.4 -- did the sizeof(st_ino) change?
 # !! make it work with `minicc --gcc=4.2' (missing memcpy), `minicc --pcc' (missing prototypes for cpp; code generation difference in sc), `minicc --tcc' (missing memcpy) and `minicc --utcc' (ld.cross segfaults)
 # !! Does sc v3 support function returning struct (i.e. no error: function returning structure is illegal) ? Yes, with memcpy! Modify include/stdlib.h etc.
 # !! remove default -0 and -3 from cross-compiler sc, as, ld, cc
-# !! add driver tool command-line
 # !! add driver flag -E to invoke CPP
 # !! for some systems, set S_ALIGNMENT=1 in ld/config.h
 # !! (after porting to ack) Remove the `t' symbols from `nm as.mx' etc. added by the assembler; use symbols starting with . instead?
@@ -17,7 +15,7 @@
 # !! fix suboptimal i386 code generation in ld for `v += (unsigned long) (unsigned char) c;'; this already uses movzx: `v += (unsigned char) c;'
 # !! Add support for -nostdlib in the bbcc driver.
 # !! Move all libc variables from .data to .bss (with .comm).
-# !! everywhere (sc, as, ld, cpp)
+# !! everywhere (sc, as, ld, cpp), there are about 26 instances remaining: rep '[(] *unsigned *char *[)]' {??,cpp}/*.[ch]
 #    ifdef ACKFIX  /* Workaround for the bug in Minix 1.5.10 i86 ACK 3.1 C compiler, which sign-extends the (unsigned char) cast. */
 #    #  define UCHARCAST(c) (unsigned char) ((unsigned) (c) & 0xff)
 #    #else
