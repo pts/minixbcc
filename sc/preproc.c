@@ -631,12 +631,12 @@ ts_s_macparam_tot += sizeof *paramlist * nparleft;
 
 		    oldparam = *(paramlist - 1);
 		    size = (/* size_t */ unsigned) (charptr - oldparam);
-		    newparam = (char*) ourmalloc(size);
+		    newparam = (char*) ourmalloc(size + 1);
 #ifdef TS
 ts_s_macparam_string_alloced += size;
 ts_s_macparam_string_alloced_tot += size;
 #endif
-		    memcpy(newparam, oldparam, size);
+		    ((char *) memcpy(newparam, oldparam, size))[size] = '\0';
 		    *(paramlist - 1) = newparam;
 #ifdef TS
 ts_s_macparam_string_tot -= charptr - oldparam;
