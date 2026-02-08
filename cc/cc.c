@@ -484,7 +484,9 @@ char **argv;
 		else
 		    ++basename;
 		if (ext == 's')
-		    s_out = stralloc(arg);
+		{
+		    if (!sc_only) s_out = stralloc(arg);
+		}
 		else
 		{
 		    if (sc_only)
