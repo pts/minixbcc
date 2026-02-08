@@ -4,6 +4,7 @@
 # by pts@fazekas.hu at Thu Jan  8 15:51:45 CET 2026
 #
 # !! make it work with `minicc --gcc=4.2' (missing memcpy), `minicc --pcc' (missing prototypes for cpp; code generation difference in sc), `minicc --tcc' (missing memcpy) and `minicc --utcc' (ld.cross segfaults)
+# !! simplify as/typeconv.c and ld/typeconv.c
 # !! Does sc v3 support function returning struct (i.e. no error: function returning structure is illegal) ? Yes, with memcpy! Modify include/stdlib.h etc.
 # !! remove default -0 and -3 from cross-compiler sc, as, ld, cc
 # !! add driver flag -E to invoke CPP
