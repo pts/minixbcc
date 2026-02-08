@@ -20,14 +20,13 @@
 #endif
 
 int
-openfile(filename)
-char		*filename;
+openfile P1(_CONST char *, filename)
 /*
  * Open a file, add it to the linked list of open files.
  * This is called only from openfile() above.
  */
 {
-	register FILE		*fp;
+	REGISTER FILE		*fp;
 
 	if ((fp = fopen(filename, "r")) == NULL) {
 #if DEBUG
@@ -43,9 +42,9 @@ char		*filename;
 	return (TRUE);
 }
 
-void addfile(fp, filename)
-FILE		*fp;			/* Open file pointer		*/
-char		*filename;		/* Name of the file		*/
+void addfile P2(FILE *, fp, _CONST char *, filename)
+/*FILE		*fp;*/			/* Open file pointer		*/
+/*char		*filename;*/		/* Name of the file		*/
 /*
  * Initialize tables for this open file.  This is called from openfile()
  * above (for #include files), and from the entry to cpp to open the main
@@ -54,7 +53,7 @@ char		*filename;		/* Name of the file		*/
  * to setup a macro replacement.)
  */
 {
-	register FILEINFO	*file;
+	REGISTER FILEINFO	*file;
 
 	file = getfile(NBUFF, filename);
 	file->fp = fp;			/* Better remember FILE *	*/
@@ -63,7 +62,7 @@ char		*filename;		/* Name of the file		*/
 	wrongline = TRUE;		/* Force out initial #line	*/
 }
 
-void setincdirs()
+void setincdirs P0()
 /*
  * Append system-specific directories to the include directory list.
  * Called only when cpp is started.
@@ -126,19 +125,17 @@ void setincdirs()
 }
 
 int
-dooptions(argc, argv)
-int		argc;
-char		*argv[];
+dooptions P2(int, argc, char **, argv)
 /*
  * dooptions is called to process command line arguments (-Detc).
  * It is called only at cpp startup.
  */
 {
-	register char		*ap;
-	register DEFBUF		*dp;
-	register int		c;
+	REGISTER char		*ap;
+	REGISTER DEFBUF		*dp;
+	REGISTER int		c;
 	int			i, j;
-	char			*arg;
+	_CONST char		*arg;
 	SIZES			*sizp;		/* For -S		*/
 	int			size;		/* For -S		*/
 	int			isdatum;	/* FALSE for -S*	*/
@@ -172,7 +169,7 @@ char		*argv[];
 		    while (*ap != EOS && *ap != '=')
 			ap++;
 		    if (*ap == EOS)
-			ap = "1";
+			ap = (char *) "1";
 		    else
 			*ap++ = EOS;
 		    /*
@@ -297,8 +294,7 @@ char		*argv[];
 
 #if HOST != SYS_UNIX
 FILE_LOCAL
-zap_uc(ap)
-register char	*ap;
+zap_uc P1(REGISTER char *, ap)
 /*
  * Dec operating systems mangle upper-lower case in command lines.
  * This routine forces the -D and -U arguments to uppercase.
@@ -316,7 +312,7 @@ register char	*ap;
 }
 #endif
 
-void initdefines()
+void initdefines P0()
 /*
  * Initialize the built-in #define's.  There are two flavors:
  * 	#define decus	1		(static definitions)
@@ -327,9 +323,9 @@ void initdefines()
  * __LINE__, __FILE__, and __DATE__ are always present.
  */
 {
-	register char		**pp;
-	register char		*tp;
-	register DEFBUF		*dp;
+	REGISTER _CONST char	**pp;
+	REGISTER char		*tp;
+	REGISTER DEFBUF		*dp;
 	int			i;
 	time_t			tvec;
 
@@ -382,9 +378,7 @@ void initdefines()
  */
 
 int
-getredirection(argc, argv)
-int		argc;
-char		**argv;
+getredirection P2(int, argc, char **, argv)
 /*
  * Process vms redirection arg's.  Exit if any error is seen.
  * If getredirection() processes an argument, it is erased
@@ -404,7 +398,7 @@ char		**argv;
  *	}
  */
 {
-	register char		*ap;	/* Argument pointer	*/
+	REGISTER char		*ap;	/* Argument pointer	*/
 	int			i;	/* argv[] index		*/
 	int			j;	/* Output index		*/
 	int			file;	/* File_descriptor 	*/

@@ -196,6 +196,32 @@ typedef struct sizes {
 #define	IO_ERROR	1
 #endif
 
+
+#if __STDC__
+#  define _CONST const
+#  define P(x) x
+#  define P0() (void)
+#  define P1(t1, n1) (t1 n1)
+#  define P2(t1, n1, t2, n2) (t1 n1, t2 n2)
+#  define P3(t1, n1, t2, n2, t3, n3) (t1 n1, t2 n2, t3 n3)
+#  define P4(t1, n1, t2, n2, t3, n3, t4, n4) (t1 n1, t2 n2, t3 n3, t4 n4)
+#  define P5(t1, n1, t2, n2, t3, n3, t4, n4, t5, n5) (t1 n1, t2 n2, t3 n3, t4 n4, t5 n5)
+#else
+#  define _CONST
+#  define P(x) ()
+#  define P0() ()
+#  define P1(t1, n1) (n1) t1 n1;
+#  define P2(t1, n1, t2, n2) (n1, n2) t1 n1; t2 n2;
+#  define P3(t1, n1, t2, n2, t3, n3) (n1, n2, n3) t1 n1; t2 n2; t3 n3;
+#  define P4(t1, n1, t2, n2, t3, n3, t4, n4) (n1, n2, n3, n4) t1 n1; t2 n2; t3 n3; t4 n4;
+#  define P5(t1, n1, t2, n2, t3, n3, t4, n4, t5, n5) (n1, n2, n3, n4, n5) t1 n1; t2 n2; t3 n3; t4 n4; t5 n5;
+#endif
+#if __cplusplus >= 201703L
+#  define REGISTER   /* register removed in C++17. */
+#else
+#  define REGISTER register
+#endif
+
 /*
  * Externs
  */
@@ -211,16 +237,16 @@ extern int	recursion;		/* Macro depth counter		*/
 extern char	ifstack[BLK_NEST];	/* #if information		*/
 #define	compiling ifstack[0]
 extern char	*ifptr;			/* -> current ifstack item	*/
-extern char	*incdir[NINCLUDE];	/* -i directories		*/
-extern char	**incend;		/* -> active end of incdir	*/
+extern _CONST char *incdir[NINCLUDE];	/* -i directories		*/
+extern _CONST char **incend;		/* -> active end of incdir	*/
 extern int	cflag;			/* -C option (keep comments)	*/
 extern int	eflag;			/* -E option (ignore errors)	*/
 extern int	nflag;			/* -N option (no pre-defines)	*/
 extern int	pflag;			/* -P option (no #line output)	*/
 extern int	tflag;			/* -T option (recognize trigraphs) */
 extern int	rec_recover;		/* unwind recursive macros	*/
-extern char	*preset[];		/* Standard predefined symbols	*/
-extern char	*magic[];		/* Magic predefined symbols	*/
+extern _CONST char *preset[];		/* Standard predefined symbols	*/
+extern _CONST char *magic[];		/* Magic predefined symbols	*/
 extern FILEINFO	*infile;		/* Current input file		*/
 extern char	work[NWORK + 1];	/* #define scratch		*/
 extern char	*workp;			/* Free space in work		*/
@@ -229,50 +255,43 @@ extern int	debug;			/* Debug level			*/
 #endif
 extern int	keepcomments;		/* Don't remove comments if set	*/
 extern SIZES	size_table[];		/* For #if sizeof sizes		*/
-
-#if __STDC__
-#  define _CPP_PROTO(x) x
-#else
-#  define _CPP_PROTO(x) ()
-#endif
-
-extern char *getmem _CPP_PROTO((int ssize));	/* Get memory or die.		*/
-extern DEFBUF *lookid _CPP_PROTO((int c));	/* Look for a #define'd thing	*/
-extern DEFBUF *defendel _CPP_PROTO((char *name, int delete));  /* Symbol table enter/delete */
-extern char *savestring _CPP_PROTO((char *text));  /* Stuff string in malloc mem. */
-extern void initdefines _CPP_PROTO((void));
-extern int dooptions _CPP_PROTO((int argc, char *argv[]));
-extern void cierror _CPP_PROTO((char *format, int narg));
-extern void cerror _CPP_PROTO((char *format, char *sarg));
-extern void cfatal _CPP_PROTO((char *format, char *sarg));
-extern void setincdirs _CPP_PROTO((void));
-extern void addfile _CPP_PROTO((FILE *fp, char *filename));
-extern void ciwarn _CPP_PROTO((char *format, int narg));
-extern void cwarn _CPP_PROTO((char *format, char *sarg));
-extern int get _CPP_PROTO((void));
-extern void unget _CPP_PROTO((void));
-extern int control _CPP_PROTO((int counter));
-extern void skipnl _CPP_PROTO((void));
-extern int macroid _CPP_PROTO((int c));
-extern int catenate _CPP_PROTO((void));
-extern void scannumber _CPP_PROTO((int c, void (*outfn)(int c)));
-extern int scanstring _CPP_PROTO((int delim, void (*outfn)(int c)));
-extern int skipws _CPP_PROTO((void));
-extern void scanid _CPP_PROTO((int c));
-extern void save _CPP_PROTO((int c));  /* Save char in work[] */
-extern int eval _CPP_PROTO((void));
-extern void dodefine _CPP_PROTO((void));
-extern void doundef _CPP_PROTO((void));
-extern int openfile _CPP_PROTO((char *filename));
-extern FILEINFO	*getfile _CPP_PROTO((int bufsize, char *name));
-extern void charput _CPP_PROTO((int c));
-extern void textput _CPP_PROTO((char *s));
-extern void checkparm _CPP_PROTO((int c, DEFBUF *dp));
-extern void stparmscan _CPP_PROTO((int delim, DEFBUF *dp));
-extern void ungetstring _CPP_PROTO((char *text));
-extern int cget _CPP_PROTO((void));
-extern void expand _CPP_PROTO((DEFBUF *tokenp));
-extern FILEINFO	*getfile _CPP_PROTO((int bufsize, char *name));
+extern char *getmem P((int ssize));	/* Get memory or die.		*/
+extern DEFBUF *lookid P((int c));	/* Look for a #define'd thing	*/
+extern DEFBUF *defendel P((_CONST char *name, int delete_));  /* Symbol table enter/delete */
+extern char *savestring P((_CONST char *text));  /* Stuff string in malloc mem. */
+extern void initdefines P((void));
+extern int dooptions P((int argc, char *argv[]));
+extern void cierror P((_CONST char *format, int narg));
+extern void cerror P((_CONST char *format, _CONST char *sarg));
+extern void cfatal P((_CONST char *format, _CONST char *sarg));
+extern void setincdirs P((void));
+extern void addfile P((FILE *fp, _CONST char *filename));
+extern void ciwarn P((_CONST char *format, int narg));
+extern void cwarn P((_CONST char *format, _CONST char *sarg));
+extern int get P((void));
+extern void unget P((void));
+extern int control P((int counter));
+extern void skipnl P((void));
+extern int macroid P((int c));
+extern int catenate P((void));
+extern void scannumber P((int c, void (*outfn)(int c)));
+extern int scanstring P((int delim, void (*outfn)(int c)));
+extern int skipws P((void));
+extern void scanid P((int c));
+extern void save P((int c));  /* Save char in work[] */
+extern int eval P((void));
+extern void dodefine P((void));
+extern void doundef P((void));
+extern int openfile P((_CONST char *filename));
+extern FILEINFO	*getfile P((int bufsize, _CONST char *name));
+extern void charput P((int c));
+extern void textput P((_CONST char *s));
+extern void checkparm P((int c, DEFBUF *dp));
+extern void stparmscan P((int delim, DEFBUF *dp));
+extern void ungetstring P((_CONST char *text));
+extern int cget P((void));
+extern void expand P((DEFBUF *tokenp));
+extern FILEINFO	*getfile P((int bufsize, _CONST char *name));
 #if OK_TRIGRAPH
-extern void trigraph _CPP_PROTO((char *in));
+extern void trigraph P((_CONST char *in));
 #endif
