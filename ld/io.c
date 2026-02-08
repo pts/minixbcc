@@ -54,24 +54,23 @@ PRIVATE char inbuf[INBUFSIZE];	/* input buffer */
 PRIVATE char *inbufend;		/* input buffer top */
 PRIVATE char *inbufptr;		/* end of input in input buffer */
 PRIVATE int infd;		/* input file descriptor */
-PRIVATE char *inputname;	/* name of current input file */
+PRIVATE _CONST char *inputname;	/* name of current input file */
 PRIVATE char outbuf[OUTBUFSIZE];  /* output buffer */
 PRIVATE char *outbufptr;	/* output buffer ptr */
 PRIVATE char *outbuftop;	/* output buffer top */
 PRIVATE int outfd;		/* output file descriptor */
 PRIVATE unsigned outputperms;	/* permissions of output file */
-PRIVATE char *outputname;	/* name of output file */
-PRIVATE char *refname;		/* name of program for error reference */
+PRIVATE _CONST char *outputname;  /* name of output file */
+PRIVATE _CONST char *refname;	/* name of program for error reference */
 PRIVATE unsigned warncount;	/* count of warnings */
 
 FORWARD void flushout P((void));
 FORWARD void outhexdigs P((offset_t num));
-FORWARD void outputerror P((char *message));
+FORWARD void outputerror P((_CONST char *message));
 FORWARD void put04x P((unsigned num));
-FORWARD void putstrn P((char *message));
+FORWARD void putstrn P((_CONST char *message));
 
-PUBLIC void ioinit(progname)
-char *progname;
+PUBLIC void ioinit P1(_CONST char *, progname)
 {
     infd = ERR;
     if (*progname)
@@ -83,21 +82,21 @@ char *progname;
     outbuftop = outbuf + OUTBUFSIZE;
 }
 
-PUBLIC void closein()
+PUBLIC void closein P0()
 {
     if (infd != ERR && close(infd) < 0)
 	inputerror("cannot close");
     infd = ERR;
 }
 
-PUBLIC void closeout()
+PUBLIC void closeout P0()
 {
     flushout();
     if (close(outfd) == ERR)
 	outputerror("cannot close");
 }
 
-PUBLIC void executable()
+PUBLIC void executable P0()
 {
     int oldmask;
 
@@ -109,13 +108,13 @@ PUBLIC void executable()
     }
 }
 
-PUBLIC void flusherr()
+PUBLIC void flusherr P0()
 {
     (void)!write(STDOUT_FILENO, errbuf, errbufptr - errbuf);
     errbufptr = errbuf;
 }
 
-PRIVATE void flushout()
+PRIVATE void flushout P0()
 {
     int nbytes;
 
@@ -126,13 +125,12 @@ PRIVATE void flushout()
 }
 
 #ifdef OPEN00
-  extern int open00 P((const char *pathname));  /* flags and mode are both 0. */
+  extern int open00 P((_CONST char *pathname));  /* flags and mode are both 0. */
 #else
 #  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
 #endif
 
-PUBLIC void openin(filename)
-char *filename;
+PUBLIC void openin P1(_CONST char *, filename)
 {
     if (infd == ERR || strcmp(inputname, filename) != 0)
     {
@@ -144,8 +142,7 @@ char *filename;
     }
 }
 
-PUBLIC void openout(filename)
-char *filename;
+PUBLIC void openout P1(_CONST char *, filename)
 {
 #ifdef __WATCOMC__  /* OpenWatcom v2 or earlier. */
 #  ifdef _WCDATA  /* OpenWatcom v2 libc. */
@@ -171,14 +168,12 @@ char *filename;
 
 PUBLIC char hexdigit[] = "0123456789abcdef";
 
-PUBLIC void puthexdig(num)
-unsigned num;
+PUBLIC void puthexdig P1(unsigned, num)
 {
     putbyte(hexdigit[num & 0xf]);
 }
 
-PRIVATE void outhexdigs(num)
-register offset_t num;
+PRIVATE void outhexdigs P1(REGISTER offset_t, num)
 {
     if (num >= 0x10)
     {
@@ -187,8 +182,7 @@ register offset_t num;
     puthexdig((unsigned) num);
 }
 
-PRIVATE void put04x(num)
-register unsigned num;
+PRIVATE void put04x P1(REGISTER unsigned, num)
 {
     puthexdig(num >> 12);
     puthexdig(num >> 8);
@@ -196,16 +190,13 @@ register unsigned num;
     puthexdig(num);
 }
 
-PUBLIC void put08lx(num)  /* Used by dumpsyms(). */
-register offset_t num;
+PUBLIC void put08lx P1(REGISTER offset_t, num)  /* Used by dumpsyms(). */
 {
     put04x((unsigned) (num >> 16));
     put04x((unsigned) num & 0xffff);
 }
 
-PUBLIC void putbstr(width, str)
-unsigned width;
-char *str;
+PUBLIC void putbstr P2(unsigned, width, _CONST char *, str)
 {
     unsigned length;
     
@@ -214,10 +205,9 @@ char *str;
     putstr(str);
 }
 
-PUBLIC void putbyte(ch)
-int ch;
+PUBLIC void putbyte P1(int, ch)
 {
-    register char *ebuf;
+    REGISTER char *ebuf;
 
     ebuf = errbufptr;
     if (ebuf >= errbuftop)
@@ -229,26 +219,24 @@ int ch;
     errbufptr = ebuf;
 }
 
-PUBLIC void putstr(message)
-char *message;
+PUBLIC void putstr P1(_CONST char *, message)
 {
     while (*message != 0)
 	putbyte(*message++);
 }
 
-PRIVATE void putstrn(message)
-char *message;
+PRIVATE void putstrn P1(_CONST char *, message)
 {
     putstr(message);
     putbyte('\n');
     flusherr();
 }
 
-PUBLIC int readchar()
+PUBLIC int readchar P0()
 {
     int ch;
 	
-    register char *ibuf;
+    REGISTER char *ibuf;
     int nread;
 
     ibuf = inbufptr;
@@ -272,9 +260,7 @@ PUBLIC int readchar()
     return ch;
 }
 
-PUBLIC void readin(buf, count)
-char *buf;
-unsigned count;
+PUBLIC void readin P2(char *, buf, unsigned, count)
 {
     int ch;
 
@@ -286,9 +272,7 @@ unsigned count;
     }
 }
 
-PUBLIC bool_pt readineofok(buf, count)
-char *buf;
-unsigned count;
+PUBLIC bool_pt readineofok P2(char *, buf, unsigned, count)
 {
     int ch;
     
@@ -309,26 +293,23 @@ unsigned count;
 #  define const_lseek_offset(v) ((off_t) (v))
 #endif
 
-PUBLIC void seekin(offset)
-unsigned INT32T offset;
+PUBLIC void seekin P1(unsigned INT32T, offset)
 {
     inbufptr = inbufend = inbuf;
     if ((INT32T) offset < 0 || lseek(infd, cast_lseek_offset(offset), SEEK_SET) < 0)
 	prematureeof();
 }
 
-PUBLIC void seekout(offset)
-unsigned INT32T offset;
+PUBLIC void seekout P1(unsigned INT32T, offset)
 {
     flushout();
     if ((INT32T) offset < 0 || lseek(outfd, cast_lseek_offset(offset), SEEK_SET) != cast_lseek_offset(offset))
 	outputerror("cannot seek in");
 }
 
-PUBLIC void writechar(ch)
-int ch;
+PUBLIC void writechar P1(int, ch)
 {
-    register char *obuf;
+    REGISTER char *obuf;
 
     obuf = outbufptr;
     if (obuf >= outbuftop)
@@ -340,11 +321,9 @@ int ch;
     outbufptr = obuf;
 }
 
-PUBLIC void writeout(buf, count)
-register char *buf;
-unsigned count;
+PUBLIC void writeout P2(REGISTER _CONST char *, buf, unsigned, count)
 {
-    register char *obuf;
+    REGISTER char *obuf;
 
     obuf = outbufptr;
     while (count--)
@@ -362,22 +341,19 @@ unsigned count;
 
 /* error module */
 
-PUBLIC void errexit(message)
-char *message;
+PUBLIC void errexit P1(_CONST char *, message)
 {
     putstrn(message);
     exit(2);
 }
 
-PUBLIC void fatalerror(message)
-char *message;
+PUBLIC void fatalerror P1(_CONST char *, message)
 {
     refer();
     errexit(message);
 }
 
-PUBLIC void inputerror(message)
-char *message;
+PUBLIC void inputerror P1(_CONST char *, message)
 {
     refer();
     putstr(message);
@@ -385,16 +361,14 @@ char *message;
     errexit(inputname);
 }
 
-PUBLIC void input1error(message)
-char *message;
+PUBLIC void input1error P1(_CONST char *, message)
 {
     refer();
     putstr(inputname);
     errexit(message);
 }
 
-PRIVATE void outputerror(message)
-char *message;
+PRIVATE void outputerror P1(_CONST char *, message)
 {
     refer();
     putstr(message);
@@ -402,22 +376,17 @@ char *message;
     errexit(outputname);
 }
 
-PUBLIC void outofmemory()
+PUBLIC void outofmemory P0()
 {
     inputerror("out of memory while processing");
 }
 
-PUBLIC void prematureeof()
+PUBLIC void prematureeof P0()
 {
     inputerror("premature end of");
 }
 
-PUBLIC void redefined(name, message, archentry, deffilename, defarchentry)
-char *name;
-char *message;
-char *archentry;
-char *deffilename;
-char *defarchentry;
+PUBLIC void redefined P5(_CONST char *, name, _CONST char *, message, _CONST char *, archentry, _CONST char *, deffilename, _CONST char *, defarchentry)
 {
     ++warncount;
     refer();
@@ -444,24 +413,20 @@ char *defarchentry;
     putbyte('\n');
 }
 
-PUBLIC void refer()
+PUBLIC void refer P0()
 {
     putstr(refname);
     putstr(": ");
 }
 
-PUBLIC void reserved(name)
-char *name;
+PUBLIC void reserved P1(_CONST char *, name)
 {
     ++errcount;
     putstr("incorrect use of reserved symbol: ");
     putstrn(name);
 }
 
-PUBLIC void size_error(seg, count, size)
-unsigned seg;
-offset_t count;
-offset_t size;
+PUBLIC void size_error P3(unsigned, seg, offset_t, count, offset_t, size)
 {
     refer();
     putstr("seg ");
@@ -473,15 +438,14 @@ offset_t size;
     errexit("\n");
 }
 
-PUBLIC void undefined(name)
-char *name;
+PUBLIC void undefined P1(_CONST char *, name)
 {
     ++errcount;
     putstr("undefined symbol: ");
     putstrn(name);
 }
 
-PUBLIC void usage()
+PUBLIC void usage P0()
 {
     putstr("usage: ");
     putstr(refname);

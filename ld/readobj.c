@@ -67,7 +67,7 @@ PRIVATE bool_pt readarheader P((char **parchentry, offset_t *filelength_out));
 PRIVATE bool_pt readminixarheader P((char **parchentry, offset_t *filelength_out));
 PRIVATE unsigned read1fileheader1 P((void));
 PRIVATE unsigned read2fileheader2 P((void));
-PRIVATE void readmodule P((char *filename, char *archentry));
+PRIVATE void readmodule P((_CONST char *filename, _CONST char *archentry));
 PRIVATE void reedmodheader P((void));
 PRIVATE bool_pt redsym P((struct symstruct *symptr, offset_t value));
 PRIVATE unsigned checksum P((char *string, unsigned length));
@@ -76,7 +76,7 @@ PRIVATE unsigned readfilecommon P((char *fileheader));
 
 /* initialise object file handler */
 
-PUBLIC void objinit()
+PUBLIC void objinit P0()
 {
     modfirst = modlast = (struct modstruct*) 0;
     entryfirst = entrylast = (struct entrylist*) 0;
@@ -85,8 +85,7 @@ PUBLIC void objinit()
 
 /* read all symbol definitions in an object file */
 
-PUBLIC void readsyms(filename)
-char *filename;
+PUBLIC void readsyms P1(_CONST char *, filename)
 {
     char *archentry;
     char filemagic[SARMAG];
@@ -99,7 +98,7 @@ char *filename;
     {
     case OMAGIC:
 	for (modcount = read2fileheader2(); modcount-- != 0;)
-	    readmodule(filename, (char *) 0);
+	    readmodule(filename, (_CONST char *) 0);
 	break;
     case MINIXARMAG:
 	filepos = 2;
@@ -145,12 +144,9 @@ char *filename;
  * It uses the speified base (8, 10 or 16), or if 0 is specified, then it
  * autodetects the base just like c does.
  */
-bool_pt parse_nonneg_lenient(s, base, output)
-char *s;
-unsigned base;
-offset_t *output;
+bool_pt parse_nonneg_lenient P3(_CONST char *, s, unsigned, base, offset_t *, output)
 {
-    register char c;
+    REGISTER char c;
     bool_t sign;
     offset_t v;  /* Unsigned. */
 
@@ -207,12 +203,10 @@ offset_t *output;
     return 1;
 }
 
-PRIVATE char *namedup(p, size)
-char *p;
-unsigned size;
+PRIVATE char *namedup P2(char *, p, unsigned, size)
 {
     char *pend, *result;
-    register char *q;
+    REGISTER char *q;
 
     for (pend = (q = p) + size; q != pend && *q != '\0' && *q != '/'; ++q) {}
     for (; q != p && q[-1] == ' '; --q) {}  /* Remove trailing spaces. */
@@ -222,9 +216,7 @@ unsigned size;
     return result;
 }
 
-PRIVATE bool_pt readarheader(parchentry, filelength_out)
-char **parchentry;
-offset_t *filelength_out;
+PRIVATE bool_pt readarheader P2(char **, parchentry, offset_t *, filelength_out)
 {
     struct ar_hdr arheader;
 
@@ -234,9 +226,7 @@ offset_t *filelength_out;
     return parse_nonneg_lenient(arheader.ar_size, 10, filelength_out);  /* Always ASCII decimal. */
 }
 
-PRIVATE bool_pt readminixarheader(parchentry, filelength_out)
-char **parchentry;
-offset_t *filelength_out;
+PRIVATE bool_pt readminixarheader P2(char **, parchentry, offset_t *, filelength_out)
 {
     struct minixar_hdr marheader;
 
@@ -249,8 +239,7 @@ offset_t *filelength_out;
 
 /* read and check file header of the object file just opened */
 
-PRIVATE unsigned readfilecommon(fileheader)
-char *fileheader;
+PRIVATE unsigned readfilecommon P1(char *, fileheader)
 {
     char filechecksum;		/* part of fileheader but would unalign */
 
@@ -260,7 +249,7 @@ char *fileheader;
     return c2u2(fileheader + 2  /* .count */);
 }
 
-PRIVATE unsigned read1fileheader1()
+PRIVATE unsigned read1fileheader1 P0()
 {
     struct
     {
@@ -272,7 +261,7 @@ PRIVATE unsigned read1fileheader1()
     return readfilecommon((char *) &fileheader);
 }
 
-PRIVATE unsigned read2fileheader2()
+PRIVATE unsigned read2fileheader2 P0()
 {
     struct
     {
@@ -288,9 +277,7 @@ PRIVATE unsigned read2fileheader2()
 
 /* read the next module */
 
-PRIVATE void readmodule(filename, archentry)
-char *filename;
-char *archentry;
+PRIVATE void readmodule P2(_CONST char *, filename, _CONST char *, archentry)
 {
     struct symdstruct		/* to save parts of symbol before name known */
     {
@@ -371,10 +358,9 @@ char *archentry;
 
 /* put symbol on entry symbol list if it is not already */
 
-PUBLIC void entrysym(symptr)
-struct symstruct *symptr;
+PUBLIC void entrysym P1(struct symstruct *, symptr)
 {
-    register struct entrylist *elptr;
+    REGISTER struct entrylist *elptr;
 
     for (elptr = entryfirst; elptr != (struct entrylist*) 0; elptr = elptr->elnext)
 	if (symptr == elptr->elsymptr)
@@ -391,7 +377,7 @@ struct symstruct *symptr;
 
 /* read the header of the next module */
 
-PRIVATE void reedmodheader()
+PRIVATE void reedmodheader P0()
 {
     struct
     {
@@ -411,7 +397,7 @@ PRIVATE void reedmodheader()
     modptr = (struct modstruct *) heapalloc(sizeof(struct modstruct));
     modptr->modnext = (struct modstruct*) 0;
     modptr->textoffset = c4u4(modheader.htextoffset);
-    modptr->class = modheader.hclass;
+    modptr->class_ = modheader.hclass;
     readin(modptr->segmaxsize, sizeof modptr->segmaxsize);
     readin(modptr->segsizedesc, sizeof modptr->segsizedesc);
     cptr = modptr->segsize;
@@ -434,14 +420,12 @@ PRIVATE void reedmodheader()
     modlast = modptr;
 }
 
-PRIVATE bool_pt redsym(symptr, value)
-register struct symstruct *symptr;
-offset_t value;
+PRIVATE bool_pt redsym P2(REGISTER struct symstruct *, symptr, offset_t, value)
 {
-    register struct redlist *rlptr;
-    char class;
+    REGISTER struct redlist *rlptr;
+    char class_;
 
-    if (symptr->modptr->class != (class = modlast->class))
+    if (symptr->modptr->class_ != (class_ = modlast->class_))
 	for (rlptr = redfirst;; rlptr = rlptr->rlnext)
 	{
 	    if (rlptr == (struct redlist*) 0)
@@ -450,8 +434,8 @@ offset_t value;
 		    heapalloc(sizeof(struct redlist));
 		rlptr->rlnext = (struct redlist*) 0;
 		rlptr->rlsymptr = symptr;
-		if (symptr->modptr->class < class)
-		    /* prefer lower class - put other on redlist */
+		if (symptr->modptr->class_ < class_)
+		    /* prefer lower class_ - put other on redlist */
 		{
 		    rlptr->rlmodptr = modlast;
 		    rlptr->rlvalue = value;
@@ -470,15 +454,13 @@ offset_t value;
 		redlast = rlptr;
 		return FALSE;
 	    }
-	    if (symptr == rlptr->rlsymptr && class == rlptr->rlmodptr->class)
+	    if (symptr == rlptr->rlsymptr && class_ == rlptr->rlmodptr->class_)
 		break;
 	}
     return TRUE;
 }
 
-PRIVATE unsigned checksum(string, length)
-char *string;
-unsigned length;
+PRIVATE unsigned checksum P2(char *, string, unsigned, length)
 {
     unsigned char sum;		/* this is a 1-byte checksum */
 
@@ -487,14 +469,12 @@ unsigned length;
     return sum;
 }
 
-PUBLIC offset_t readconvsize(countindex)
-unsigned countindex;
+PUBLIC offset_t readconvsize P1(unsigned, countindex)
 {
     return readsize(convertsize[countindex]);
 }
 
-PUBLIC offset_t readsize(count)
-unsigned count;
+PUBLIC offset_t readsize P1(unsigned, count)
 {
     char buf[MAX_OFFSET_SIZE];
 
@@ -504,17 +484,13 @@ unsigned count;
     return cnu4(buf, count);
 }
 
-PRIVATE unsigned segbits(seg, sizedesc)
-unsigned seg;
-char *sizedesc;
+PRIVATE unsigned segbits P2(unsigned, seg, char *, sizedesc)
 {
     return 3 & ((unsigned) sizedesc[((NSEG - 1) - seg) / 4] >> (2 * (seg % 4)));
     /* unsigned to give logical shift */
 }
 
-PUBLIC unsigned segsizecount(seg, modptr)
-unsigned seg;
-struct modstruct *modptr;
+PUBLIC unsigned segsizecount P2(unsigned, seg, struct modstruct *, modptr)
 {
     return convertsize[segbits(seg, modptr->segsizedesc)];
 }

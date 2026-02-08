@@ -27,11 +27,11 @@ struct entrylist		/* list of entry symbols */
 
 struct modstruct		/* module table entry format */
 {
-    char *filename;		/* file containing this module */
-    char *archentry;		/* name of component file for archives */
-    char *modname;		/* name of module */
+    _CONST char *filename;	/* file containing this module */
+    _CONST char *archentry;	/* name of component file for archives */
+    _CONST char *modname;	/* name of module */
     offset_t textoffset;	/* offset to module text in file */
-    char class;			/* class of module */
+    char class_;		/* class of module */
     char loadflag;		/* set if module to be loaded */
     char segmaxsize[NSEG / 4];	/* |SF|SE|..|S0|, 2 bits for seg max size */
 				/* 00 = 1, 01 = 2, 10 = 3, 11 = 4 */
@@ -70,12 +70,6 @@ struct symstruct		/* symbol table entry format */
 
 /* prototypes */
 
-#if __STDC__
-#  define P(x) x
-#else
-#  define P(x) ()
-#endif
-
 /* dump.c */
 void dumpmods P((void));
 void dumpsyms P((void));
@@ -84,20 +78,20 @@ void dumpsyms P((void));
 void initheap P((void));
 
 /* io.c */
-void ioinit P((char *progname));
+void ioinit P((_CONST char *progname));
 void closein P((void));
 void closeout P((void));
 void executable P((void));
 void flusherr P((void));
-void openin P((char *filename));
-void openout P((char *filename));
-void putstr P((char *message));
+void openin P((_CONST char *filename));
+void openout P((_CONST char *filename));
+void putstr P((_CONST char *message));
 void puthexdig P((unsigned num));
 #ifdef OBJ_H
 void put08x P((offset_t num));
 void put08lx P((offset_t num));
 #endif
-void putbstr P((unsigned width, char *str));
+void putbstr P((unsigned width, _CONST char *str));
 void putbyte P((int ch));
 int readchar P((void));
 void readin P((char *buf, unsigned count));
@@ -105,23 +99,21 @@ bool_pt readineofok P((char *buf, unsigned count));
 void seekin P((unsigned INT32T offset));
 void seekout P((unsigned INT32T offset));
 void writechar P((int c));
-void writedrel P((char *buf, unsigned count));
-void writeout P((char *buf, unsigned count));
-void writetrel P((char *buf, unsigned count));
+void writeout P((_CONST char *buf, unsigned count));
 void refer P((void));
-void errexit P((char *message));
-void fatalerror P((char *message));
-void inputerror P((char *message));
-void input1error P((char *message));
+void errexit P((_CONST char *message));
+void fatalerror P((_CONST char *message));
+void inputerror P((_CONST char *message));
+void input1error P((_CONST char *message));
 void outofmemory P((void));
 void prematureeof P((void));
-void redefined P((char *name, char *message, char *archentry,
-		  char *deffilename, char *defarchentry));
-void reserved P((char *name));
+void redefined P((_CONST char *name, _CONST char *message, _CONST char *archentry,
+		  _CONST char *deffilename, _CONST char *defarchentry));
+void reserved P((_CONST char *name));
 #ifdef OBJ_H
 void size_error P((unsigned seg, offset_t count, offset_t size));
 #endif
-void undefined P((char *name));
+void undefined P((_CONST char *name));
 void usage P((void));
 
 /* ld.c */
@@ -129,8 +121,8 @@ int main P((int argc, char **argv));
 
 /* readobj.c */
 void objinit P((void));
-void readsyms P((char *filename));
-bool_pt parse_nonneg_lenient P((char *s, unsigned base, offset_t *output));
+void readsyms P((_CONST char *filename));
+bool_pt parse_nonneg_lenient P((_CONST char *s, unsigned base, offset_t *output));
 #ifdef OBJ_H
 void entrysym P((struct symstruct *symptr));
 offset_t readconvsize P((unsigned countindex));
@@ -140,20 +132,20 @@ unsigned segsizecount P((unsigned seg, struct modstruct *modptr));
 
 /* table.c */
 void syminit P((void));
-struct symstruct *addsym P((char *name));
-struct symstruct *findsym P((char *name));
+struct symstruct *addsym P((_CONST char *name));
+struct symstruct *findsym P((_CONST char *name));
 char *moveup P((unsigned nbytes));
 char *heapalloc P((unsigned nbytes));
 void ourfree P((char *cptr));
 char *readstring P((void));
 void release P((char *cptr));
-char *stralloc P((char *s));
+char *stralloc P((_CONST char *s));
 
 /* typeconvert.c */
-u2_pt c2u2 P((char *buf));
-u4_pt c4u4 P((char *buf));
-u2_pt cnu2 P((char *buf, unsigned count));
-u4_pt cnu4 P((char *buf, unsigned count));
+u2_pt c2u2 P((_CONST char *buf));
+u4_pt c4u4 P((_CONST char *buf));
+u2_pt cnu2 P((_CONST char *buf, unsigned count));
+u4_pt cnu4 P((_CONST char *buf, unsigned count));
 void u2c2 P((char *buf, u2_pt offset));
 void u4c4 P((char *buf, u4_pt offset));
 void u2cn P((char *buf, u2_pt offset, unsigned count));
@@ -161,6 +153,6 @@ void u4cn P((char *buf, u4_pt offset, unsigned count));
 bool_pt typeconv_init P((void));
 
 /* writebin.c */
-void writebin P((char *outfilename, bool_pt argsepid, bool_pt argbits32,
+void writebin P((_CONST char *outfilename, bool_pt argsepid, bool_pt argbits32,
 		 bool_pt argstripflag, bool_pt arguzp));
 void linksyms P((bool_pt argreloc_output));

@@ -36,12 +36,12 @@
 #include "type.h"
 #include "globvar.h"
 
-FORWARD u2_pt c2u2_00 P((char *buf));
-FORWARD u4_pt c4u4_00 P((char *buf));
-FORWARD u2_pt c2u2_ss P((char *buf));
-FORWARD u4_pt c4u4_ss P((char *buf));
-FORWARD u4_pt c4u4_s0 P((char *buf));
-FORWARD u4_pt c4u4_0s P((char *buf));
+FORWARD u2_pt c2u2_00 P((_CONST char *buf));
+FORWARD u4_pt c4u4_00 P((_CONST char *buf));
+FORWARD u2_pt c2u2_ss P((_CONST char *buf));
+FORWARD u4_pt c4u4_ss P((_CONST char *buf));
+FORWARD u4_pt c4u4_s0 P((_CONST char *buf));
+FORWARD u4_pt c4u4_0s P((_CONST char *buf));
 FORWARD void u2c2_00 P((char *buf, u2_pt offset));
 FORWARD void u4c4_00 P((char *buf, u4_pt offset));
 FORWARD void u2c2_ss P((char *buf, u2_pt offset));
@@ -49,8 +49,8 @@ FORWARD void u4c4_ss P((char *buf, u4_pt offset));
 FORWARD void u4c4_s0 P((char *buf, u4_pt offset));
 FORWARD void u4c4_0s P((char *buf, u4_pt offset));
 
-PRIVATE u2_pt (*pc2u2) P((char *buf)) = c2u2_00;
-PRIVATE u4_pt (*pc4u4) P((char *buf)) = c4u4_00;
+PRIVATE u2_pt (*pc2u2) P((_CONST char *buf)) = c2u2_00;
+PRIVATE u4_pt (*pc4u4) P((_CONST char *buf)) = c4u4_00;
 PRIVATE void (*pu2c2) P((char *buf, u2_pt offset)) = u2c2_00;
 PRIVATE void (*pu4c4) P((char *buf, u4_pt offset)) = u4c4_00;
 
@@ -58,8 +58,7 @@ PRIVATE void (*pu4c4) P((char *buf, u4_pt offset)) = u4c4_00;
 
 /* no bytes swapped, copying the bytes to avoid alignment problems */
 
-PRIVATE u2_pt c2u2_00(buf)
-register char *buf;
+PRIVATE u2_pt c2u2_00 P1(REGISTER _CONST char *, buf)
 {
     u2_t offset;
 
@@ -68,8 +67,7 @@ register char *buf;
     return offset;
 }
 
-PRIVATE u4_pt c4u4_00(buf)
-register char *buf;
+PRIVATE u4_pt c4u4_00 P1(REGISTER _CONST char *, buf)
 {
     u4_t offset;
 
@@ -82,8 +80,7 @@ register char *buf;
 
 /* straight swapping for little-endian to big-endian and vice versa */
 
-PRIVATE u2_pt c2u2_ss(buf)
-register char *buf;
+PRIVATE u2_pt c2u2_ss P1(REGISTER _CONST char *, buf)
 {
     u2_t offset;
 
@@ -92,8 +89,7 @@ register char *buf;
     return offset;
 }
 
-PRIVATE u4_pt c4u4_ss(buf)
-register char *buf;
+PRIVATE u4_pt c4u4_ss P1(REGISTER _CONST char *, buf)
 {
     u4_t offset;
 
@@ -106,8 +102,7 @@ register char *buf;
 
 /* wierd swapping for different-endian u2's, same-endian u4's */
 
-PRIVATE u4_pt c4u4_s0(buf)
-register char *buf;
+PRIVATE u4_pt c4u4_s0 P1(REGISTER _CONST char *, buf)
 {
     u4_t offset;
 
@@ -120,8 +115,7 @@ register char *buf;
 
 /* very wierd swapping for same-endian u2's, different-endian u4's */
 
-PRIVATE u4_pt c4u4_0s(buf)
-register char *buf;
+PRIVATE u4_pt c4u4_0s P1(REGISTER _CONST char *, buf)
 {
     u4_t offset;
 
@@ -134,21 +128,17 @@ register char *buf;
 
 /* === entry points === */
 
-PUBLIC u2_pt c2u2(buf)
-char *buf;
+PUBLIC u2_pt c2u2 P1(_CONST char *, buf)
 {
     return (*pc2u2) (buf);
 }
 
-PUBLIC u4_pt c4u4(buf)
-char *buf;
+PUBLIC u4_pt c4u4 P1(_CONST char *, buf)
 {
     return (*pc4u4) (buf);
 }
 
-PUBLIC u2_pt cnu2(buf, count)
-char *buf;
-unsigned count;
+PUBLIC u2_pt cnu2 P2(_CONST char *, buf, unsigned, count)
 {
     switch (count)
     {
@@ -163,9 +153,7 @@ unsigned count;
     }
 }
 
-PUBLIC u4_pt cnu4(buf, count)
-char *buf;
-unsigned count;
+PUBLIC u4_pt cnu4 P2(_CONST char *, buf, unsigned, count)
 {
     switch (count)
     {
@@ -184,18 +172,14 @@ unsigned count;
 
 /* no bytes swapped, copying the bytes to avoid alignment problems */
 
-PRIVATE void u2c2_00(buf, offset)
-register char *buf;
-u2_pt offset;
+PRIVATE void u2c2_00 P2(REGISTER char *, buf, u2_pt, offset)
 {
 
     buf[0] = ((char *) &offset)[0];
     buf[1] = ((char *) &offset)[1];
 }
 
-PRIVATE void u4c4_00(buf, offset)
-register char *buf;
-u4_pt offset;
+PRIVATE void u4c4_00 P2(REGISTER char *, buf, u4_pt, offset)
 {
     buf[0] = ((char *) &offset)[0];
     buf[1] = ((char *) &offset)[1];
@@ -205,9 +189,7 @@ u4_pt offset;
 
 /* straight swapping for little-endian to big-endian and vice versa */
 
-PRIVATE void u2c2_ss(buf, offset)
-register char *buf;
-u2_pt offset;
+PRIVATE void u2c2_ss P2(REGISTER char *, buf, u2_pt, offset)
 {
     u2_t offset2;
 
@@ -216,9 +198,7 @@ u2_pt offset;
     buf[1] = ((char *) &offset2)[0];
 }
 
-PRIVATE void u4c4_ss(buf, offset)
-register char *buf;
-u4_pt offset;
+PRIVATE void u4c4_ss P2(REGISTER char *, buf, u4_pt, offset)
 {
     buf[0] = ((char *) &offset)[3];
     buf[1] = ((char *) &offset)[2];
@@ -228,9 +208,7 @@ u4_pt offset;
 
 /* wierd swapping for different-endian u2's, same-endian u4's */
 
-PRIVATE void u4c4_s0(buf, offset)
-register char *buf;
-u4_pt offset;
+PRIVATE void u4c4_s0 P2(REGISTER char *, buf, u4_pt, offset)
 {
     buf[0] = ((char *) &offset)[1];
     buf[1] = ((char *) &offset)[0];
@@ -240,9 +218,7 @@ u4_pt offset;
 
 /* very wierd swapping for same-endian u2's, different-endian u4's */
 
-PRIVATE void u4c4_0s(buf, offset)
-register char *buf;
-u4_pt offset;
+PRIVATE void u4c4_0s P2(REGISTER char *, buf, u4_pt, offset)
 {
     buf[0] = ((char *) &offset)[2];
     buf[1] = ((char *) &offset)[3];
@@ -252,24 +228,17 @@ u4_pt offset;
 
 /* === entry points === */
 
-PUBLIC void u2c2(buf, offset)
-register char *buf;
-u2_pt offset;
+PUBLIC void u2c2 P2(REGISTER char *, buf, u2_pt, offset)
 {
     (*pu2c2) (buf, offset);
 }
 
-PUBLIC void u4c4(buf, offset)
-register char *buf;
-u4_pt offset;
+PUBLIC void u4c4 P2(REGISTER char *, buf, u4_pt, offset)
 {
     (*pu4c4) (buf, offset);
 }
 
-PUBLIC void u2cn(buf, offset, count)
-register char *buf;
-u2_pt offset;
-unsigned count;
+PUBLIC void u2cn P3(REGISTER char *, buf, u2_pt, offset, unsigned, count)
 {
     switch (count)
     {
@@ -285,10 +254,7 @@ unsigned count;
     }
 }
 
-PUBLIC void u4cn(buf, offset, count)
-register char *buf;
-u4_pt offset;
-unsigned count;
+PUBLIC void u4cn P3(REGISTER char *, buf, u4_pt, offset, unsigned, count)
 {
     switch (count)
     {
@@ -306,12 +272,12 @@ unsigned count;
 
 /* initialise type conversion, return FALSE if it cannot be handled */
 
-PUBLIC bool_pt typeconv_init()  /* !! hardcode the defaults */
+PUBLIC bool_pt typeconv_init P0()  /* !! hardcode the defaults */
 {
     u2_pt conv2;
     u4_pt conv4;
-    char *conv2ptr;
-    char *conv4ptr;
+    _CONST char *conv2ptr;
+    _CONST char *conv4ptr;
 
     if (sizeof(u2_t) != 2 || sizeof(u4_t) != 4)
 	/* dumb preprocessor's don't accept sizeof in #if expressions */
@@ -355,7 +321,7 @@ PUBLIC bool_pt typeconv_init()  /* !! hardcode the defaults */
 
 #ifdef DEBUG_TYPECONV
 
-main()
+main P0()
 {
     char *source;
     char target[4];

@@ -57,13 +57,14 @@
 #endif
 
 PRIVATE int trybrk P((char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-PRIVATE int trybrk(p) char *p; {
+PRIVATE int trybrk P1(char *, p)
+{
   /* brk(...) makes sure that a minimmum amount of stack space is still available above the heap. */
   return !brk(p) && brksize >= p;  /* brk(...) also changes brksize. */
 }
 #endif
 
-PUBLIC void initheap()
+PUBLIC void initheap P0()
 {
 #ifdef MINIXHEAP
   unsigned a, b, m;
@@ -119,9 +120,9 @@ PUBLIC void initheap()
   unsigned size;
 
   size = MAXHEAPEXPR;
-  if (!(p = malloc(size))) {  /* If `size' bytes are not available, try smaller amounts. */
-    while (size > 1024 && !(p = malloc((size >>= 1, size += size >> 1)))) {}
-    if (!p && size > 1024 && !(p = malloc(size = 1024))) {
+  if (!(p = (char *) malloc(size))) {  /* If `size' bytes are not available, try smaller amounts. */
+    while (size > 1024 && !(p = (char *) malloc((size >>= 1, size += size >> 1)))) {}
+    if (!p && size > 1024 && !(p = (char *) malloc(size = 1024))) {
       outofmemory();  /* Minimum is 1 KiB. */
     }
   }
