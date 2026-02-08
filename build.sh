@@ -15,26 +15,12 @@
 # !! fix suboptimal i386 code generation in ld for `v += (unsigned long) (unsigned char) c;'; this already uses movzx: `v += (unsigned char) c;'
 # !! Add support for -nostdlib in the bbcc driver.
 # !! Move all libc variables from .data to .bss (with .comm).
-# !! everywhere (sc, as, ld, cpp), there are about 26 instances remaining: rep '[(] *unsigned *char *[)]' {??,cpp}/*.[ch]
+# !! everywhere (sc, as, ld, cpp), there are about 26 instances remaining: grep '[(] *unsigned *char *[)]' {??,cpp}/*.[ch]
 #    ifdef ACKFIX  /* Workaround for the bug in Minix 1.5.10 i86 ACK 3.1 C compiler, which sign-extends the (unsigned char) cast. */
 #    #  define UCHARCAST(c) (unsigned char) ((unsigned) (c) & 0xff)
 #    #else
 #    #  define UCHARCAST(c) ((unsigned char) (c))
 #    #endif
-# !! make sure that constant folding division is always correct in sc: it is on C99 (but not on C89), and it is on x86 (__i386__, __i386__, i8086, i8088, i80386 etc.), otherwise use mininasm implementation:
-#    /*
-#     ** Deterministic signed division, rounds towards zero.
-#     ** The result is undefined if b == 0. It's defined for a == int_min and b == -1.
-#     */
-#    static value_t value_div(value_t a, value_t b) {
-#        const char an = (a < 0);
-#        const char bn = (b < 0);
-#        const uvalue_t d = (uvalue_t)(an ? -a : a) / (uvalue_t)(bn ? -b : b);
-#        return an == bn ? d : -d;
-#    }
-# !! replace divisions with right shifts (BCC is not smart enough to optimize it, it also means something different)
-#    fix sar code generation bug in sc/codefrag.c diveasy(), see extras/divbug.c
-# !! strtol.c -1 / 2 sign incompatibility with the i86 /local/bin/sc (== -1); the other one returns 0.
 #
 
 test "$ZSH_VERSION" && set -y 2>/dev/null  # SH_WORD_SPLIT for zsh(1). It's an i nvalid option in bash(1), and it's harmful (prevents echo) in ash(1).
@@ -249,7 +235,7 @@ if test "$1" = acko; then  # Minix 1.5.10 i86 old (traditional, pre-ANSI) ACK 3.
     cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4"
     # -i for separate I&D (BCC has it by default)
     # -s for adding symbols (opposite meaning as in BCC bcc and GCC gcc)
-    "$cc" -i    -O $cflags -DOPEN00 -DNOUNIONINIT -DACKFIX -DSBRK -DLIBCH -DMXMALLOC -c sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+    "$cc" -i    -O $cflags -DOPEN00 -DNOUNIONINIT -DACKFIX -DSBRK -DIDIVTOZ -DLIBCH -DMXMALLOC -c sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
     # This old asld (but not the new asld) would run out of memory if we used the Minix 1.5.10 libc (/usr/lib/crtso.c ... /usr/lib/libc.a /usr/lib/end.s).
     # We work it around by using a small, custom libc tailored for sc (lsca.s bcc-cc1. ... lsce.s).
     asld -i -o sc.mx sc/lsca.s bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s sc/lsce.s || exit "$?"
@@ -290,7 +276,7 @@ if test "$1" = acka; then  # Minix >=1.7.0 i86 or i386 ACK ANSI C compiler (1.20
   cr=  # Will be set later.
 fi
 
-if test "$1" = bcc || test "$1" = bbcc; then  # BCC (v0 or v3) on Minix x86, targeting Minix x86.
+if test "$1" = bcc || test "$1" = bbcc; then  # BCC (v0 or v3) or minixbcc (bbcc) on Minix x86, targeting Minix x86.
   if test "$h" = 0; then  # Host system is Minix i86.
     # Try to find the linker filename (typically fld=/local/bin/ld) and the host Minix kernel architecture (f03=-0 for i86 or f03=-3 for i386).
     # !! Simplify for bbcc: fld="bbcc ld" (and use it as $fld, without the quotes)

@@ -62,11 +62,7 @@ int base;
 #if PARANOIA
 	limit += ((limit + 1) * base < LONG_MIN + base);
 #else
-#if __BCC__ && __AS386_16__ + __AS386_32__
-	limit += 0;  /* Work around bug in BCC backend sc v0, which incorrectly computes (-1 / 2) == -1. */
-#else
-	limit += (-1 / 2 == -1);
-#endif
+	limit += (-1 / 2 == -1);  /* This is 0 on x86. BCC sc v3 does it correctly (-1 / 2 == 0), but BCC sc v0 diveasy(...) is buggy (-1 / 2 == -1). */
 #endif
   }
   else

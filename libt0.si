@@ -1,6 +1,6 @@
 |
 | libt0.si: part of the Minix libc implemented in 8086 (i86) assembly, BCC as (non-asld) special syntax
-| based on Minix 1.5.10 libc and Minix 1.5.10 BCC libc source files: crtso.s sendrec.s brksize.s idiv.s idivu.s imul.s laddl.s landl.s lcmpl.s lcoml.s ldecl.s ldivl.s ldivmod.s ldivul.s leorl.s lincl.s lmodl.s lmodul.s lmull.s lnegl.s lorl.s lsll.s lsrl.s lsrul.s lsubl.s ltstl.s
+| based on Minix 1.5.10 libc and Minix 1.5.10 BCC libc source files: crtso.s sendrec.s brksize.s idiv.s idivu.s imodu.s imul.s laddl.s landl.s lcmpl.s lcoml.s ldecl.s ldivl.s ldivul.s leorl.s lincl.s lmodl.s lmodul.s lmull.s lnegl.s lorl.s lsll.s lsrl.s lsrul.s lsubl.s ltstl.s
 | modified and size-optimized by pts@fazekas.hu at Mon Jan 12 22:25:29 CET 2026
 |
 | The Minix 1.5.10 i86 calling convention is the following:
@@ -415,6 +415,14 @@ idiv_u:
 	div bx
 	ret
 
+| imodu doesn't preserve edx/dx (returns quotient in it)
+.globl imodu
+imodu:
+	xor dx, dx
+	div bx
+	mov ax, dx  | instruction queue full so xchg slower
+	ret
+
 | imul_, imul_u don't preserve dx
 .globl imul_
 .globl imul_u
@@ -617,219 +625,192 @@ isru:
 endif
 
 if F_LDIVMOD
-| bx:ax % 2(di):(di), remainder bx:ax, quotient di:cx, dx not preserved
+| Divides signed 32-bit long dividend BX:AX by signed 32-bit long divisor [DI+2]:[DI], rounds towards 0, saves the quotient to DI:CX, saves the remainder to BX:AX. Ruins DX and FLAGS. Traps on division by 0 or overflow.
 .globl lmodl
-|.extern ldivmod
+|.extern __I4D
 lmodl:
-	mov cx, (di)
-	mov di, 2(di)
-	j ldivmod  | bx:ax / di:cx, quot di:cx, rem bx:ax
+	mov dx, (di)
+	mov cx, 2(di)
+	xchg dx, bx
+	call __I4D
+	mov di, dx
+	xchg cx, ax
+	xchg bx, ax
+	ret
 endif
 
 if F_LDIVMOD
-| unsigned bx:ax / 2(di):(di), remainder bx:ax, quotient di:cx, dx not preserved
+| Divides unsigned 32-bit long dividend BX:AX by unsigned 32-bit long divisor [DI+2]:[DI], rounds towards 0 (same as rounding down for unsigned) saves the quotient to DI:CX, saves the remainder to BX:AX. Ruins DX and FLAGS. Traps on division by 0 or overflow.
 .globl lmodul
-|.extern ludivmod
+|.extern __U4D
 lmodul:
-	mov cx, (di)
-	mov di, 2(di)
-	j ludivmod | unsigned bx:ax / di:cx, quot di:cx, rem bx:ax
+	mov dx, (di)
+	mov cx, 2(di)
+	xchg dx, bx
+	call __U4D
+	mov di, dx
+	xchg cx, ax
+	xchg bx, ax
+	ret
 endif
 
 if F_LDIVMOD
-| ldivmod: 32 over 32 to 32 bit division and remainder for 8086
-|
-| ldivmod( dividend bx:ax, divisor di:cx )  [ signed quot di:cx, rem bx:ax ]
-| ludivmod( dividend bx:ax, divisor di:cx ) [ unsigned quot di:cx, rem bx:ax ]
-|
-| dx is not preserved
-|
-| NB negatives are handled correctly, unlike by the processor
-| divison by zero does not trap
-|
-| let dividend = a, divisor = b, quotient = q, remainder = r
-| a = b * q + r  mod 2^32
-| where:
-|
-| if b = 0, q = 0 and r = a
-|
-| otherwise, q and r are uniquely determined by the requirements:
-| r has the same sign as b and absolute value smaller than that of b, i.e.
-|  if b > 0, then 0 <= r < b
-|  if b < 0, then 0 >= r > b
-| (the absoulute value and its comparison depend on signed/unsigned)
-|
-| the rule for the sign of r means that the quotient is truncated towards
-| negative infinity in the usual case of a positive divisor
-|
-| if the divisor is negative, the division is done by negating a and b,
-| doing the division, then negating q and r
-|
-| !! Replace it with a shorter implementation.
-.globl ldivmod
-ldivmod:
-	mov dx, di  | sign byte of b in dh
-	mov dl, bh  | sign byte of a in dl
-	test di, di
-	jns set_asign
-	neg di
-	neg cx
-	sbb di, *0
-set_asign:
-	test bx, bx
-	jns got_signs | leave r = a positive
-	neg bx
-	neg ax
-	sbb bx, *0
-	j got_signs
+| Divides signed 32-bit long dividend BX:AX by signed 32-bit long divisor [DI+2]:[DI], rounds towards 0, saves the quotient to BX:AX, saves the remainder to DI:CX. Ruins DX and FLAGS. Traps on division by 0 or overflow.
+.globl ldivl
+|.extern __I4D
+ldivl:
+	mov dx, (di)
+	mov cx, 2(di)
+	xchg dx, bx
+	call __I4D
+	mov di, cx
+	mov cx, bx
+	mov bx, dx
+	ret
+endif
 
-.globl ludivmod
-ludivmod:
-	xor dx, dx  | both sign bytes 0
-got_signs:
+if F_LDIVMOD
+| Divides unsigned 32-bit long dividend BX:AX by unsigned 32-bit long divisor [DI+2]:[DI], rounds towards 0 (same as rounding down for unsigned) saves the quotient to BX:AX, saves the remainder to DI:CX. Ruins DX and FLAGS. Traps on division by 0 or overflow.
+.globl ldivul
+|.extern __U4D
+ldivul:
+	mov dx, (di)
+	mov cx, 2(di)
+	xchg dx, bx
+	call __U4D
+	mov di, cx
+	mov cx, bx
+	mov bx, dx
+	ret
+endif
+
+if F_LDIVMOD
+| Divides signed 32-bit long dividend DX:AX by signed 32-bit long divisor CX:BX, rounds towards 0, saves the quotient to DX:AX, saves the remainder to CX:BX. Ruins FLAGS. Traps on division by 0 or overflow.
+| Based on OpenWatcom v2 libc.
+__I4D:
+	test dx, dx
+	js i4ddividendneg
+	test cx, cx
+	jns __U4D
+	neg cx
+	neg bx
+	sbb cx, *0
+	call __U4D
+	j i4dqneg
+i4ddividendneg:
+	neg dx
+	neg ax
+	sbb dx, *0
+	test cx, cx
+	jns i4drneg
+	neg cx
+	neg bx
+	sbb cx, *0
+	call __U4D
+	neg cx
+	neg bx
+	sbb cx, *0
+	ret
+i4drneg:
+	call __U4D
+	neg cx
+	neg bx
+	sbb cx, *0
+i4dqneg:
+	neg dx
+	neg ax
+	sbb dx, *0
+	ret
+
+| Divides unsigned 32-bit long dividend DX:AX by unsigned 32-bit long divisor CX:BX, rounds towards 0 (same as rounding down for unsigned) saves the quotient to DX:AX, saves the remainder to CX:BX. Ruins FLAGS. Traps on division by 0 or overflow.
+| Based on OpenWatcom v2 libc.
+__U4D:
+	test cx, cx
+	jnz u4dlargedivisor  | Jumps iff the divisor doesn't fit to a 16-bit word.
+	dec bx
+	je u4dretsmall  | If dividing by 1, it's a no-op, keep the quotient in DX:AX, and keep the remainder 0 in CX:BX.
+	inc bx
+	cmp bx, dx
+	ja u4dlow  | Jumps iff the quotient fits to a 16-bit word, i.e. if the divisor BX is larger than high word of the dividend (DX). If it jumps, it stores the high word of the quotient in CX, which is 0.
+	mov cx, ax
+	mov ax, dx
+	xor dx, dx
+	div bx  | This traps on division by zero.
+	xchg ax, cx
+u4dlow:
+	div bx
+	mov bx, dx  | BX := low word of the remainder.
+	mov dx, cx  | DX := high word of the quotient.
+	xor cx, cx  | DX := high word of the remainder. It's 0, because the remainder is smaller than the divisor, and the divisor fits to a 16-bit word, so the remainder also does.
+u4dretsmall:
+	ret
+u4dlargedivisor:
+	cmp cx, dx
+	jb u4dqnonzero  | Jumps iff the high word of the dividend is larger than the high word of the divisor.
+	jne u4dqzero
+	cmp bx, ax
+	ja u4dqzero  | Jumps iff the divisor is larger than the dividend.
+u4dqone:
+	sub ax, bx  | AX := low word of the remainder.
+	xchg bx, ax  | BX := AX| AX := junk.
+	xor cx, cx  | Set high word of the remainder to 0.
+	mov ax, *1
+	cwd  | Set the quotient (DX:AX) to 1.
+	ret
+u4dqzero:
+	xor cx, cx
+	xor bx, bx  | CX:BX := 0.
+	xchg ax, bx
+	xchg dx, cx  | Set the remainder (CX:BX) to the dividend, and the quotient (DX:AX) to 0.
+	ret
+u4dqnonzero:
 	push bp
 	push si
-	mov bp, sp
-	push di  | remember b
-	push cx
-| b0 = -4
-| b16 = -2
-	test di, di
-	jne divlarge
-	test cx, cx
-	je divzero
-	cmp bx, cx
-	jae divlarge | would overflow
-	xchg dx, bx  | a in dx:ax, signs in bx
-	div cx
-	xchg cx, ax  | q in di:cx, junk in ax
-	xchg ax, bx  | signs in ax, junk in bx
-	xchg ax, dx  | r in ax, signs back in dx
-	mov bx, di  | r in bx:ax
-	j zdivu1
-divzero:   | return q = 0 and r = a
-	test dl, dl
-	jns return
-	j negr  | a initially minus, restore it
-
-divlarge:
-	push dx  | remember sign bytes
-	mov si, di  | w in si:dx, initially b from di:cx
-	mov dx, cx
-	xor cx, cx  | q in di:cx, initially 0
-	mov di, cx
-	   | r in bx:ax, initially a
-	   | use di:cx rather than dx:cx in order to
-	   | have dx free for a byte pair later
-	cmp si, bx
-	jb loop1
-	ja zdivu  | finished if b > r
-	cmp dx, ax
-	ja zdivu
-| rotate w (= b) to greatest dyadic multiple of b <= r
-loop1:
-	shl dx, *1  | w = 2*w
-	rcl si, *1
-	jc loop1_exit | w was > r counting overflow (unsigned)
-	cmp si, bx  | while w <= r (unsigned)
-	jb loop1
-	ja loop1_exit
-	cmp dx, ax
-	jbe loop1  | else exit with carry clear for rcr
-loop1_exit:
-	rcr si, *1
-	rcr dx, *1
-loop2:
-	shl cx, *1  | q = 2*q
-	rcl di, *1
-	cmp si, bx  | if w <= r
-	jb loop2_over
-	ja loop2_test
-	cmp dx, ax
-	ja loop2_test
-loop2_over:
-	add cx, *1  | q++
-	adc di, *0
-	sub ax, dx  | r = r-w
-	sbb bx, si
-loop2_test:
-	shr si, *1  | w = w/2
-	rcr dx, *1
-	cmp si, -2(bp) | while w >= b
-	ja loop2
-	jb zdivu
-	cmp dx, -4(bp)
-	jae loop2
-zdivu:
-	pop dx  | sign bytes
-zdivu1:
-	test dh, dh
-	js zbminus
-	test dl, dl
-	jns return  | else a initially minus, b plus
-	mov dx, ax  | -a = b * q + r ==> a = b * (-q) + (-r)
-	or dx, bx
-	je negq  | use if r = 0
-	sub ax, -4(bp) | use a = b * (-1 - q) + (b - r)
-	sbb bx, -2(bp)
-	not cx  | q = -1 - q (same as complement)
-	not di
-negr:
-	neg bx
-	neg ax
-	sbb bx, *0
-return:
-	mov sp, bp
+	xor si, si
+	mov bp, si
+loc8:
+	add bx, bx
+	adc cx, cx
+	jb loc11
+	inc bp
+	cmp cx, dx
+	jb loc8
+	ja loc9
+	cmp bx, ax
+	jbe loc8
+loc9:
+	clc
+loc10:
+	adc si, si
+	dec bp
+	js loc14
+loc11:
+	rcr cx, *1
+	rcr bx, *1
+	sub ax, bx
+	sbb dx, cx
+	cmc
+	jb loc10
+loc12:
+	add si, si
+	dec bp
+	js loc13
+	shr cx, *1
+	rcr bx, *1
+	add ax, bx
+	adc dx, cx
+	jae loc12
+	j loc10
+loc13:
+	add ax, bx
+	adc dx, cx
+loc14:
+	mov bx, ax
+	mov cx, dx
+	mov ax, si
+	xor dx, dx
 	pop si
 	pop bp
-	ret
-zbminus:
-	test dl, dl  | (-a) = (-b) * q + r ==> a = b * q + (-r)
-	js negr  | use if initial a was minus
-	mov dx, ax  | a = (-b) * q + r ==> a = b * (-q) + r
-	or dx, bx
-	je negq  | use if r = 0
-	sub ax, -4(bp) | use a = b * (-1 - q) + (b + r) (b is now -b)
-	sbb bx, -2(bp)
-	not cx
-	not di
-	mov sp, bp
-	pop si
-	pop bp
-	ret
-negq:
-	neg di
-	neg cx
-	sbb di, *0
-	mov sp, bp
-	pop si
-	pop bp
-	ret
-endif
-
-if F_LDIVMOD
-| bx:ax / 2(di):(di), quotient bx:ax, remainder di:cx, dx not preserved
-.globl ldivl
-|.extern ldivmod
-ldivl:
-	mov cx, (di)
-	mov di, 2(di)
-	call ldivmod  | bx:ax / di:cx, quot di:cx, rem bx:ax
-	xchg ax, cx
-	xchg bx, di
-	ret
-endif
-
-if F_LDIVMOD
-| unsigned bx:ax / 2(di):(di), quotient bx:ax, remainder di:cx, dx not preserved
-.globl ldivul
-|.extern ludivmod
-ldivul:
-	mov cx, (di)
-	mov di, 2(di)
-	call ludivmod | unsigned bx:ax / di:cx, quot di:cx, rem bx:ax
-	xchg ax, cx
-	xchg bx, di
 	ret
 endif
 

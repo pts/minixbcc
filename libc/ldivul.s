@@ -1,19 +1,17 @@
 | ldivul.s
-| unsigned bx:ax / [di+2]:[di], quotient bx:ax,remainder di:cx, dx not preserved
-
-	.globl	ldivul
-	.extern	ludivmod
-	.text
-	.even
-
+| Divides unsigned 32-bit long dividend BX:AX by unsigned 32-bit long divisor [DI+2]:[DI], rounds towards 0 (same as rounding down for unsigned) saves the quotient to BX:AX, saves the remainder to DI:CX. Ruins DX and FLAGS. Traps on division by 0 or overflow.
+.globl ldivul
 ldivul:
 if __IBITS__ = 32
 error unneeded
-else  | Based on assembly source file (*.s) by Bruce Evans.
-	mov	cx,[di]
-	mov	di,[di+2]
-	call	ludivmod	| unsigned bx:ax / di:cx, quot di:cx, rem bx:ax
-	xchg	ax,cx
-	xchg	bx,di
-endif
+else
+.extern __U4D
+	mov dx, [di]
+	mov cx, [di+2]
+	xchg dx, bx
+	call __U4D
+	mov di, cx
+	mov cx, bx
+	mov bx, dx
 	ret
+endif

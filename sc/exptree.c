@@ -54,7 +54,6 @@ PRIVATE void binconvert(nodeptr)
 register struct nodestruct *nodeptr;
 {
     bool_t bothscalar;
-    value_t divisor;
     scalar_t lscalar;
     register struct nodestruct *right;
     scalar_t rscalar;
@@ -77,12 +76,7 @@ register struct nodestruct *nodeptr;
 	     ((nodeptr->tag == ANDOP &&
 	       (redscalar(nodeptr->left.nodeptr) | redscalar(right)) & CHAR) ||
 	      ((nodeptr->tag == EOROP || nodeptr->tag == OROP) &&
-	       redscalar(nodeptr->left.nodeptr) & redscalar(right) & CHAR) ||
-	      (nodeptr->tag == MODOP && right->tag == LEAF &&
-	       right->left.symptr->storage == CONSTANT &&
-	       (divisor = right->left.symptr->offset.offv,
-	        (uvalue_t) divisor <= MAXUCHTO + 1) &&
-	       bitcount((uvalue_t) divisor) <= 1)))
+	       redscalar(nodeptr->left.nodeptr) & redscalar(right) & CHAR)))
     {
 	/* result fits in char and extends correctly */
 	if (bothscalar & UNSIGNED)
@@ -243,28 +237,92 @@ struct nodestruct *nodeptr;
     }
 }
 
-/* !! This uses the division on the host C system. Fix it so that it rounds towards 0. x86 idiv and C99 / round towards 0. C89 / allows rounding down or rounding towards 0. */
-#if 1  /*CONFIG_CPU_IDIV_TO_ZERO*/  /* !! size optimization: Define this if x86 is the host C system */  /* !! bugfix: it's safer to hardcode 0 here */
-#  define VALUE_DIV(a, b) ((value_t)(a) / (value_t)(b))
-#  define VALUE_MOD(a, b) ((value_t)(a) % (value_t)(b))
-#else
+#ifndef IDIVTOZ  /* Configurable from the command line. */
+#  ifndef NOIDIVTOZ  /* Configurable from the command line. */
+#    ifdef __BCC__
+#      if __AS386_16__ + __AS386_32__
+#        define IDIVTOZ 1  /* Code (Minix a.out a_text) would be too larg for __AS386_16__ without the IDIVTOZ optimization. */
+#      endif
+#    else
+#      ifdef __ACK__
+#        if defined(__i86) || defined(__i386)  /* Minix >=1.7.0 i86 or i386 ACK ANSI C compiler (1.202 on Minix 2.0.4). */
+#          define IDIVTOZ 1
+#        endif
+#      else
+#        ifdef __WATCOMC__
+#          if defined(__386__) || defined(_M_I86)
+#            define IDIVTOZ 1
+#          endif
+#        else
+#          ifdef __GNUC__
+#            if defined(__i386__) || defined(__x86_64__)
+#              define IDIVTOZ 1
+#            endif
+#          else
+#            ifdef __STDC_VERSION__
+#              if __STDC_VERSION__ >= 199901L  /* C99 requires signed integer division to round towards zero. */
+#                define IDIVTOZ 1
+#              endif
+#            endif
+#          endif
+#        endif
+#      endif
+#    endif
+#  endif
+#endif
+
+#ifdef IDIVTOZ  /* Use the signed integer division on the host C system. x86 idiv and C99 `/' round towards 0. C89 `/' allows rounding down or rounding towards 0. */
+  /* In some buggy compilers (such as BCC sc v0), constant folding with
+   * signed integer division buggy, but they generate correct machine code
+   * for signed integer division. We don't care about the former, because
+   * all users of VALUE_DIV(...) and VALUE_MOD(...) use the latter.
+   */
+#  define VALUE_DIV(a, b) ((value_t) (a) / (value_t) (b))
+#  define VALUE_MOD(a, b) ((value_t) (a) % (value_t) (b))
+#else  /* This makes signed integer division always round towards 0. */
 #  define VALUE_DIV(a, b) value_div((a), (b))
 #  define VALUE_MOD(a, b) value_mod((a), (b))
-  /* Deterministic signed division, rounds towards zero.
-   * The result is undefined if b == 0. It's defined for a == int_min and b == -1.
-   */
-  static value_t value_div(a, b); value_t a; value_t b; {
-      fastin_t an, bn;
-      uvalue_t d;
+PRIVATE value_t value_div P((value_t a, value_t b));
+/* Deterministic signed division, rounds towards zero.
+ * The result is undefined if b == 0. It's defined for a == int_min and b == -1.
+ */
+PRIVATE value_t value_div(a, b) value_t a; value_t b; {
+    uvalue_t d;
+    char sign;
 
-      an = (a < 0);  /* !! size optimization: change most fastin_t to int, see if code gets shorter. */
-      bn = (b < 0);
-      d = (uvalue_t)(an ? -a : a) / (uvalue_t)(bn ? -b : b);
-      return an == bn ? d : -d;
-  }
-  static value_t value_mod(a, b); value_t a, value_t b; {
-      return a - value_div(a, b) * b;
-  }
+    sign = FALSE;
+    if (a < 0)
+    {
+	sign ^= 1;
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+	a = (value_t) (~(uvalue_t) a + 1);  /* It works with any C compiler doing 2s complement arithmetic. */
+#else
+	a = (value_t) -(uvalue_t) a;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
+#endif
+    }
+    if (b < 0)
+    {
+	sign ^= 1;
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+	b = (value_t) (~(uvalue_t) b + 1);  /* It works with any C compiler doing 2s complement arithmetic. */
+#else
+	b = (value_t) -(uvalue_t) b;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
+#endif
+    }
+    d = (uvalue_t) a / (uvalue_t) b;
+    if (sign) {
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
+	d = (value_t) (~(uvalue_t) d + 1);  /* It works with any C compiler doing 2s complement arithmetic. */
+#else
+	d = (value_t) -(uvalue_t) d;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
+#endif
+    }
+    return d;
+}
+PRIVATE value_t value_mod P((value_t a, value_t b));
+PRIVATE value_t value_mod(a, b) value_t a; value_t b; {
+    return a - value_div(a, b) * b;
+}
 #endif
 
 PUBLIC struct nodestruct *node(t, p1, p2)

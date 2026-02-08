@@ -113,6 +113,9 @@ int argc;
 #endif
 }
 
+int myidiv P((int a, int b));
+int myidiv(a, b) int a; int b; { return a / b; }
+
 int main P((int argc, char **argv));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
 int main(argc, argv)
 int argc;
@@ -168,6 +171,7 @@ char **argv;
    * Clang warning -Wint-to-pointer-cast.
    */
   write_str(STDOUT_FILENO, alignptrcheck((char *) 1, argc) ? "-DNOPORTALIGN=0 " : "-DNOPORTALIGN=1 ");
+  write_str(STDOUT_FILENO, (-1 / 2 == 0 && -2 / 3 == 0 && myidiv(-(argc < 0), 2) == 0 && myidiv(-(argc < 0), 3) == 0) ? "-DIDIVTOZ " : "-DNOIDIVTOZ ");
 
   if (argv[0] && (filename = argv[1])) {
     if (argv[2]) fatal2("too many command-line arguments", (CONST char*)0);

@@ -425,7 +425,7 @@ label_t label;
     outnl();
 }
 
-/* and accumulator with constant */
+/* and accumulator with constant; this only touches AL if the constat is small */
 
 PUBLIC void andconst(offset)
 offset_t offset;
@@ -622,35 +622,92 @@ bool_pt dataflag;
     return strlab;
 }
 
+FORWARD void outsxaccum P((void));
+
+/* Sign-extend the accumulator to DATAREG2. */
+
+PRIVATE void outsxaccum()
+{
+    outnop1str(i386_32 ? "cdq" : "cwd");  /* !! Replace outcwd() with outsxaccum(), even for i386_32. */
+}
+
+FORWARD void outaccandreg2n P((void));
+
+PRIVATE void outaccandreg2n()
+{
+	outaccum(); outcomma(); outnstr(dreg2str);  /* This desn't call bumplc(). */
+}
+
 /* divide D register by a constant if it is easy to do with shifts */
 
 PUBLIC bool_pt diveasy(divisor, uflag)
 value_t divisor;
 bool_pt uflag;
 {
-    bool_t sign;
+    int hb;
 
-    sign = FALSE;
-    if (divisor < 0 && !(bool_t) uflag)
+    if (divisor < 0 && !(bool_t) uflag) return FALSE;  /* There is no way to avoid idiv, no (reasonable) bit operations work for dividing INT_MIN with the negative of a power of 2. */
+    if (divisor == 0) { clr(DREG); goto done; }
+    if ((divisor & (divisor - 1))) return FALSE;  /* divisor is not a power of 2. */
+    if ((hb = highbit((uvalue_t) divisor)) == 31 && !(bool_t) uflag && i386_32)  /* Convert (value_t)-0x80000000L to 1, everything else to 0. */
     {
-	sign = TRUE;
-#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
-	divisor = (value_t) (~(uvalue_t) divisor + 1);  /* It works with any C compiler doing 2s complement arithmetic. */
-#else
-	divisor = (value_t) -(uvalue_t) divisor;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
-#endif
+	outnop2str("rol\teax,*1");
+	outnop1str("dec\teax");
+	outnop2str("neg\teax");
+	outnop2str("sbb\teax,eax");
+	outnop1str("inc\teax");
     }
-    if (bitcount((uvalue_t) divisor) > 1)
-	return FALSE;
-    if (divisor == 0)
-	clr(DREG);
+    else if (!(bool_t) uflag && !i386_32 && hb == 15)  /* Convert -32768 to 1, everything else to 0. */
+    {
+	outnop2str("xor\tah,*$80"); bumplc();
+	outnop2str("neg\tax");
+	outnop2str("sbb\tax,ax");
+	outnop1str("inc\tax");
+    }
     else
     {
-	if (sign)  /* !! Is this always correct? Add tests. */
-	    negDreg();
-	/* !! This code generation (sar instead of idiv) is incorrect if uflag == 0, becase `sar ax, #1' rounds down, x87 idiv round towards 0, so we'd need to add extra instructions, see divbug.txt. */
-	srconst((value_t) highbit((uvalue_t) divisor), uflag);
+	if ((bool_t) uflag || hb == 0) goto do_srconst;
+	outsxaccum();
+	if (hb == 1) { outsub(); outaccandreg2n(); goto do_srconst; }
+	if (hb < 8)
+	{
+	    outand();  /* This calls outop2str(), which calls bumplc2(). */
+	    outstr(dreg2str);  /* "edx" or "dx". */
+	    outncimmadr((offset_t) --divisor); bumplc();
+	    outadd(); outaccandreg2n();
+	    if (hb == 7 && !i386_32) {  /* Output code size and speed optimization. It would work without this. */
+		outnop2str("add\tax,ax");
+		outnop2str("mov\tal,ah");
+		outnop2str("sbb\tah,ah");
+		goto done;  /* Don't call srconst(...), we are done. */
+	    }
+	    goto do_srconst;
+	}
+	if (i386_32)  /* Increase negative EAX before right shift (sar) to do rounding towards 0 (consistent with the i86 and i386 idiv instruction, and required by C99). */
+	{
+	    outsl();  /* This calls outop2str(), which calls bumplc2(). */
+	    outstr(dreg2str);  /* edx. */
+	    outncimmadr((offset_t) hb); bumplc();
+	    outsbc(); outaccandreg2n();
+	    goto do_srconst;
+	}
+	if (hb == 8)  /* Output code size and speed optimization. It would work without this. */
+	{
+	    outnop2str("add\tal,dl");
+	    outnop2str("mov\tal,ah");
+	    outnop2str("adc\tal,*0");
+	    outnop1str("cbw");
+	    goto done;  /* Don't call srconst(...), we are done. */
+	}
+	/* Increase negative AX before right shift (sar) to do rounding towards 0 (consistent with the i86 and i386 idiv instruction, and required by C99). */
+	outand();  /* This calls outop2str(), which calls bumplc2(). */
+	outstr("dh");
+	outncimmadr((offset_t) (((unsigned) divisor - 1) >> 8)); bumplc();
+	outadd(); outaccandreg2n();
+      do_srconst:
+	srconst((value_t) hb, uflag);  /* For !uflag, this generates the `sar ..., *1' instruction, which rounds down. We've adjusted the input above so that in total it will round towards 0. */
     }
+  done:
     return TRUE;
 }
 
@@ -838,38 +895,103 @@ bool_pt uflag;
     return (int) shift;
 }
 
+FORWARD void andrconst P((bool_pt is_accum, value_t value));
+
+/* and REG (is_accum) or DATAREG2 with the specified constant. */
+
+PRIVATE void andrconst(is_accum, value)
+bool_pt is_accum;
+value_t value;
+{
+    if (value == 0) { clr(is_accum ? DREG : DATREG2); return; }
+    outand();  /* Calls 2 * bumplc(). */
+    bumplc();  /* 1 or 2 bytes of value. */
+    if (is_accum)
+    {
+	outaccum();
+    }
+    else
+    {
+	if (!i386_32 && ((int) value & 0xff) == 0xff)
+	{
+	    outstr("dh");
+	    outncimmadr((offset_t) ((unsigned) value >> 8));
+	    return;
+	}
+	outstr(dreg2str);
+    }
+    outncimmadr((offset_t) value);
+    if ((uvalue_t) value > MAXUCHTO + 1)
+    {
+	if (!is_accum) bumplc();  /* 1 byte because of non-accumulator register. */
+	if (i386_32) bumplc2();  /* 2 bytes of value. */
+    }
+}
+
 /* take D register modulo a constant if it is easy to do with a mask */
 
 PUBLIC bool_pt modeasy(divisor, uflag)
 value_t divisor;
 bool_pt uflag;
 {
-    bool_t sign;
+    bool_pt is_div_by_2;
 
-    sign = FALSE;
-    if (divisor < 0 && !(bool_t) uflag)
+    if (divisor < 0 && !(bool_t) uflag)  /* For a round-towards-zero modulo calculation, we just take the absolute value of the divisor. */
     {
-	sign = TRUE;
 #ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler, no matter the optimization setting (cc -O). */  /* Fix not needed when compiling this BCC sc by this BCC sc compiled with ACK. */
 	divisor = (value_t) (~(uvalue_t) divisor + 1);  /* It works with any C compiler doing 2s complement arithmetic. */
 #else
 	divisor = (value_t) -(uvalue_t) divisor;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it only negates the low 16 bits of the 32-bit variable here. */
 #endif
     }
-    if (bitcount((uvalue_t) divisor) > 1)
-	return FALSE;
-    if (--divisor == 0)
-	clrBreg();		/* original divisor 1 or -1 yields 0 */
+    if ((uvalue_t) divisor <= 1) { clr(DREG); return TRUE; }  /* original divisor 1 or -1 yields 0 */
+    if ((divisor & (divisor - 1))) return FALSE;  /* divisor is not a power of 2. */
+    --divisor;
+    if ((bool_t) uflag) goto do_and;
+    outsxaccum();
+    if (!i386_32)
+    {
+	if (divisor == 256)  /* Output code size and speed optimization. It would work without this. */
+	{
+	    outnop2str("mov\tdh,*0");
+	    outadd(); outaccandreg2n();
+	    outnop2str("mov\tah,*0");
+	    goto do_sub;
+	}
+	if ((uvalue_t) divisor == (uvalue_t)1 << 15)  /* Output code size and speed optimization. It would work without this. */
+	{
+	    outnop2str("mov\tdx,ax");
+	    outnop2str("xor\tdh,*$80"); bumplc();
+	    outnop2str("neg\tdx");
+	    outnop2str("sbb\tdx,dx");
+	    outand();
+	    goto do_last2args;
+	}
+    }
+    else if ((uvalue_t) divisor == (uvalue_t)1 << 31)  /* Output code size and speed optimization. It would work without this. */
+    {
+	outnop2str("mov\tedx,eax");
+	outnop2str("rol\tedx,*$1");
+	outnop1str("dec\tedx");
+	outnop2str("neg\tedx");
+	outnop2str("sbb\tedx,edx");
+	outand();
+	goto do_last2args;
+    }
+    is_div_by_2 = divisor == 1;
+    andrconst(is_div_by_2, (value_t) divisor);
+    if (is_div_by_2)
+    {
+	outxor(); outaccandreg2n();
+    }
     else
     {
-	if (sign)  /* !! Is this always correct? Add tests. */
-	    negDreg();
-	/* !! This code generation (and instead of idiv) may be incorrect for uflag ==0, because it implements rounding down, and x87 idiv does rounds towards 0? Diagnose and fix it. See divbug.txt for details. */
-	andconst((offset_t) divisor);	/* if original divisor 0, this is
-					   null */
-	if (sign)
-	    negDreg();
+	outadd(); outaccandreg2n();  /* Increase negative EAX to do rounding towards 0 (consistent with the i86 and i386 idiv instruction, and required by C99). */
+      do_and:
+	andrconst(TRUE, (value_t) divisor);
     }
+  do_sub:
+    if (!(bool_t) uflag) { outsub(); do_last2args: outaccandreg2n(); }
     return TRUE;
 }
 

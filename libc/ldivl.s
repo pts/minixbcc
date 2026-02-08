@@ -1,20 +1,18 @@
 | ldivl.s
-| bx:ax / [di+2]:[di], quotient bx:ax, remainder di:cx, dx not preserved
-
-	.globl	ldivl
-	.extern	ldivmod
-	.text
-	.even
-
+| Divides signed 32-bit long dividend BX:AX by signed 32-bit long divisor [DI+2]:[DI], rounds towards 0, saves the quotient to BX:AX, saves the remainder to DI:CX. Ruins DX and FLAGS. Traps on division by 0 or overflow.
+.globl ldivl
 ldivl:
 if __IBITS__ = 32
 error unneeded
-else  | Based on assembly source file (*.s) by Bruce Evans.
-	mov	cx,[di]
-	mov	di,[di+2]
-	call	ldivmod		| bx:ax / di:cx, quot di:cx, rem bx:ax
-	xchg	ax,cx
-	xchg	bx,di
-endif
+else
+.extern __I4D
+	mov dx, [di]
+	mov cx, [di+2]
+	xchg dx, bx
+	call __I4D
+	mov di, cx
+	mov cx, bx
+	mov bx, dx
 	ret
+endif
 
