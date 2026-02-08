@@ -19,9 +19,20 @@
 #if __STDC__
 #  define _CONST const
 #  define P(x) x
+#  define P0() (void)
+#  define P1(t1, n1) (t1 n1)
+#  define P2(t1, n1, t2, n2) (t1 n1, t2 n2)
 #else
 #  define _CONST
 #  define P(x) ()
+#  define P0() ()
+#  define P1(t1, n1) (n1) t1 n1;
+#  define P2(t1, n1, t2, n2) (n1, n2) t1 n1; t2 n2;
+#endif
+#if __cplusplus >= 201703L
+#  define REGISTER   /* register removed in C++17. */
+#else
+#  define REGISTER register
 #endif
 
 #ifdef OPEN00
@@ -44,11 +55,8 @@
  * if the input has a minus sign.
  */
 static int parse_u_arg P((_CONST char *s, unsigned INT32T *output));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-static int parse_u_arg(s, output)
-_CONST char *s;
-unsigned INT32T *output;
-{
-  register char c;
+static int parse_u_arg P2(_CONST char *, s, unsigned INT32T *, output) {
+  REGISTER char c;
   unsigned base;
   int sign;
 
@@ -92,17 +100,12 @@ unsigned INT32T *output;
 }
 
 static void write_err P((_CONST char *msg));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-static void write_err(msg)
-_CONST char *msg;
-{
+static void write_err P1(_CONST char *, msg) {
   if (*msg != '\0') (void)!write(2, msg, strlen(msg));
 }
 
 static void fatal2 P((_CONST char *msg1, _CONST char *msg2));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-static void fatal2(msg1, msg2)
-_CONST char *msg1;
-_CONST char *msg2;
-{
+static void fatal2 P2(_CONST char *, msg1, _CONST char *, msg2) {
   write_err("fatal: ");
   write_err(msg1);
   if (msg2) {
@@ -113,21 +116,15 @@ _CONST char *msg2;
   exit(2);
 }
 
-static char *dump16le P((unsigned v, char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-static char *dump16le(v, p)  /* Appends 16 bits in little-endian byte order. */
-unsigned v;
-char *p;
-{
+static char *dump16le P((unsigned v, char *p)); /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static char *dump16le P2(unsigned, v, char *, p) {  /* Appends 16 bits in little-endian byte order. */
   *p++ = v;
   *p++ = v >> 8;
   return p;
 }
 
 static char *dump32pdp11 P((unsigned INT32T v, char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-static char *dump32pdp11(v, p)  /* Appends 16 bits in PDP-11 middle-endian byte order. */
-unsigned INT32T v;
-char *p;
-{
+static char *dump32pdp11 P2(unsigned INT32T, v, char *, p) {  /* Appends 16 bits in PDP-11 middle-endian byte order. */
   /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add these `(unsigned)' casts. */
   return dump16le((unsigned) v, dump16le((unsigned) (v >> 16), p));
 }
@@ -135,10 +132,7 @@ char *p;
 static char iobuf[8192];
 
 int main P((int argc, char **argv));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-int main(argc, argv)
-int argc;
-char **argv;
-{
+int main P2(int, argc, char **, argv) {
   _CONST char *arg;
   _CONST char *p;
   char c;
