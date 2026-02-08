@@ -62,11 +62,26 @@
 #define PUBLIC
 
 #if __STDC__
-#  define P(x)	x
-#  define CONST const
+#  define _CONST const
+#  define P(x) x
+#  define P0() (void)
+#  define P1(t1, n1) (t1 n1)
+#  define P2(t1, n1, t2, n2) (t1 n1, t2 n2)
+#  define P3(t1, n1, t2, n2, t3, n3) (t1 n1, t2 n2, t3 n3)
+#  define P4(t1, n1, t2, n2, t3, n3, t4, n4) (t1 n1, t2 n2, t3 n3, t4 n4)
 #else
-#  define P(x)	()
-#  define CONST
+#  define _CONST
+#  define P(x) ()
+#  define P0() ()
+#  define P1(t1, n1) (n1) t1 n1;
+#  define P2(t1, n1, t2, n2) (n1, n2) t1 n1; t2 n2;
+#  define P3(t1, n1, t2, n2, t3, n3) (n1, n2, n3) t1 n1; t2 n2; t3 n3;
+#  define P4(t1, n1, t2, n2, t3, n3, t4, n4) (n1, n2, n3, n4) t1 n1; t2 n2; t3 n3; t4 n4;
+#endif
+#if __cplusplus >= 201703L
+#  define REGISTER   /* register removed in C++17. */
+#else
+#  define REGISTER register
 #endif
 
 typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
@@ -96,7 +111,7 @@ typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
 struct arg_s
 {
     int argc;
-    char **argv;
+    _CONST char **argv;
     unsigned size;
 };
 
@@ -106,48 +121,27 @@ PRIVATE struct arg_s ldargs;	/* = NULL */
 PRIVATE char *progname;
 PRIVATE struct arg_s tmpargs;	/* = NULL */
 PRIVATE bool_t verbose;		/* = FALSE */
-
-
 PRIVATE char bits32_arg[3] = "-?";  /*The '?' will be replaced with '0' or '3'. */
 
-#if 0  /* We use these functions. */
-  int chmod P((const char *name, int mode));
-  int execv P((char *name, char *argv[]));
-  int execve P((char *name, char *argv[], char *envp[]));
-  void exit P((int status));
-  int fork P((void));
-  int getpid P((void));
-  void *malloc P((unsigned));
-  char *mktemp P((void));
-  void *realloc P((void *ptr, unsigned size));
-  void (*signal P((int sig, void (*func) P((int sig))))) P((int sig));
-  char *strcpy P((char *target, const char *source));
-  size_t strlen P((const char *s));
-  char *strrchr P((const char *s, int c));
-  int unlink P((const char *name));
-  int wait P((int *status));
-  int write P((int fd, char *buf, unsigned int nbytes));
-#endif
-
-FORWARD void addarg P((register struct arg_s *argp, char *arg));
+FORWARD void addarg P((REGISTER struct arg_s *argp, _CONST char *arg));
 FORWARD void fatal P((void));
 FORWARD void killtemps P((void));
-FORWARD void *my_malloc P((unsigned size, char *where));
+FORWARD void *my_malloc P((unsigned size, _CONST char *where));
 FORWARD char *my_mktemp P((void));
-FORWARD void my_unlink P((char *name));
-FORWARD void outofmemory P((char *where));
-FORWARD int execute P((char **argv));
-FORWARD int run P((char *prog, char *arg1, char *arg2, struct arg_s *argp));
+FORWARD void my_unlink P((_CONST char *name));
+FORWARD void outofmemory P((_CONST char *where));
+FORWARD int execute P((_CONST char **argv));
+FORWARD int run P((_CONST char *prog, _CONST char *arg1, _CONST char *arg2, struct arg_s *argp));
 FORWARD void set_trap P((void));
-FORWARD void show_who P((char *message));
+FORWARD void show_who P((_CONST char *message));
 FORWARD void startarg P((struct arg_s *argp));
-FORWARD char *stralloc P((char *s));
+FORWARD char *stralloc P((_CONST char *s));
 FORWARD void trap P((int signum));
-FORWARD void unsupported P((char *option, char *message));
+FORWARD void unsupported P((_CONST char *option, _CONST char *message));
 FORWARD void writen P((void));
-FORWARD void writes P((char *s));
-FORWARD void writesn P((char *s));
-FORWARD bool_t is_tool P((char *s));
+FORWARD void writes P((_CONST char *s));
+FORWARD void writesn P((_CONST char *s));
+FORWARD bool_t is_tool P((_CONST char *s));
 FORWARD void trap_signal P((int signum));
 FORWARD unsigned long mix3 P((unsigned long key));
 
@@ -159,9 +153,9 @@ PRIVATE char *flag_include_;
 PRIVATE char *target_CRTSO;
 PRIVATE char *target_LIBCA;
 PRIVATE void init_driverdir P((void));
-FORWARD char *get_cross_path_tool P((char *tool_name));
+FORWARD char *get_cross_path_tool P((_CONST char *tool_name));
 FORWARD char *get_cross_flag_include P((void));
-FORWARD char *get_cross_path_target P((char *file_name, char **file_cache));
+FORWARD char *get_cross_path_target P((_CONST char *file_name, char **file_cache));
 #else
 /* We need this workaround since many old C compilers, including BCC con't support string literal concatenation in:
  * char flag_include[] = "-I" LIBDIR INCLUDE;
@@ -201,11 +195,9 @@ PRIVATE struct
 
 PUBLIC int main P((int argc, char **argv));
 
-PUBLIC int main(argc, argv)
-int argc;
-char **argv;
+PUBLIC int main P2(int, argc, char **, argv)
 {
-    register char *arg;
+    REGISTER char *arg;
     int argcount = argc;
     bool_t *argdone;
     bool_t as_only = FALSE;
@@ -215,7 +207,7 @@ char **argv;
     bool_t echo = FALSE;
     unsigned errcount = 0;
     char ext;
-    char *f_out = "a.out";
+    _CONST char *f_out = "a.out";
     int length;
     unsigned ncsfiles = 0;
     unsigned nfilters;
@@ -252,7 +244,7 @@ char **argv;
 	strcpy(path_tool.tool, arg);
 	*++argv = path_tool.libdir;
 #endif
-	status = execute(argv);
+	status = execute((_CONST char **) argv);
 	return WIFEXITED(status) ? WEXITSTATUS(status) : 126;
     }
     if (arg[0] == '-' && arg[1] == 'v' && arg[2] == 0 && is_tool(arg = argv[2]))  /* Example: bbcc -v ld -3 -o foo.o foo.s */
@@ -492,7 +484,7 @@ char **argv;
 		    if (sc_only)
 		    {
 			if (nofiles != 0)
-			    s_out = f_out;
+			    s_out = stralloc(f_out);
 			else
 			{
 			    s_out = stralloc(basename);
@@ -520,7 +512,7 @@ char **argv;
 		    if (as_only)
 		    {
 			if (nofiles != 0)
-			    o_out = f_out;
+			    o_out = stralloc(f_out);
 			else
 			{
 			    o_out = stralloc(basename);
@@ -563,9 +555,9 @@ char **argv;
 #define LIBEXECPATH "/../libexec/"
 #define TARGETPATH "/../?/"
 #define INCLUDEDIR  "/../include"
-PRIVATE void init_driverdir()
+PRIVATE void init_driverdir P0()
 {
-    register char *p, *q;
+    REGISTER char *p, *q;
 
     for (driverdir = p = progname, q = p + strlen(p); q != p && q[-1] != '/'; --q) {}
     if (q == p) {
@@ -576,10 +568,9 @@ PRIVATE void init_driverdir()
     for (; q != p && q[-1] == '/'; --q) {}
     driverdirlen = q - p;
 }
-PRIVATE char *get_cross_path_tool(tool_name)
-char *tool_name;
+PRIVATE char *get_cross_path_tool P1(_CONST char *, tool_name)
 {
-    register char *p;
+    REGISTER char *p;
 
     if (strlen(tool_name) > (unsigned) (TOOL_SIZE - 1)) {
 	show_who("tool name too long: ");
@@ -596,9 +587,9 @@ char *tool_name;
     strcpy(p + sizeof(LIBEXECPATH) - 1, tool_name);
     return path_tool_;
 }
-PRIVATE char *get_cross_flag_include()
+PRIVATE char *get_cross_flag_include P0()
 {
-    register char *p;
+    REGISTER char *p;
 
     if (!(p = flag_include_)) {
 	flag_include_ = p = (char*) my_malloc(2 + driverdirlen + sizeof(INCLUDEDIR), "include flag");
@@ -609,11 +600,9 @@ PRIVATE char *get_cross_flag_include()
     }
     return p;
 }
-PRIVATE char *get_cross_path_target(file_name, file_cache)
-char *file_name;
-char **file_cache;
+PRIVATE char *get_cross_path_target P2(_CONST char *, file_name, char **, file_cache)
 {
-    register char *p;
+    REGISTER char *p;
 
     if (!(p = *file_cache)) {
 	*file_cache = p = (char*) my_malloc(driverdirlen + sizeof(TARGETPATH) + strlen(file_name), "target-specific file");
@@ -627,35 +616,30 @@ char **file_cache;
 }
 #endif
 
-PRIVATE void addarg(argp, arg)
-register struct arg_s *argp;
-char *arg;
+PRIVATE void addarg P2(REGISTER struct arg_s *, argp, _CONST char *, arg)
 {
     if (argp->size == 0)
 	startarg(argp);
     if (++argp->argc >= (int) argp->size &&
-	(argp->argv = (char **) realloc(argp->argv, (argp->size += ALLOC_UNIT) *
-			      sizeof *argp->argv)) == (char **) 0)
+	(argp->argv = (_CONST char **) realloc(argp->argv, (argp->size += ALLOC_UNIT) * sizeof *argp->argv)) == (_CONST char **) 0)
 	outofmemory("addarg");
     argp->argv[argp->argc - 1] = arg;
     argp->argv[argp->argc] = (char*) 0;
 }
 
-PRIVATE void fatal()
+PRIVATE void fatal P0()
 {
     killtemps();
     exit(1);
 }
 
-PRIVATE void killtemps()
+PRIVATE void killtemps P0()
 {
     for (tmpargs.argc -= 2, tmpargs.argv += 2; --tmpargs.argc > 0;)
 	my_unlink(*++tmpargs.argv);
 }
 
-PRIVATE void *my_malloc(size, where)
-unsigned size;
-char *where;
+PRIVATE void *my_malloc P2(unsigned, size, _CONST char *, where)
 {
     void *block;
 
@@ -682,8 +666,7 @@ char *where;
  * This function uses the low 32 bits of the input, and returns a value less
  * than 1 << 32.
  */
-PRIVATE unsigned long mix3(key)
-unsigned long key;
+PRIVATE unsigned long mix3 P1(unsigned long, key)
 {
     key ^= (key << 13);
     key ^= ((key & (unsigned long) 0xffffffffL) >> 17);
@@ -691,16 +674,16 @@ unsigned long key;
     return key & (unsigned long) 0xffffffffL;
 }
 
-PRIVATE char *my_mktemp()
+PRIVATE char *my_mktemp P0()
 {
-    register char *p;
+    REGISTER char *p;
     unsigned digit;
     unsigned long digits;
     char *tmpfilename;
     static unsigned long tmpnum;
     static char is_tmpnum_valid;
 #if CROSS
-    static char *tmpdir;
+    static _CONST char *tmpdir;
 #endif
     time_t ts;
     int fd;
@@ -741,8 +724,7 @@ PRIVATE char *my_mktemp()
     return p;
 }
 
-PRIVATE void my_unlink(name)
-char *name;
+PRIVATE void my_unlink P1(_CONST char *, name)
 {
     struct stat st;
 
@@ -760,8 +742,7 @@ char *name;
     }
 }
 
-PRIVATE void outofmemory(where)
-char *where;
+PRIVATE void outofmemory P1(_CONST char *, where)
 {
     show_who("out of memory in ");
     writesn(where);
@@ -772,11 +753,10 @@ char *where;
 extern char **environ;
 #endif
 
-PRIVATE int execute(argv)
-char **argv;
+PRIVATE int execute P1(_CONST char **, argv)
 {
     int status;
-    register char **argvi;
+    REGISTER _CONST char **argvi;
 
     if (verbose) {
 	for (argvi = argv; *argvi; ++argvi)
@@ -796,10 +776,10 @@ char **argv;
 #ifdef __MINILIBC686__  /* For old minilibc686. The new one has execv(...) */
 	execve(argv[0], argv, environ);
 #else
-#  ifdef _WCDATA  /* OpenWatcom v2 libc; it has a different type for argv. */
-	execv(argv[0], (void *) argv);
+#  ifdef __cplusplus
+	execv(argv[0], (char * _CONST *) argv);
 #  else
-	execv(argv[0], argv);
+	execv((void *) argv[0], (void *) argv);  /* (void *) to cast away constness. C++ is picky, we can't do it there. */
 #  endif
 #endif
 	tmpargs.argc = 0;  /* Make killtemps() a no-op. The parent will delete the temporary files. */
@@ -814,11 +794,7 @@ char **argv;
     }
 }
 
-PRIVATE int run(prog, arg1, arg2, argp)
-char *prog;
-char *arg1;
-char *arg2;
-register struct arg_s *argp;
+PRIVATE int run P4(_CONST char *, prog, _CONST char *, arg1, _CONST char *, arg2, REGISTER struct arg_s *,argp)
 {
     if (argp->size == 0)
 	startarg(argp);
@@ -828,14 +804,13 @@ register struct arg_s *argp;
     return execute(argp->argv);
 }
 
-PRIVATE void trap_signal(signum)
-int signum;
+PRIVATE void trap_signal P1(int, signum)
 {
     if (signal(signum, SIG_IGN) != SIG_IGN)  /* !! use sigaction instead if available, i.e. #ifdef SA_RESTART (which Minix doesn't have) */
 	signal(signum, trap);
 }
 
-PRIVATE void set_trap()
+PRIVATE void set_trap P0()
 {
 #ifdef SIGHUP
     trap_signal(SIGHUP);
@@ -851,30 +826,26 @@ PRIVATE void set_trap()
 #endif
 }
 
-PRIVATE void show_who(message)
-char *message;
+PRIVATE void show_who P1(_CONST char *, message)
 {
     writes(progname);
     writes(": ");
     writes(message);
 }
 
-PRIVATE void startarg(argp)
-struct arg_s *argp;
+PRIVATE void startarg P1(struct arg_s *, argp)
 {
-    argp->argv = (char **) my_malloc((argp->size = ALLOC_UNIT) * sizeof *argp->argv, "startarg");
+    argp->argv = (_CONST char **) my_malloc((argp->size = ALLOC_UNIT) * sizeof *argp->argv, "startarg");
     argp->argc = 3;
     argp->argv[3] = (char*) 0;
 }
 
-PRIVATE char *stralloc(s)
-char *s;
+PRIVATE char *stralloc P1(_CONST char *, s)
 {
     return strcpy((char *) my_malloc(strlen(s) + 1, "stralloc"), s);
 }
 
-PRIVATE void trap(signum)
-int signum;
+PRIVATE void trap P1(int, signum)
 {
     signal(signum, SIG_IGN);
     if (verbose)
@@ -882,9 +853,7 @@ int signum;
     fatal();
 }
 
-PRIVATE void unsupported(option, message)
-char *option;
-char *message;
+PRIVATE void unsupported P2(_CONST char *, option, _CONST char *, message)
 {
     show_who("compiler option ");
     writes(option);
@@ -893,26 +862,23 @@ char *message;
     writesn(") not supported yet");
 }
 
-PRIVATE void writen()
+PRIVATE void writen P0()
 {
     writes("\n");
 }
 
-PRIVATE void writes(s)
-char *s;
+PRIVATE void writes P1(_CONST char *, s)
 {
     (void)!write(2, s, strlen(s));
 }
 
-PRIVATE void writesn(s)
-char *s;
+PRIVATE void writesn P1(_CONST char *, s)
 {
     writes(s);
     writen();
 }
 
-PRIVATE bool_t is_tool(s)
-register char *s;
+PRIVATE bool_t is_tool P1(REGISTER _CONST char *, s)
 {
     if (!s || *s == '-' || *s == '\0') return FALSE;
     for (; *s != '\0'; ++s) {
