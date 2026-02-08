@@ -6,7 +6,7 @@ test "$0" = "${0%/*}" || cd "${0%/*}"
 rm -f elks.img
 #cp -a "$HOME"/Downloads/elks/elks070.img elks.img
 #cp -a "$HOME"/Downloads/elks/elks081.img elks.img
-cp -a elks0.img elks.img
+cp -a elks0.img elks.img  # Some files are already deleted.
 chmod +w elks.img
 ../../mxft.pl -i elks.img mkdir d
 #../../mxft.pl -i elks.img mkdir d/sc

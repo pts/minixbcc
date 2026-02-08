@@ -73,16 +73,7 @@ struct symstruct *target;
 	    break;
 	case MODOP:
 	    if (modeasy(sourceval, uflag))
-	    {
-		if ((uvalue_t) sourceval <= MAXUCHTO + 1)
-		{
-		    target->storage = BREG;
-		    target->type = ctype;
-		    if (uflag)
-			target->type = uctype;
-		}
 		return;
-	    }
 	    break;
 	case MULOP:
 	    if (muleasy((uvalue_t) sourceval, target->storage))

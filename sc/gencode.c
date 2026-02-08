@@ -575,7 +575,7 @@ struct nodestruct *exp;
     case LEOP:
     case LTOP:
     case NEOP:
-	condtrue = GET_OPDATA_FIRST(op);  /* !!! better code in BCC: (opdata - FIRSTOPDATA)[op] */
+	condtrue = GET_OPDATA_FIRST(op);
 	cmp(source, target, &condtrue);
 	break;
     case FUNCOP:

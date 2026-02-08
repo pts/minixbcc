@@ -1,17 +1,17 @@
 | lmodul.s
-| unsigned bx:ax / [di+2]:[di], remainder bx:ax,quotient di:cx, dx not preserved
-
-	.globl	lmodul
-	.extern	ludivmod
-	.text
-	.even
-
+| Divides unsigned 32-bit long dividend BX:AX by unsigned 32-bit long divisor [DI+2]:[DI], rounds towards 0, saves the quotient to DI:CX, saves the remainder to BX:AX. Ruins DX and FLAGS. Traps on division by 0 or overflow.
+.globl lmodul
 lmodul:
 if __IBITS__ = 32
 error unneeded
+else
+.extern __U4D
+	mov dx, [di]
+	mov cx, [di+2]
+	xchg dx, bx
+	call __U4D
+	mov di, dx
+	xchg cx, ax
+	xchg bx, ax
 	ret
-else  | Based on assembly source file (*.s) by Bruce Evans.
-	mov	cx,[di]
-	mov	di,[di+2]
-	jmp	ludivmod	| unsigned bx:ax / di:cx, quot di:cx, rem bx:ax
 endif
