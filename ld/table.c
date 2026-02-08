@@ -20,11 +20,11 @@ PUBLIC char *heapptr;		/* next free space in heap */
 
 PRIVATE struct symstruct *hashtab[HASHTABSIZE];	/* hash table */
 
-FORWARD struct symstruct **gethashptr P((char *name));
+FORWARD struct symstruct **gethashptr P((_CONST char *name));
 
 /* initialise symbol table */
 
-PUBLIC void syminit()
+PUBLIC void syminit P0()
 {
     unsigned i;
 
@@ -36,8 +36,7 @@ PUBLIC void syminit()
 /* add named symbol to end of table - initialise only name and next fields */
 /* caller must not duplicate names of externals for findsym() to work */
 
-PUBLIC struct symstruct *addsym(name)
-char *name;
+PUBLIC struct symstruct *addsym P1(_CONST char *, name)
 {
     struct symstruct **hashptr;
     struct symstruct *oldsymptr;
@@ -68,8 +67,7 @@ char *name;
 
 /* lookup named symbol */
 
-PUBLIC struct symstruct *findsym(name)
-char *name;
+PUBLIC struct symstruct *findsym P1(_CONST char *, name)
 {
     struct symstruct *symptr;
 
@@ -82,10 +80,9 @@ char *name;
 
 /* convert name to a hash table ptr */
 
-PRIVATE struct symstruct **gethashptr(name)
-register char *name;
+PRIVATE struct symstruct **gethashptr P1(REGISTER _CONST char *, name)
 {
-    register unsigned hashval;
+    REGISTER unsigned hashval;
 
     hashval = 0;
     while (*name)
@@ -123,11 +120,10 @@ HASHVAL.EXIT
 
 /* move symbol descriptor entries to top of table (no error checking) */
 
-PUBLIC char *moveup(nbytes)
-unsigned nbytes;
+PUBLIC char *moveup P1(unsigned, nbytes)
 {
-    register char *source;
-    register char *target;
+    REGISTER char *source;
+    REGISTER char *target;
 
     source = heapptr;
     target = heapend;
@@ -139,8 +135,7 @@ unsigned nbytes;
 
 /* allocate from our heap */
 
-PUBLIC char *heapalloc(nbytes)
-unsigned nbytes;
+PUBLIC char *heapalloc P1(unsigned, nbytes)
 {
     char *allocptr;
 
@@ -153,7 +148,7 @@ unsigned nbytes;
 
 /* read string from file into table at offset suitable for next symbol */
 
-PUBLIC char *readstring()
+PUBLIC char *readstring P0()
 {
     int c;
     char *s;
@@ -175,16 +170,14 @@ PUBLIC char *readstring()
 
 /* release from top of table */
 
-PUBLIC void release(cptr)
-char *cptr;
+PUBLIC void release P1(char *, cptr)
 {
     heapend = cptr;
 }
 
 /* allocate space for string */
 
-PUBLIC char *stralloc(s)
-char *s;
+PUBLIC char *stralloc P1(_CONST char *, s)
 {
     return strcpy(heapalloc((unsigned) strlen(s) + 1), s);
 }
