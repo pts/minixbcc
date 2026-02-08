@@ -20,7 +20,7 @@
 
 /* as.c */
 int main P((int argc, char **argv));
-void as_abort P((char *message));
+void as_abort P((_CONST char *message));
 void finishup P((void));
 void initp1p2 P((void));
 
@@ -59,8 +59,8 @@ void listline P((void));
 void writec P((int c));
 void writenl P((void));
 void writeoff P((offset_t offset));
-void writes P((char *s));
-void writesn P((char *s));
+void writes P((_CONST char *s));
+void writesn P((_CONST char *s));
 void writew P((unsigned word));
 
 /* genobj.c */

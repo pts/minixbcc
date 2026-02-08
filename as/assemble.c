@@ -9,7 +9,7 @@
 
 PRIVATE bool_t nocolonlabel;	/* set for labels not followed by ':' */
 PRIVATE void (*routine) P((void));
-PRIVATE pfv rout_table[] =
+PRIVATE _CONST pfv rout_table[] =
 {
     pelse,
     pelseif,
@@ -132,7 +132,7 @@ FORWARD void asline P((void));
   and overflow in CC.
 */
 
-PUBLIC void assemble()
+PUBLIC void assemble P0()
 {
     while (TRUE)
     {
@@ -161,9 +161,9 @@ PUBLIC void assemble()
     }
 }
 
-PRIVATE void asline()
+PRIVATE void asline P0()
 {
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
 
     postb = popflags = pcrflag =
 	sprefix = oprefix = aprefix =

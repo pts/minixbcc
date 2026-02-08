@@ -14,7 +14,7 @@ FORWARD void simple P((void));
 FORWARD void term P((void));
 FORWARD void factor2 P((void));
 
-PUBLIC void absexpres()
+PUBLIC void absexpres P0()
 {
     expres();
     chkabs();
@@ -22,7 +22,7 @@ PUBLIC void absexpres()
 
 /* check lastexp.data is abs */
 
-PUBLIC void chkabs()
+PUBLIC void chkabs P0()
 {
     if (lastexp.data & RELBIT)
     {
@@ -32,19 +32,18 @@ PUBLIC void chkabs()
     }
 }
 
-PRIVATE void experror(errnum)
-error_pt errnum;
+PRIVATE void experror P1(error_pt, errnum)
 {
     error(errnum);
     expundefined();
 }
 
-PRIVATE void expundefined()
+PRIVATE void expundefined P0()
 {
     lastexp.data = FORBIT | UNDBIT;
 }
 
-PUBLIC void nonimpexpres()
+PUBLIC void nonimpexpres P0()
 {
     expres();
     if (lastexp.data & IMPBIT)
@@ -53,20 +52,20 @@ PUBLIC void nonimpexpres()
 
 /* generate relocation error if pass 2, make lastexp.data forward&undefined */
 
-PUBLIC void showrelbad()
+PUBLIC void showrelbad P0()
 {
     if (pass != 0)
 	error(RELBAD);
     expundefined();
 }
 
-PUBLIC void symabsexpres()
+PUBLIC void symabsexpres P0()
 {
     getsym();
     absexpres();
 }
 
-PUBLIC void symexpres()
+PUBLIC void symexpres P0()
 {
     getsym();
     expres();
@@ -79,7 +78,7 @@ PUBLIC void symexpres()
   Returns value in lastexp.
 */
 
-PUBLIC void expres()
+PUBLIC void expres P0()
 {
     offset_t leftoffset;
 
@@ -115,7 +114,7 @@ PUBLIC void expres()
 
 /* get symbol and 2nd simple expression, check both rel or both abs */
 
-PRIVATE void simple2()
+PRIVATE void simple2 P0()
 {
     unsigned char leftdata;
 
@@ -134,7 +133,7 @@ PRIVATE void simple2()
   where op is +, -, or \ (OR).
 */
 
-PRIVATE void simple()
+PRIVATE void simple P0()
 {
     offset_t leftoffset;
     unsigned char leftdata;
@@ -187,7 +186,7 @@ PRIVATE void simple()
 
 /* term() parses term = factor {op factor}, where op is *, /, &, <<, or >>. */
 
-PRIVATE void term()
+PRIVATE void term P0()
 {
     offset_t leftoffset;
 
@@ -229,7 +228,7 @@ PRIVATE void term()
 
 /* get symbol and 2nd or later factor, check both abs */
 
-PRIVATE void factor2()
+PRIVATE void factor2 P0()
 {
     unsigned char leftdata;
 
@@ -253,7 +252,7 @@ PRIVATE void factor2()
   taken from the identifier.
 */
 
-PUBLIC void factor()
+PUBLIC void factor P0()
 {
     switch (sym)
     {
@@ -268,7 +267,7 @@ PUBLIC void factor()
 	return;
     case IDENT:
 	{
-	    register struct sym_s *symptr;
+	    REGISTER struct sym_s *symptr;
 
 	    symptr = gsymptr;
 	    if (symptr->type & (MNREGBIT | MACBIT))
@@ -347,7 +346,7 @@ PUBLIC void factor()
   returns logical value in lastexp
 */
 
-PUBLIC void scompare()
+PUBLIC void scompare P0()
 {
     /* prepare flags for OK, lastexp.offset for error */
     lastexp.data = lastexp.offset = 0;
@@ -355,8 +354,8 @@ PUBLIC void scompare()
 	experror(LPEXP);
     else
     {
-	register char *string1;
-	register char *string2;
+	REGISTER _CONST char *string1;
+	REGISTER _CONST char *string2;
 
 	for (string2 = string1 = lineptr; *string2 != ')'; ++string2)
 	    if (*string2 == 0 || *string2 == ')')

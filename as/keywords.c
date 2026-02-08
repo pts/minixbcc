@@ -21,11 +21,21 @@
 #  endif
 #endif
 
+/* Make GCC C++ and Clang C++ export these global constant arrays. */
+#ifdef MNSIZE
+EXTERN _CONST char bytesizeops[];
+#endif
+EXTERN _CONST char ops[];
+EXTERN _CONST char page1ops[];
+EXTERN _CONST char page2ops[];
+EXTERN _CONST char regs[];
+EXTERN _CONST char typesizes[];
+
 /* registers */
 /* the register code (internal to assembler) is given in 1 byte */
 /* the "opcode" field is not used */
 
-PUBLIC char regs[] =
+PUBLIC _CONST char regs[] =
 {
     2, 'B', 'P', BPREG, 0,
     2, 'B', 'X', BXREG, 0,
@@ -89,7 +99,7 @@ PUBLIC char regs[] =
 /* type sizes */
 /* the "opcode" field gives the type size */
 
-PUBLIC char typesizes[] =
+PUBLIC _CONST char typesizes[] =
 {
     4, 'B', 'Y', 'T', 'E', BYTEOP, 1,
     5, 'D', 'W', 'O', 'R', 'D', DWORDOP, 4,
@@ -107,7 +117,7 @@ PUBLIC char typesizes[] =
 /* the routine number is given in 1 byte */
 /* the opcode is given in 1 byte (it is not used for pseudo-ops) */
 
-PUBLIC char ops[] =
+PUBLIC _CONST char ops[] =
 {
     /* pseudo-ops. The "opcode" field is unused and padded with a null byte */
     /* conditionals - must be first */
@@ -495,7 +505,7 @@ PUBLIC char ops[] =
     0				/* end of ops */
 };
 
-PUBLIC char page1ops[] =
+PUBLIC _CONST char page1ops[] =
 {
     3, 'B', 'S', 'F', GvEv, (char) 0xBC,
     3, 'B', 'S', 'R', GvEv, (char) 0xBD,
@@ -571,14 +581,14 @@ PUBLIC char page1ops[] =
     0				/* end of page 1 ops */
 };
 
-PUBLIC char page2ops[] =  /* !! Remove this constant. */
+PUBLIC _CONST char page2ops[] =  /* !! Remove this constant. */
 {
 
     0				/* end of page 2 ops */
 };
 
 #ifdef MNSIZE
-PUBLIC char bytesizeops[] =
+PUBLIC _CONST char bytesizeops[] =
 {
     4, 'A', 'D', 'C', 'B', GROUP1, 0x10,
     4, 'A', 'D', 'D', 'B', GROUP1, 0x00,

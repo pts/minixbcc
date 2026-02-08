@@ -68,22 +68,22 @@ PRIVATE struct fbufstruct *inputbuf;	/* current input file buffer */
 					/* its fcb only to date in includes */
 
 PRIVATE char hid_linebuf[LINLEN];	/* line buffer */
-PRIVATE char *mac1linebuf;
-PRIVATE char *mac2linebuf;
+PRIVATE _CONST char *mac1linebuf;
+PRIVATE _CONST char *mac2linebuf;
 
 FORWARD void clearsource P((void));
 FORWARD void line_too_long P((void));
 
-PRIVATE void clearsource()
+PRIVATE void clearsource P0()
 {
     input.includer = inputbuf;
     inputbuf = &xyz;
     input.first = input.limit = input.buf = inputbuf->fbuf + 1;
-    *(lineptr = linebuf = input.first - 1) = EOLCHAR;
+    *(char *) (lineptr = linebuf = input.first - 1) = EOLCHAR;
     input.blocksize = 0;
 }
 
-PRIVATE void line_too_long()
+PRIVATE void line_too_long P0()
 {
     symname = linebuf + (LINLEN - 1);	/* spot for the error */
     error(LINLONG);		/* so error is shown in column LINLEN - 1 */
@@ -91,7 +91,7 @@ PRIVATE void line_too_long()
 
 /* initialise private variables */
 
-PUBLIC void initsource()
+PUBLIC void initsource P0()
 {
     filnamptr = hid_filnambuf;
     getstak = hid_getstak + MAXGET;
@@ -104,8 +104,7 @@ PUBLIC void initsource()
 #  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
 #endif
 
-PUBLIC fd_t open_input(name)
-char *name;
+PUBLIC fd_t open_input P1(char *, name)
 {
     int fd;
 
@@ -130,7 +129,7 @@ char *name;
   file must be seekable for the buffer discard/restore method to work
 */
 
-PUBLIC void pget()
+PUBLIC void pget P0()
 {
     INT32T fileofs;
 
@@ -174,7 +173,7 @@ PUBLIC void pget()
 /* otherwise switch pass 0 to pass 1 or exit on pass 2 */
 /* end of file may be from phyical end of file or an END statement */
 
-PUBLIC void pproceof()
+PUBLIC void pproceof P0()
 {
     if (infiln != 0)
 	close(infil);
@@ -239,13 +238,13 @@ PUBLIC void pproceof()
   This is where macro lines are recursively expanded.
 */
 
-PUBLIC void readline()
+PUBLIC void readline P0()
 {
     listpre = FALSE;		/* not listed yet */
     if (maclevel != 0)
     {
-      register char *bufptr;	/* hold *bufptr in a reg char variable */
-      register char *reglineptr;	/* if possible (not done here) */
+      REGISTER char *bufptr;	/* hold *bufptr in a reg char variable */
+      REGISTER char *reglineptr;	/* if possible (not done here) */
       char *oldbufptr;
       struct schain_s *parameters;
       char paramnum;
@@ -323,7 +322,7 @@ again:
     {
 	if (lineptr < input.limit)	/* move back partial line */
 	{
-	    register char *col;
+	    REGISTER char *col;
 
 	    col = input.buf;
 	    while ((*--col = *--input.limit) != EOLCHAR)
@@ -358,12 +357,12 @@ again:
     }
     linebuf = lineptr;
     if (lineptr >= input.limit)
-	*(lineptr = input.limit = input.buf) = EOLCHAR;
+	*(char *) (lineptr = input.limit = input.buf) = EOLCHAR;
 }
 
-PUBLIC void skipline()
+PUBLIC void skipline P0()
 {
-    register char *reglineptr;
+    REGISTER _CONST char *reglineptr;
 
     reglineptr = lineptr - 1;
     while (*reglineptr != EOLCHAR)

@@ -26,8 +26,7 @@ FORWARD struct sym_s *needlabel P((void));
 FORWARD void showredefinedlabel P((void));
 FORWARD void setloc P((unsigned seg));
 
-PRIVATE void bumpsem(flagptr)
-register struct flags_s *flagptr;
+PRIVATE void bumpsem P1(REGISTER struct flags_s *, flagptr)
 {
     int newcount;
 
@@ -69,8 +68,7 @@ register struct flags_s *flagptr;
 /* check symbol is either undefined */
 /* or has the same segment & relocatability as lc */
 
-PUBLIC bool_pt checksegrel(symptr)
-register struct sym_s *symptr;
+PUBLIC bool_pt checksegrel P1(REGISTER struct sym_s *, symptr)
 {
     if ((symptr->type & LABIT ||
 	 (symptr->data & IMPBIT && !(symptr->data & UNDBIT))) &&
@@ -84,7 +82,7 @@ register struct sym_s *symptr;
 
 /* check address fits in 1 byte (possibly with sign truncated) */
 
-PUBLIC void checkdatabounds()
+PUBLIC void checkdatabounds P0()
 {
     if (!(lastexp.data & UNDBIT) &&
 	(offset_t) (lastexp.offset + 0x80) >= 0x180)
@@ -93,8 +91,7 @@ PUBLIC void checkdatabounds()
 
 /* allocate constant data (zero except for size 1), default zero for size 1 */
 
-PRIVATE void constdata(size)
-unsigned size;
+PRIVATE void constdata P1(unsigned, size)
 {
     offset_t remaining;
 
@@ -120,16 +117,16 @@ unsigned size;
     }
 }
 
-PUBLIC void datatoobig()
+PUBLIC void datatoobig P0()
 {
     error(DBOUNDS);
 }
 
 /* common routine for COMM/.COMM */
 
-PRIVATE void docomm()
+PRIVATE void docomm P0()
 {
-    register struct sym_s *labptr;
+    REGISTER struct sym_s *labptr;
 
     absexpres();		/* if undefined, value 0 and size unchanged */
     labptr = label;
@@ -154,8 +151,7 @@ PRIVATE void docomm()
 
 /* common routine for ELSEIF/ELSEIFC */
 
-PRIVATE void doelseif(func)
-pfv func;
+PRIVATE void doelseif P1(pfv, func)
 {
     if (iflevel == 0)
 	error(ELSEIFBAD);
@@ -177,10 +173,9 @@ pfv func;
 
 /* common routine for EQU/SET */
 
-PRIVATE void doequset(labits)
-unsigned labits;
+PRIVATE void doequset P1(unsigned, labits)
 {
-    register struct sym_s *labptr;
+    REGISTER struct sym_s *labptr;
     unsigned char olddata;
     unsigned char oldtype;
 
@@ -214,9 +209,7 @@ unsigned labits;
 
 /* common routine for ENTRY/EXPORT */
 
-PRIVATE void doentexp(entbits, impbits)
-unsigned entbits;
-unsigned impbits;
+PRIVATE void doentexp P2(unsigned, entbits, unsigned, impbits)
 {
     struct sym_s *symptr;
 
@@ -262,8 +255,7 @@ unsigned impbits;
 
 /* common routine for IF/IFC */
 
-PRIVATE void doif(func)
-pfv func;
+PRIVATE void doif P1(pfv, func)
 {
     if (iflevel >= MAXIF)
 	error(IFOV);
@@ -290,8 +282,7 @@ pfv func;
     }
 }
 
-PUBLIC void fatalerror(errnum)
-error_pt errnum;
+PUBLIC void fatalerror P1(error_pt, errnum)
 {
     error(errnum);
     skipline();
@@ -302,13 +293,12 @@ error_pt errnum;
 /* swap position with label position, do error, put back posn */
 /* also clear label ptr */
 
-PUBLIC void labelerror(errnum)
-error_pt errnum;
+PUBLIC void labelerror P1(error_pt, errnum)
 {
     struct sym_s *oldgsymptr;
-    char *oldlineptr;
+    _CONST char *oldlineptr;
     unsigned char oldsym;
-    char *oldsymname;
+    _CONST char *oldsymname;
 
     oldgsymptr = gsymptr;
     oldlineptr = lineptr;
@@ -325,9 +315,9 @@ error_pt errnum;
     label = (struct sym_s*) 0;
 }
 
-PRIVATE struct sym_s *needlabel()
+PRIVATE struct sym_s *needlabel P0()
 {
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
 
     if (sym != IDENT ||
 	(symptr = gsymptr)->type & (MACBIT | MNREGBIT | VARBIT))
@@ -340,7 +330,7 @@ PRIVATE struct sym_s *needlabel()
 
 /* .ALIGN pseudo-op */
 
-PUBLIC void palign()
+PUBLIC void palign P0()
 {
     absexpres();
     if (!((lcdata |= lastexp.data) & UNDBIT))
@@ -354,20 +344,20 @@ PUBLIC void palign()
 
 /* .BLKW pseudo-op */
 
-PUBLIC void pblkw()
+PUBLIC void pblkw P0()
 {
     constdata(2);
 }
 
 /* BLOCK pseudo-op */
 
-PUBLIC void pblock()
+PUBLIC void pblock P0()
 {
     if (blocklevel >= MAXBLOCK)
 	error(BLOCKOV);
     else
     {
-	register struct block_s *blockp;
+	REGISTER struct block_s *blockp;
 
 	++blocklevel;
 	blockp = blockstak;
@@ -381,14 +371,14 @@ PUBLIC void pblock()
 
 /* .BSS pseudo-op */
 
-PUBLIC void pbss()
+PUBLIC void pbss P0()
 {
     setloc(BSSLOC);
 }
 
 /* COMM pseudo-op */
 
-PUBLIC void pcomm()
+PUBLIC void pcomm P0()
 {
     if (label == (struct sym_s*) 0)
 	labelerror(MISLAB);
@@ -400,7 +390,7 @@ PUBLIC void pcomm()
 
 /* .COMM pseudo-op */
 
-PUBLIC void pcomm1()
+PUBLIC void pcomm1 P0()
 {
     unsigned oldseg;
 
@@ -427,14 +417,14 @@ PUBLIC void pcomm1()
 
 /* .DATA pseudo-op */
 
-PUBLIC void pdata()
+PUBLIC void pdata P0()
 {
     setloc(DATALOC);
 }
 
 /* ELSE pseudo-op */
 
-PUBLIC void pelse()
+PUBLIC void pelse P0()
 {
     if (iflevel == 0)
 	error(ELSEBAD);
@@ -451,21 +441,21 @@ PUBLIC void pelse()
 
 /* ELSEIF pseudo-op */
 
-PUBLIC void pelseif()
+PUBLIC void pelseif P0()
 {
     doelseif(absexpres);
 }
 
 /* ELSEIFC pseudo-op */
 
-PUBLIC void pelsifc()
+PUBLIC void pelsifc P0()
 {
     doelseif(scompare);
 }
 
 /* ENDB pseudo-op */
 
-PUBLIC void pendb()
+PUBLIC void pendb P0()
 {
     if (label != (struct sym_s*) 0)
 	labelerror(ILLAB);
@@ -473,7 +463,7 @@ PUBLIC void pendb()
 	error(ENDBBAD);
     else
     {
-	register struct block_s *blockp;
+	REGISTER struct block_s *blockp;
 
 	blockp = blockstak;
 	lcdata = blockp->data;
@@ -487,7 +477,7 @@ PUBLIC void pendb()
 
 /* ENDIF pseudo-op */
 
-PUBLIC void pendif()
+PUBLIC void pendif P0()
 {
     if (iflevel == 0)
 	error(ENDIFBAD);
@@ -502,7 +492,7 @@ PUBLIC void pendif()
 
 /* ENTER pseudo-op */
 
-PUBLIC void penter()
+PUBLIC void penter P0()
 {
     if (!(pedata & UNDBIT))
 	error(REENTER);
@@ -518,16 +508,16 @@ PUBLIC void penter()
 
 /* ENTRY pseudo-op */
 
-PUBLIC void pentry()
+PUBLIC void pentry P0()
 {
     doentexp(ENTBIT, 0);
 }
 
 /* EQU pseudo-op */
 
-PUBLIC void pequ()
+PUBLIC void pequ P0()
 {
-    register struct sym_s *labptr;
+    REGISTER struct sym_s *labptr;
 
     if ((labptr = label) == (struct sym_s*) 0)
 	labelerror(MISLAB);
@@ -541,7 +531,7 @@ PUBLIC void pequ()
 
 /* .EVEN pseudo-op */
 
-PUBLIC void peven()
+PUBLIC void peven P0()
 {
     popflags = POPLONG | POPHI | POPLO | POPLC;
     accumulate_rmb((offset_t) (lcjump = lastexp.data = lc & 1));
@@ -549,21 +539,21 @@ PUBLIC void peven()
 
 /* EXPORT pseudo-op */
 
-PUBLIC void pexport()
+PUBLIC void pexport P0()
 {
     doentexp(0, 0);
 }
 
 /* FAIL pseudo-op */
 
-PUBLIC void pfail()
+PUBLIC void pfail P0()
 {
     error(FAILERR);
 }
 
 /* FCB pseudo-op */
 
-PUBLIC void pfcb()
+PUBLIC void pfcb P0()
 {
     char *bufptr;
     offset_t firstbyte;
@@ -586,12 +576,12 @@ PUBLIC void pfcb()
 }
 
 /* Parses a delimited string to databuf.fcbuf. Returns nonzero on success. Sets mcount to the number of bytes in databuf.fcbuf. */
-PUBLIC int as_getdelim()
+PUBLIC int as_getdelim P0()
 {
-    register char *bufptr;
+    REGISTER char *bufptr;
     unsigned char byte;
     char delimiter;
-    register char *reglineptr;
+    REGISTER _CONST char *reglineptr;
 
     bufptr = databuf.fcbuf;
     reglineptr = symname;
@@ -630,7 +620,7 @@ PUBLIC int as_getdelim()
 
 /* FCC pseudo-op */
 
-PUBLIC void pfcc()
+PUBLIC void pfcc P0()
 {
     as_getdelim();
     if (mcount)
@@ -644,7 +634,7 @@ PUBLIC void pfcc()
 
 /* FDB pseudo-op */
 
-PUBLIC void pfdb()
+PUBLIC void pfdb P0()
 {
     struct address_s *adrptr;
     unsigned firstdata;
@@ -670,7 +660,7 @@ PUBLIC void pfdb()
 
 /* FQB pseudo-op */
 
-PUBLIC void pfqb()
+PUBLIC void pfqb P0()
 {
     struct address_s *adrptr;
     offset_t firstdata;
@@ -696,7 +686,7 @@ PUBLIC void pfqb()
 
 /* .GLOBL pseudo-op */
 
-PUBLIC void pglobl()
+PUBLIC void pglobl P0()
 {
     if (binaryg)
 	error(NOIMPORT);
@@ -705,7 +695,7 @@ PUBLIC void pglobl()
 
 /* IDENT pseudo-op (not complete) */
 
-PUBLIC void pident()
+PUBLIC void pident P0()
 {
     if (sym != IDENT)
 	error(LABEXP);
@@ -715,21 +705,21 @@ PUBLIC void pident()
 
 /* IF pseudo-op */
 
-PUBLIC void pif()
+PUBLIC void pif P0()
 {
     doif(absexpres);
 }
 
 /* IFC pseudo-op */
 
-PUBLIC void pifc()
+PUBLIC void pifc P0()
 {
     doif(scompare);
 }
 
 /* IMPORT pseudo-op */
 
-PUBLIC void pimport()
+PUBLIC void pimport P0()
 {
     struct sym_s *symptr;
 
@@ -755,7 +745,7 @@ PUBLIC void pimport()
 
 /* LCOMM pseudo-op */
 
-PUBLIC void plcomm()
+PUBLIC void plcomm P0()
 {
     lcommflag = TRUE;
     pcomm();
@@ -763,7 +753,7 @@ PUBLIC void plcomm()
 
 /* .LCOMM pseudo-op */
 
-PUBLIC void plcomm1()
+PUBLIC void plcomm1 P0()
 {
     lcommflag = TRUE;
     pcomm1();
@@ -771,14 +761,14 @@ PUBLIC void plcomm1()
 
 /* .LIST pseudo-op */
 
-PUBLIC void plist()
+PUBLIC void plist P0()
 {
     bumpsem(&list);
 }
 
 /* LOC pseudo-op */
 
-PUBLIC void ploc()
+PUBLIC void ploc P0()
 {
     if (label != (struct sym_s*) 0)
 	labelerror(ILLAB);
@@ -794,14 +784,14 @@ PUBLIC void ploc()
 
 /* .MACLIST pseudo-op */
 
-PUBLIC void pmaclist()
+PUBLIC void pmaclist P0()
 {
     bumpsem(&maclist);
 }
 
 /* .MAP pseudo-op */
 
-PUBLIC void pmap()
+PUBLIC void pmap P0()
 {
     absexpres();
     if (!(lastexp.data & UNDBIT))
@@ -815,7 +805,7 @@ PUBLIC void pmap()
 
 /* ORG pseudo-op */
 
-PUBLIC void porg()
+PUBLIC void porg P0()
 {
     if (label != (struct sym_s*) 0)
 	labelerror(ILLAB);
@@ -830,14 +820,14 @@ PUBLIC void porg()
 
 /* RMB pseudo-op */
 
-PUBLIC void prmb()
+PUBLIC void prmb P0()
 {
     constdata(1);
 }
 
 /* .SECT pseudo-op */
 
-PUBLIC void psect()
+PUBLIC void psect P0()
 {
     if (label != (struct sym_s*) 0)
 	labelerror(ILLAB);
@@ -868,9 +858,9 @@ PUBLIC void psect()
 
 /* SET pseudo-op */
 
-PUBLIC void pset()
+PUBLIC void pset P0()
 {
-    register struct sym_s *labptr;
+    REGISTER struct sym_s *labptr;
 
     if ((labptr = label) == (struct sym_s*) 0)
 	labelerror(MISLAB);
@@ -882,7 +872,7 @@ PUBLIC void pset()
 
 /* SETDP pseudo-op */
 
-PUBLIC void psetdp()
+PUBLIC void psetdp P0()
 {
     absexpres();
     if (!(lastexp.data & UNDBIT))
@@ -896,21 +886,21 @@ PUBLIC void psetdp()
 
 /* .TEXT pseudo-op */
 
-PUBLIC void ptext()
+PUBLIC void ptext P0()
 {
     setloc(TEXTLOC);
 }
 
 /* .WARN pseudo-op */
 
-PUBLIC void pwarn()
+PUBLIC void pwarn P0()
 {
     bumpsem(&warn);
 }
 
 /* USE16 pseudo-op */
 
-PUBLIC void puse16()
+PUBLIC void puse16 P0()
 {
     defsize = 2;
     if (++use16c == 8 && !asld_compatible) {  /* This is the compatibility hack. */
@@ -921,7 +911,7 @@ PUBLIC void puse16()
 
 /* USE16 pseudo-op */
 
-PUBLIC void puse32()
+PUBLIC void puse32 P0()
 {
     defsize = 4;
     use16c = 0;
@@ -929,9 +919,9 @@ PUBLIC void puse32()
 
 /* show redefined label and error, and set REDBIT */
 
-PRIVATE void showredefinedlabel()
+PRIVATE void showredefinedlabel P0()
 {
-    register struct sym_s *labptr;
+    REGISTER struct sym_s *labptr;
 
     labptr = label;		/* showlabel() will kill label prematurely */
     showlabel();
@@ -942,9 +932,9 @@ PRIVATE void showredefinedlabel()
     }
 }
 
-PUBLIC void showlabel()
+PUBLIC void showlabel P0()
 {
-    register struct sym_s *labptr;
+    REGISTER struct sym_s *labptr;
 
     labptr = label;
     lastexp.data = labptr->data;
@@ -955,13 +945,12 @@ PUBLIC void showlabel()
 
 /* set location segment */
 
-PRIVATE void setloc(seg)
-unsigned seg;
+PRIVATE void setloc P1(unsigned, seg)
 {
     if (pass != 0 && seg != (lcdata & SEGM))
 	putobj(seg | OBJ_SET_SEG);
     {
-	register struct lc_s *lcp;
+	REGISTER struct lc_s *lcp;
 
 	lcp = lcptr;
 	lcp->data = lcdata;

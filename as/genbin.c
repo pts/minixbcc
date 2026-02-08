@@ -14,7 +14,7 @@ FORWARD void putbinoffset P((offset_t offset, count_t size));
 
 /* write header to binary file */
 
-PUBLIC void binheader()
+PUBLIC void binheader P0()
 {
     if ((innum = binfil) != 0x0)
     {
@@ -31,7 +31,7 @@ PUBLIC void binheader()
 
 /* write trailer to binary file */
 
-PUBLIC void bintrailer()
+PUBLIC void bintrailer P0()
 {
     if ((innum = binfil) != 0x0)
     {
@@ -47,7 +47,7 @@ PUBLIC void bintrailer()
 
 /* generate binary code for current line */
 
-PUBLIC void genbin()
+PUBLIC void genbin P0()
 {
     struct address_s *adrptr;
     char *bufptr;
@@ -136,15 +136,14 @@ PUBLIC void genbin()
 
 /* initialise private variables */
 
-PUBLIC void initbin()
+PUBLIC void initbin P0()
 {
     binmin = -1;		/* greater than anything */
 }
 
 /* write char to binary file or directly to memory */
 
-PUBLIC void putbin(c)
-opcode_pt c;
+PUBLIC void putbin P1(opcode_pt, c)
 {
 	if (!binaryc)		/* pass 1, just record limits */
 	{
@@ -173,9 +172,7 @@ opcode_pt c;
 
 /* write sized offset to binary file or directly to memory */
 
-PRIVATE void putbinoffset(offset, size)
-offset_t offset;
-count_t size;
+PRIVATE void putbinoffset P2(offset_t, offset, count_t, size)
 {
     char buf[sizeof offset];
 

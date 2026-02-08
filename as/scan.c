@@ -16,7 +16,7 @@ PRIVATE unsigned numbase;	/* base for number */
 #  define S01(sv0, sv1) (sv1)
 #endif
 
-PRIVATE char symofchar[256] =	/* table to convert chars to their symbols */
+PRIVATE _CONST char symofchar[256] =  /* table to convert chars to their symbols */
 {
     WHITESPACE, WHITESPACE, WHITESPACE, WHITESPACE,
     WHITESPACE, WHITESPACE, WHITESPACE, WHITESPACE,
@@ -94,15 +94,15 @@ PRIVATE char symofchar[256] =	/* table to convert chars to their symbols */
 
 FORWARD void intconst P((void));
 
-PUBLIC void context_hexconst()
+PUBLIC void context_hexconst P0()
 {
     numbase = 16;
     intconst();
 }
 
-PUBLIC void getsym()
+PUBLIC void getsym P0()
 {
-    register char *reglineptr;
+    REGISTER _CONST char *reglineptr;
 
     reglineptr = lineptr;
 advance:
@@ -187,7 +187,7 @@ advance:
     return;
 }
 
-PUBLIC void getsym_nolookup()
+PUBLIC void getsym_nolookup P0()
 {
     bool_t old_ifflag;
 
@@ -197,9 +197,9 @@ PUBLIC void getsym_nolookup()
     ifflag = old_ifflag;
 }
 
-PRIVATE void intconst()
+PRIVATE void intconst P0()
 {
-    register char *reglineptr;
+    REGISTER _CONST char *reglineptr;
 
     number = 0;
     reglineptr = lineptr;
@@ -237,7 +237,7 @@ PRIVATE void intconst()
     lineptr = reglineptr;
 }
 
-PUBLIC void initscan()
+PUBLIC void initscan P0()
 {
     if (asld_compatible)
     {

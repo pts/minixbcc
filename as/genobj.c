@@ -44,8 +44,7 @@ FORWARD void writeobj P((char *buf, unsigned count));
 
 /* accumulate RMB requests into 1 (so + and - requests cancel) */
 
-PUBLIC void accumulate_rmb(offset)
-offset_t offset;
+PUBLIC void accumulate_rmb P1(offset_t, offset)
 {
     if (objectc)
     {
@@ -56,13 +55,13 @@ offset_t offset;
 
 /* flush absolute object code buffer to object code buffer if necessary */
 
-PRIVATE void flushabs()
+PRIVATE void flushabs P0()
 {
     if (absbufptr > absbuf)
     {
 	putobj1((absbufptr - absbuf) | OBJ_ABS);
 	{
-	    register char *bufptr;
+	    REGISTER char *bufptr;
 
 	    bufptr = absbuf;
 	    do
@@ -75,7 +74,7 @@ PRIVATE void flushabs()
 
 /* flush object code buffer if necessary */
 
-PUBLIC void flushobj()
+PUBLIC void flushobj P0()
 {
     int ntowrite;
 
@@ -93,7 +92,7 @@ PUBLIC void flushobj()
 
 /* flush RMB count if necessary */
 
-PRIVATE void flushrmb()
+PRIVATE void flushrmb P0()
 {
     count_t size;
 
@@ -127,7 +126,7 @@ PRIVATE void flushrmb()
   any immediate parameter is (corectly) in immadr
 */
 
-PUBLIC void genobj()
+PUBLIC void genobj P0()
 {
     struct address_s *adrptr;
     char *bufptr;
@@ -209,9 +208,7 @@ PUBLIC void genobj()
 
 /* generate object code for current address */
 
-PRIVATE void genobjadr(adrptr, size)
-struct address_s *adrptr;
-int size;
+PRIVATE void genobjadr P2(struct address_s *, adrptr, int, size)
 {
     unsigned char byte;
     unsigned symnum;
@@ -248,7 +245,7 @@ int size;
 	{
 	    /* symbol relocation (imported symbol + offset) */
 	    {
-		register struct sym_s **copyptr;
+		REGISTER struct sym_s **copyptr;
 
 		for (copyptr = arrext, symnum = 0;
 		     symnum < numext && *copyptr++ != adrptr->sym; ++symnum)
@@ -288,7 +285,7 @@ int size;
 
 /* initialise private variables */
 
-PUBLIC void initobj()
+PUBLIC void initobj P0()
 {
     absbufend = (absbufptr = absbuf = hid_absbuf) + sizeof hid_absbuf;
     objbufend = (objbufptr = objbuf = hid_objbuf) + sizeof hid_objbuf;
@@ -299,7 +296,7 @@ PUBLIC void initobj()
   also build array of imported/exported symbols
 */
 
-PUBLIC void objheader()
+PUBLIC void objheader P0()
 {
     static char module_header[] =
     {
@@ -315,7 +312,7 @@ PUBLIC void objheader()
 	0x55,			/* 0b10 = max size 2^24, 0b11 = max 2^32 */
     };
     unsigned char byte;
-    register struct sym_s **copyptr;
+    REGISTER struct sym_s **copyptr;
     struct sym_s **copytop;
     struct sym_s **hashptr;
     struct lc_s *lcp;
@@ -327,7 +324,7 @@ PUBLIC void objheader()
     unsigned char sizebits;
     unsigned strsiz;		/* size of object string table */
     unsigned symosiz;		/* size of object symbol table */
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
     offset_t textlength;
 
     if ((objectc = objectg) == 0)
@@ -533,7 +530,7 @@ PUBLIC void objheader()
 
 /* write trailer to object file */
 
-PUBLIC void objtrailer()
+PUBLIC void objtrailer P0()
 {
     if (objectc)
     {
@@ -544,8 +541,7 @@ PUBLIC void objtrailer()
 
 /* write char to absolute object code buffer, flush if necessary */
 
-PUBLIC void putabs(c)
-opcode_pt c;
+PUBLIC void putabs P1(opcode_pt, c)
 {
     if (objectc)
     {
@@ -559,8 +555,7 @@ opcode_pt c;
 
 /* write char to object code buffer, flush if necessary */
 
-PUBLIC void putobj(c)
-opcode_pt c;
+PUBLIC void putobj P1(opcode_pt, c)
 {
     if (objectc)
     {
@@ -572,8 +567,7 @@ opcode_pt c;
 
 /* write char to object code buffer assuming nothing in absolute & rmb bufs */
 
-PRIVATE void putobj1(c)
-opcode_pt c;
+PRIVATE void putobj1 P1(opcode_pt, c)
 {
     if (objbufptr >= objbufend)
 	flushobj();
@@ -582,8 +576,7 @@ opcode_pt c;
 
 /* write 32 bit offset to object code buffer assuming ... */
 
-PRIVATE void putobj4(offset)
-offset_t offset;
+PRIVATE void putobj4 P1(offset_t, offset)
 {
     char buf[4];
 
@@ -593,9 +586,7 @@ offset_t offset;
 
 /* write sized offset to object code buffer assuming ... */
 
-PRIVATE void putobjoffset(offset, size)
-offset_t offset;
-count_t size;
+PRIVATE void putobjoffset P2(offset_t, offset, count_t, size)
 {
     char buf[4];
 
@@ -612,8 +603,7 @@ count_t size;
 
 /* write word to object code buffer assuming ... */
 
-PRIVATE void putobjword(word)
-unsigned word;
+PRIVATE void putobjword P1(unsigned, word)
 {
     char buf[2];
 
@@ -624,9 +614,7 @@ unsigned word;
 
 /* write several bytes to object code buffer assuming ... */
 
-PRIVATE void writeobj(buf, count)
-char *buf;
-unsigned count;
+PRIVATE void writeobj P2(char *, buf, unsigned, count)
 {
     do
 	putobj1(*buf++);

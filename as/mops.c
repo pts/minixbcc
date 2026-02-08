@@ -5,9 +5,10 @@
 #include "globvar.h"
 #include "opcode.h"
 #include "scan.h"
+#include "address.h"
 #undef EXTERN
 #define EXTERN
-#include "address.h"
+#include "address.h"  /* With the EXTERN macro empty, define the global variables in "extern.h". */
 
 #define is8bitadr(offset) ((offset_t) offset < 0x100)
 #define is8bitsignedoffset(offset) ((offset_t) (offset) + 0x80 < 0x100)
@@ -51,7 +52,7 @@ FORWARD void reldata P((void));
 #define TOREGBIT    0x02
 #define WORDBIT     0x01
 
-PRIVATE opcode_t baseind16[] =
+PRIVATE _CONST opcode_t baseind16[] =
 {
     0x00,			/* BP + BP, illegal */
     0x00,			/* BX + BP, illegal */
@@ -71,7 +72,7 @@ PRIVATE opcode_t baseind16[] =
     0x00,			/* SI + SI, illegal */
 };
 
-PRIVATE opcode_t regbits[] =
+PRIVATE _CONST opcode_t regbits[] =
 {
     0x05 << REG_SHIFT,		/* BP */
     0x03 << REG_SHIFT,		/* BX */
@@ -135,7 +136,7 @@ PRIVATE opcode_t regbits[] =
     0x07 << REG_SHIFT,		/* ST(7) */
 };
 
-PRIVATE opsize_t regsize[] =
+PRIVATE _CONST opsize_t regsize[] =
 {
     2,				/* BP */
     2,				/* BX */
@@ -201,7 +202,7 @@ PRIVATE opsize_t regsize[] =
     0,				/* NOREG */
 };
 
-PRIVATE opcode_t regsegword[] =
+PRIVATE _CONST opcode_t regsegword[] =
 {
     WORDBIT,			/* BP */
     WORDBIT,			/* BX */
@@ -267,7 +268,7 @@ PRIVATE opcode_t regsegword[] =
     0x00,			/* NOREG */
 };
 
-PRIVATE opcode_t rm[] =
+PRIVATE _CONST opcode_t rm[] =
 {
     0x05,			/* BP */
     0x03,			/* BX */
@@ -333,7 +334,7 @@ PRIVATE opcode_t rm[] =
     0x04,			/* null index reg for sib only */
 };
 
-PRIVATE opcode_t rmfunny[] =
+PRIVATE _CONST opcode_t rmfunny[] =
 {
     0x06,			/* BP */
     0x07,			/* BX */
@@ -341,7 +342,7 @@ PRIVATE opcode_t rmfunny[] =
     0x04,			/* SI */
 };
 
-PRIVATE opcode_t segoverride[] =
+PRIVATE _CONST opcode_t segoverride[] =
 {
     0x2E,			/* CS */
     0x3E,			/* DS */
@@ -351,7 +352,7 @@ PRIVATE opcode_t segoverride[] =
     0x36,			/* SS */
 };
 
-PRIVATE opcode_t ss[] =		/* scale to ss bits */
+PRIVATE _CONST opcode_t ss[] =	/* scale to ss bits */
 {
     0x00,			/* x0, illegal */
     0x00 << SS_SHIFT,		/* x1 */
@@ -414,8 +415,7 @@ FORWARD void notsegorspecreg P((struct ea_s *eap));
 FORWARD void yesimmed P((struct ea_s *eap));
 FORWARD void yes_samesize P((void));
 
-PRIVATE void Eb(eap)
-register struct ea_s *eap;
+PRIVATE void Eb P1(REGISTER struct ea_s *, eap)
 {
     Ex(eap);
     if (eap->size != 0x1)
@@ -429,8 +429,7 @@ register struct ea_s *eap;
     }
 }
 
-PRIVATE void Ew(eap)
-register struct ea_s *eap;
+PRIVATE void Ew P1(REGISTER struct ea_s *, eap)
 {
     Ex(eap);
     if (eap->size != 0x2)
@@ -444,53 +443,46 @@ register struct ea_s *eap;
     }
 }
 
-PRIVATE void Ev(eap)
-register struct ea_s *eap;
+PRIVATE void Ev P1(REGISTER struct ea_s *, eap)
 {
     Ex(eap);
     notbytesize(eap);
 }
 
-PRIVATE void Ex(eap)
-register struct ea_s *eap;
+PRIVATE void Ex P1(REGISTER struct ea_s *, eap)
 {
     getea(eap);
     notimmed(eap);
     notsegorspecreg(eap);
 }
 
-PRIVATE void Gd(eap)
-register struct ea_s *eap;
+PRIVATE void Gd P1(REGISTER struct ea_s *, eap)
 {
     Gx(eap);
     if (eap->size != 0x4)
 	kgerror(ILL_SIZE);
 }
 
-PRIVATE void Gw(eap)
-register struct ea_s *eap;
+PRIVATE void Gw P1(REGISTER struct ea_s *, eap)
 {
     Gx(eap);
     if (eap->size != 0x2)
 	kgerror(ILL_SIZE);
 }
 
-PRIVATE void Gv(eap)
-register struct ea_s *eap;
+PRIVATE void Gv P1(REGISTER struct ea_s *, eap)
 {
     Gx(eap);
     notbytesize(eap);
 }
 
-PRIVATE void Gx(eap)
-register struct ea_s *eap;
+PRIVATE void Gx P1(REGISTER struct ea_s *, eap)
 {
     Ex(eap);
     notindirect(eap);
 }
 
-PRIVATE void buildea(eap)
-register struct ea_s *eap;
+PRIVATE void buildea P1(REGISTER struct ea_s *, eap)
 {
     opsize_t asize;
 
@@ -562,7 +554,7 @@ register struct ea_s *eap;
     }
 }
 
-PRIVATE void buildfloat()
+PRIVATE void buildfloat P0()
 {
     if (mcount != 0x0)
     {
@@ -573,7 +565,7 @@ PRIVATE void buildfloat()
     }
 }
 
-PRIVATE void buildfreg()
+PRIVATE void buildfreg P0()
 {
     mcount += 0x2;
     oprefix = 0x0;
@@ -581,9 +573,7 @@ PRIVATE void buildfreg()
     opcode = ESCAPE_OPCODE_BASE | ((opcode & 0x70) >> 0x4);
 }
 
-PRIVATE void buildimm(eap, signflag)
-register struct ea_s *eap;
-bool_pt signflag;
+PRIVATE void buildimm P2(REGISTER struct ea_s *, eap, bool_pt, signflag)
 {
     immadr = eap->displ;
     immcount = eap->size;
@@ -607,7 +597,7 @@ bool_pt signflag;
     }
 }
 
-PRIVATE void buildregular()
+PRIVATE void buildregular P0()
 {
     if (mcount != 0x0)
     {
@@ -618,8 +608,7 @@ PRIVATE void buildregular()
 
 /* Check size and build segword. */
 
-PRIVATE void buildsegword(eap)
-register struct ea_s *eap;
+PRIVATE void buildsegword P1(REGISTER struct ea_s *, eap)
 {
     if (eap->size == 0x0)
 #ifdef NODEFAULTSIZE
@@ -637,8 +626,7 @@ register struct ea_s *eap;
 	segword = regsegword[eap->base];
 }
 
-PRIVATE void buildunary(opc)
-opcode_pt opc;
+PRIVATE void buildunary P1(opcode_pt, opc)
 {
     if (mcount != 0x0)
     {
@@ -648,8 +636,7 @@ opcode_pt opc;
     }
 }
 
-PRIVATE opsize_pt displsize(eap)
-register struct ea_s *eap;
+PRIVATE opsize_pt displsize P1(REGISTER struct ea_s *, eap)
 {
     opsize_t asize;
 
@@ -675,7 +662,7 @@ register struct ea_s *eap;
     return asize;
 }
 
-PRIVATE reg_pt fpregchk()
+PRIVATE reg_pt fpregchk P0()
 {
     reg_pt fpreg;
 
@@ -703,8 +690,7 @@ PRIVATE reg_pt fpregchk()
     return fpreg;
 }
 
-PRIVATE bool_pt getaccumreg(eap)
-register struct ea_s *eap;
+PRIVATE bool_pt getaccumreg P1(REGISTER struct ea_s *, eap)
 {
     if ((eap->base = regchk()) != AXREG && eap->base != ALREG
 	&& eap->base != EAXREG)
@@ -721,7 +707,7 @@ register struct ea_s *eap;
   Initialise direction, segword, bump mcount.
 */
 
-PRIVATE void getbinary()
+PRIVATE void getbinary P0()
 {
     ++mcount;
     getea(&target);
@@ -764,8 +750,7 @@ PRIVATE void getbinary()
     buildsegword(&source);
 }
 
-PRIVATE bool_pt getdxreg(eap)
-register struct ea_s *eap;
+PRIVATE bool_pt getdxreg P1(REGISTER struct ea_s *, eap)
 {
     if ((eap->base = regchk()) != DXREG)
 	return FALSE;
@@ -804,12 +789,11 @@ register struct ea_s *eap;
   optional-imediate-prefix displ(scaled index)     -- anachronism
 */
 
-PRIVATE void getea(eap)
-register struct ea_s *eap;
+PRIVATE void getea P1(REGISTER struct ea_s *, eap)
 {
     bool_t leading_displ;
     bool_t leading_immed;
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
 
     leading_immed = leading_displ = lastexp.data = eap->indcount
 		  = lastexp.offset = 0x0;
@@ -956,9 +940,7 @@ register struct ea_s *eap;
 	eap->displ = lastexp;
 }
 
-PRIVATE void getimmed(eap, immcount)
-struct ea_s *eap; 
-count_t immcount;
+PRIVATE void getimmed P2(struct ea_s *, eap, count_t, immcount)
 {
     getea(eap);
     yesimmed(eap);
@@ -969,16 +951,14 @@ count_t immcount;
     }
 }
 
-PRIVATE void getindirect(eap)
-register struct ea_s *eap;
+PRIVATE void getindirect P1(REGISTER struct ea_s *, eap)
 {
     getea(eap);
     if (eap->indcount == 0x0)
 	kgerror(IND_REQ);
 }
 
-PRIVATE void getshift(eap)
-register struct ea_s *eap;
+PRIVATE void getshift P1(REGISTER struct ea_s *, eap)
 {
     getcomma();
     getea(eap);
@@ -992,8 +972,7 @@ register struct ea_s *eap;
   Return register number (adjusted if necessary to a legal index) or NOREG.
 */
 
-PRIVATE reg_pt indregchk(matchreg)
-reg_pt matchreg;
+PRIVATE reg_pt indregchk P1(reg_pt, matchreg)
 {
     reg_pt reg;
 
@@ -1039,15 +1018,13 @@ reg_pt matchreg;
     return reg;
 }
 
-PRIVATE void kgerror(errnum)
-error_pt errnum;
+PRIVATE void kgerror P1(error_pt, errnum)
 {
     error(errnum);
     sprefix = oprefix = aprefix = mcount = 0x0;
 }
 
-PRIVATE void lbranch(backamount)
-unsigned backamount;
+PRIVATE void lbranch P1(unsigned, backamount)
 {
     mcount += defsize + 0x1;
     if (pass2)
@@ -1065,7 +1042,7 @@ unsigned backamount;
 
 /* BCC (long branches emulated by short branch over & long jump) */
 
-PUBLIC void mbcc()
+PUBLIC void mbcc P0()
 {
     getea(&target);
     if (target.indcount >= 0x2 || target.base != NOREG)
@@ -1094,7 +1071,7 @@ PUBLIC void mbcc()
 
 /* bswap r32 */
 
-PUBLIC void mbswap()
+PUBLIC void mbswap P0()
 {
     ++mcount;
     Gd(&target);
@@ -1103,11 +1080,11 @@ PUBLIC void mbswap()
 
 /* BR, CALL, J, JMP */
 
-PUBLIC void mcall()
+PUBLIC void mcall P0()
 {
     opcode_pt far_;
     bool_t indirect;
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
 
     far_ = 0x0;
     if (sym == IDENT && (symptr = gsymptr)->type & MNREGBIT &&
@@ -1200,7 +1177,7 @@ PUBLIC void mcall()
 
 /* CALLI, JMPI */
 
-PUBLIC void mcalli()
+PUBLIC void mcalli P0()
 {
     bool_t indirect;
 
@@ -1245,7 +1222,7 @@ PUBLIC void mcalli()
 
 /* DIV, IDIV, MUL */
 
-PUBLIC void mdivmul()
+PUBLIC void mdivmul P0()
 {
     if (getaccumreg(&source))
     {
@@ -1261,7 +1238,7 @@ PUBLIC void mdivmul()
 
 /* ENTER */
 
-PUBLIC void menter()
+PUBLIC void menter P0()
 {
     ++mcount;
     getimmed(&target, 0x2);
@@ -1276,7 +1253,7 @@ PUBLIC void menter()
 
 /* arpl r/m16,r16 (Intel manual opcode chart wrongly says EwRw) */
 
-PUBLIC void mEwGw()
+PUBLIC void mEwGw P0()
 {
     ++mcount;
     Ew(&target);
@@ -1288,7 +1265,7 @@ PUBLIC void mEwGw()
 
 /* [cmpxchg xadd] [r/m8,r8 r/m16,r16, r/m32,r32] */
 
-PUBLIC void mExGx()
+PUBLIC void mExGx P0()
 {
     ++mcount;
     Ex(&target);
@@ -1299,7 +1276,7 @@ PUBLIC void mExGx()
     buildregular();
 }
 
-PUBLIC void mf_inher()
+PUBLIC void mf_inher P0()
 {
     mcount += 0x2;
     postb = REG_MOD | (opcode & ~REG_MOD);
@@ -1310,7 +1287,7 @@ PUBLIC void mf_inher()
 
 /* [fldenv fnsave fnstenv frstor] mem */
 
-PUBLIC void mf_m()
+PUBLIC void mf_m P0()
 {
     ++mcount;
     getindirect(&source);
@@ -1321,7 +1298,7 @@ PUBLIC void mf_m()
 
 /* [fldcw fnstcw] mem2i */
 
-PUBLIC void mf_m2()
+PUBLIC void mf_m2 P0()
 {
     ++mcount;
     getindirect(&source);
@@ -1332,7 +1309,7 @@ PUBLIC void mf_m2()
 
 /* fnstsw [mem2i ax] */
 
-PUBLIC void mf_m2_ax()
+PUBLIC void mf_m2_ax P0()
 {
     if (getaccumreg(&target))
     {
@@ -1351,7 +1328,7 @@ PUBLIC void mf_m2_ax()
 
 /* [fiadd ficom ficomp fidiv fidivr fimul fist fisub fisubr] [mem2i mem4i] */
 
-PUBLIC void mf_m2_m4()
+PUBLIC void mf_m2_m4 P0()
 {
     ++mcount;
     getindirect(&source);
@@ -1366,7 +1343,7 @@ PUBLIC void mf_m2_m4()
 
 /* [fild fistp] [mem2i mem4i mem8i] */
 
-PUBLIC void mf_m2_m4_m8()
+PUBLIC void mf_m2_m4_m8 P0()
 {
     ++mcount;
     getindirect(&source);
@@ -1383,7 +1360,7 @@ PUBLIC void mf_m2_m4_m8()
 
 /* [fcom fcomp] [mem4r mem8r optional-st(i)] */
 
-PUBLIC void mf_m4_m8_optst()
+PUBLIC void mf_m4_m8_optst P0()
 {
     if (sym == EOLSYM)
     {
@@ -1396,7 +1373,7 @@ PUBLIC void mf_m4_m8_optst()
 
 /* [fadd fdiv fdivr fmul fsub fsubr] [mem4r mem8r st,st(i) st(i),st] */
 
-PUBLIC void mf_m4_m8_stst()
+PUBLIC void mf_m4_m8_stst P0()
 {
     target.base = fpregchk();
     if (target.base != NOREG)
@@ -1436,7 +1413,7 @@ PUBLIC void mf_m4_m8_stst()
 
 /* fst [mem4r mem8r st(i)] */
 
-PUBLIC void mf_m4_m8_st()
+PUBLIC void mf_m4_m8_st P0()
 {
     target.base = fpregchk();
     if (target.base != NOREG)
@@ -1461,7 +1438,7 @@ PUBLIC void mf_m4_m8_st()
 
 /* [fld fstp] [mem4r mem8r mem10r st(i)] */
 
-PUBLIC void mf_m4_m8_m10_st()
+PUBLIC void mf_m4_m8_m10_st P0()
 {
     target.base = fpregchk();
     if (target.base != NOREG)
@@ -1488,7 +1465,7 @@ PUBLIC void mf_m4_m8_m10_st()
 
 /* [fbld fbstp] mem10r */
 
-PUBLIC void mf_m10()
+PUBLIC void mf_m10 P0()
 {
     ++mcount;
     getindirect(&source);
@@ -1499,7 +1476,7 @@ PUBLIC void mf_m10()
 
 /* ffree st(i) */
 
-PUBLIC void mf_st()
+PUBLIC void mf_st P0()
 {
     target.base = fpregchk();
     if (target.base == NOREG)
@@ -1509,7 +1486,7 @@ PUBLIC void mf_st()
 
 /* [fucom fucomp fxch] optional-st(i) */
 
-PUBLIC void mf_optst()
+PUBLIC void mf_optst P0()
 {
     if (sym == EOLSYM)
     {
@@ -1522,7 +1499,7 @@ PUBLIC void mf_optst()
 
 /* [faddp fdivp fdivrp fmulp fsubp fsubrp] st(i),st */
 
-PUBLIC void mf_stst()
+PUBLIC void mf_stst P0()
 {
     target.base = fpregchk();
     if (target.base == NOREG)
@@ -1545,7 +1522,7 @@ PUBLIC void mf_stst()
     buildfreg();
 }
 
-PUBLIC void mf_w_inher()
+PUBLIC void mf_w_inher P0()
 {
     sprefix = WAIT_OPCODE;
     mf_inher();
@@ -1553,7 +1530,7 @@ PUBLIC void mf_w_inher()
 
 /* [fsave fstenv] mem */
 
-PUBLIC void mf_w_m()
+PUBLIC void mf_w_m P0()
 {
     sprefix = WAIT_OPCODE;
     mf_m();
@@ -1561,7 +1538,7 @@ PUBLIC void mf_w_m()
 
 /* fstcw mem2i */
 
-PUBLIC void mf_w_m2()
+PUBLIC void mf_w_m2 P0()
 {
     sprefix = WAIT_OPCODE;
     mf_m2();
@@ -1569,7 +1546,7 @@ PUBLIC void mf_w_m2()
 
 /* fstsw [mem2i ax] */
 
-PUBLIC void mf_w_m2_ax()
+PUBLIC void mf_w_m2_ax P0()
 {
     sprefix = WAIT_OPCODE;
     mf_m2_ax();
@@ -1577,7 +1554,7 @@ PUBLIC void mf_w_m2_ax()
 
 /* ADC, ADD, AND, CMP, OR, SBB, SUB, XOR */
 
-PUBLIC void mgroup1()
+PUBLIC void mgroup1 P0()
 {
     if (opcode == CMP_OPCODE_BASE && sym == EOLSYM)  /* For compatibility with as v0: no-argument `cmpb' means `cmpsb', no-argument `cmp' means `cmpsw' or `cmpsd'. */
     {
@@ -1616,7 +1593,7 @@ PUBLIC void mgroup1()
 
 /* RCL, RCR, ROL, ROR, SAL, SAR, SHL, SHR */
 
-PUBLIC void mgroup2()
+PUBLIC void mgroup2 P0()
 {
     ++mcount;
     Ex(&target);
@@ -1638,7 +1615,7 @@ PUBLIC void mgroup2()
 
 /* LLDT, LTR, SLDT, STR, VERR, VERW */
 
-PUBLIC void mgroup6()
+PUBLIC void mgroup6 P0()
 {
     ++mcount;
     Ew(&target);
@@ -1648,7 +1625,7 @@ PUBLIC void mgroup6()
 
 /* INVLPG, LGDT, LIDT, LMSW, SGDT, SIDT, SMSW */
 
-PUBLIC void mgroup7()
+PUBLIC void mgroup7 P0()
 {
     ++mcount;
     if (opcode == 0x20 || opcode == 0x30)
@@ -1668,7 +1645,7 @@ PUBLIC void mgroup7()
 
 /* BT, BTR, BTS, BTC */
 
-PUBLIC void mgroup8()
+PUBLIC void mgroup8 P0()
 {
     ++mcount;
     Ev(&target);
@@ -1696,7 +1673,7 @@ PUBLIC void mgroup8()
 
 /* BSF, BSR, LAR, LSL (Intel manual opcode chart wrongly says GvEw for L*) */
 
-PUBLIC void mGvEv()
+PUBLIC void mGvEv P0()
 {
     ++mcount;
     Gv(&source);
@@ -1708,7 +1685,7 @@ PUBLIC void mGvEv()
 
 /* bound [r16,m16&16 r32,m32&32] */
 
-PUBLIC void mGvMa()
+PUBLIC void mGvMa P0()
 {
     ++mcount;
     Gv(&source);
@@ -1720,7 +1697,7 @@ PUBLIC void mGvMa()
 
 /* LDS, LES, LFS, LGS, LSS */
 
-PUBLIC void mGvMp()
+PUBLIC void mGvMp P0()
 {
     ++mcount;
     Gv(&source);
@@ -1733,7 +1710,7 @@ PUBLIC void mGvMp()
 
 /* IMUL */
 
-PUBLIC void mimul()
+PUBLIC void mimul P0()
 {
     ++mcount;
     Ex(&target);
@@ -1788,7 +1765,7 @@ PUBLIC void mimul()
 
 /* IN */
 
-PUBLIC void min()
+PUBLIC void min P0()
 {
     ++mcount;
     if (opcode & WORDBIT)	/* inw; ind not supported */
@@ -1818,7 +1795,7 @@ PUBLIC void min()
 
 /* DEC, INC */
 
-PUBLIC void mincdec()
+PUBLIC void mincdec P0()
 {
     ++mcount;
     Ex(&target);
@@ -1832,7 +1809,7 @@ PUBLIC void mincdec()
 /* CBW, CWD, CMPSW, INSW, IRET, LODSW, POPA, POPF, PUSHA, PUSHF */
 /* MOVSW, OUTSW, SCASW, STOSW */
 
-PUBLIC void minher16()
+PUBLIC void minher16 P0()
 {
     minher();
     if (defsize != 0x2)
@@ -1842,7 +1819,7 @@ PUBLIC void minher16()
 /* CWDE, CDQ, CMPSD, INSD, IRETD, LODSD, POPAD, POPFD, PUSHAD, PUSHFD */
 /* MOVSD, OUTSD, SCASD, STOSD */
 
-PUBLIC void minher32()
+PUBLIC void minher32 P0()
 {
     minher();
     if (defsize != 0x4)
@@ -1851,7 +1828,7 @@ PUBLIC void minher32()
 
 /* AAD, AAM */
 
-PUBLIC void minhera()
+PUBLIC void minhera P0()
 {
     ++mcount;
     if (sym == EOLSYM)
@@ -1866,7 +1843,7 @@ PUBLIC void minhera()
 
 /* INT */
 
-PUBLIC void mint()
+PUBLIC void mint P0()
 {
     ++mcount;
     getimmed(&target, 0x1);
@@ -1880,7 +1857,7 @@ PUBLIC void mint()
 
 /* JCC */
 
-PUBLIC void mjcc()
+PUBLIC void mjcc P0()
 {
     if (jumps_long && opcode < 0x80)	/* above 0x80 means loop - not long */
 	mbcc();
@@ -1890,7 +1867,7 @@ PUBLIC void mjcc()
 
 /* JCXZ, JECXZ */
 
-PUBLIC void mjcxz()
+PUBLIC void mjcxz P0()
 {
     if (opcode != defsize)
     {
@@ -1905,7 +1882,7 @@ PUBLIC void mjcxz()
 
 /* LEA */
 
-PUBLIC void mlea()
+PUBLIC void mlea P0()
 {
     Gv(&source);		/* back to front */
     getcomma();
@@ -1917,7 +1894,7 @@ PUBLIC void mlea()
 
 /* MOV */
 
-PUBLIC void mmov()
+PUBLIC void mmov P0()
 {
     if (sym == EOLSYM)  /* For compatibility with as v0: no-argument `movb' means `movsb', no-argument `mov' means `movsw' or `movsd'. */
     {
@@ -1972,7 +1949,7 @@ PUBLIC void mmov()
 
 /* MOVSX, MOVZX */
 
-PUBLIC void mmovx()
+PUBLIC void mmovx P0()
 {
     ++mcount;
     Gv(&source);
@@ -1992,7 +1969,7 @@ PUBLIC void mmovx()
 
 /* NEG, NOT */
 
-PUBLIC void mnegnot()
+PUBLIC void mnegnot P0()
 {
     ++mcount;
     Ex(&target);
@@ -2002,7 +1979,7 @@ PUBLIC void mnegnot()
 
 /* OUT */
 
-PUBLIC void mout()
+PUBLIC void mout P0()
 {
     ++mcount;
     if (opcode & WORDBIT)	/* outw; outd not supported */
@@ -2034,7 +2011,7 @@ PUBLIC void mout()
 
 /* POP, PUSH */
 
-PUBLIC void mpushpop()
+PUBLIC void mpushpop P0()
 {
     opcode_t oldopcode;
 
@@ -2107,7 +2084,7 @@ PUBLIC void mpushpop()
 
 /* RET, RETF */
 
-PUBLIC void mret()
+PUBLIC void mret P0()
 {
     ++mcount;
     if (sym != EOLSYM)
@@ -2125,7 +2102,7 @@ PUBLIC void mret()
 
 /* SEG CS/DS/ES/FS/GS/SS */
 
-PUBLIC void mseg()
+PUBLIC void mseg P0()
 {
     reg_pt reg;
 
@@ -2141,7 +2118,7 @@ PUBLIC void mseg()
 
 /* SETCC */
 
-PUBLIC void msetcc()
+PUBLIC void msetcc P0()
 {
     ++mcount;
     Eb(&target);
@@ -2151,7 +2128,7 @@ PUBLIC void msetcc()
 
 /* SHLD, SHRD */
 
-PUBLIC void mshdouble()
+PUBLIC void mshdouble P0()
 {
     ++mcount;
     Ev(&target);
@@ -2180,7 +2157,7 @@ PUBLIC void mshdouble()
   and does not use the relevant direction bit.
 */
 
-PUBLIC void mtest()
+PUBLIC void mtest P0()
 {
     getbinary();
     notsegorspecreg(&source);
@@ -2214,7 +2191,7 @@ PUBLIC void mtest()
   and does not use the irrelevant direction bit.
 */
 
-PUBLIC void mxchg()
+PUBLIC void mxchg P0()
 {
     getbinary();
     notimmed(&source);
@@ -2236,36 +2213,31 @@ PUBLIC void mxchg()
     buildregular();
 }
 
-PRIVATE void notbytesize(eap)
-register struct ea_s *eap;
+PRIVATE void notbytesize P1(REGISTER struct ea_s *, eap)
 {
     if (eap->size == 0x1)
 	kgerror(ILL_SIZE);
 }
 
-PRIVATE void notimmed(eap)
-register struct ea_s *eap;
+PRIVATE void notimmed P1(REGISTER struct ea_s *, eap)
 {
     if (eap->indcount == 0x0 && eap->base == NOREG)
 	kgerror(ILL_IMM_MODE);
 }
 
-PRIVATE void notindirect(eap)
-register struct ea_s *eap;
+PRIVATE void notindirect P1(REGISTER struct ea_s *, eap)
 {
     if (eap->indcount != 0x0)
 	kgerror(ILL_IND);
 }
 
-PRIVATE void notsegorspecreg(eap)
-register struct ea_s *eap;
+PRIVATE void notsegorspecreg P1(REGISTER struct ea_s *, eap)
 {
     if (regsegword[eap->base] >= SEGMOV)
 	kgerror(ILLREG);
 }
 
-PRIVATE void yesimmed(eap)
-register struct ea_s *eap;
+PRIVATE void yesimmed P1(REGISTER struct ea_s *, eap)
 {
     if (eap->indcount == 0x1)
 	eap->indcount = 0x0;
@@ -2273,7 +2245,7 @@ register struct ea_s *eap;
 	kgerror(IMM_REQ);
 }
 
-PRIVATE void yes_samesize()
+PRIVATE void yes_samesize P0()
 {
     if (target.size == 0x0)
 	target.size = source.size;
@@ -2283,7 +2255,7 @@ PRIVATE void yes_samesize()
 
 /* routines common to all processors */
 
-PUBLIC void getcomma()
+PUBLIC void getcomma P0()
 {
     if (sym != COMMA)
 	error(COMEXP);
@@ -2299,20 +2271,20 @@ PUBLIC void getcomma()
 /* LAHF, LEAVE, LOCK, LODSB, MOVSB, NOP, OUTSB, REP, REPE, REPNE, REPNZ, */
 /* REPZ, SAHF, SCASB, STC, STD, STI, STOSB, WAIT, WBINVD */
 
-PUBLIC void minher()
+PUBLIC void minher P0()
 {
     ++mcount;
 }
 
 /* short branches */
 
-PUBLIC void mshort()
+PUBLIC void mshort P0()
 {
     nonimpexpres();
     mshort2();
 }
 
-PRIVATE void mshort2()
+PRIVATE void mshort2 P0()
 {
     mcount += 0x2;
     if (pass2)
@@ -2331,9 +2303,9 @@ PRIVATE void mshort2()
 
 /* check if current symbol is a register, return register number or NOREG */
 
-PRIVATE reg_pt regchk()
+PRIVATE reg_pt regchk P0()
 {
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
 
     if (sym == IDENT)
     {
@@ -2354,7 +2326,7 @@ PRIVATE reg_pt regchk()
 
 /* convert lastexp.data for PC relative */
 
-PRIVATE void reldata()
+PRIVATE void reldata P0()
 {
     if ((lastexp.data ^ lcdata) & (IMPBIT | RELBIT | SEGM))
     {

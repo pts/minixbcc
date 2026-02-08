@@ -19,8 +19,7 @@
   next:string. The first string is the macro number in 4 bytes.
 */
 
-PUBLIC void entermac(symptr)
-struct sym_s *symptr;
+PUBLIC void entermac P1(struct sym_s *, symptr)
 {
     if (maclevel >= MAXMAC)
 	error(MACOV);
@@ -31,8 +30,8 @@ struct sym_s *symptr;
     {
 	char ch;
 	struct schain_s *param1;
-	register char *reglineptr;
-	register char *stringptr;
+	REGISTER _CONST char *reglineptr;
+	REGISTER char *stringptr;
 
 	++maclevel;
 	(--macstak)->text = symptr->value_reg_or_op.text;
@@ -89,7 +88,7 @@ struct sym_s *symptr;
 
 /* MACRO pseudo-op */
 
-PUBLIC void pmacro()
+PUBLIC void pmacro P0()
 {
     bool_t saving;
     bool_t savingc;
@@ -151,8 +150,8 @@ PUBLIC void pmacro()
 	if (!saving)
 	    continue;
 	{
-	    register char *reglineptr;
-	    register char *regheapptr;
+	    REGISTER _CONST char *reglineptr;
+	    REGISTER char *regheapptr;
 
 	    reglineptr = linebuf;
 	    regheapptr = heapptr;

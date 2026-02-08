@@ -28,7 +28,7 @@ EXTERN unsigned totwarn;	/* total warnings */
 
 /* bookeeping for current line */
 
-EXTERN char *linebuf;		/* buffer */
+EXTERN _CONST char *linebuf;	/* buffer */
 
 /* for symbol table routines */
 
