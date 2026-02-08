@@ -25,10 +25,10 @@
 #include	<rmsdef.h>
 #endif
 
-FILE_LOCAL void doinclude _CPP_PROTO((void));
-FILE_LOCAL void doif _CPP_PROTO((int hash));
-FILE_LOCAL int openinclude _CPP_PROTO((char *filename, int searchlocal));
-FILE_LOCAL int hasdirectory _CPP_PROTO((char *source, char *result));
+FILE_LOCAL void doinclude P((void));
+FILE_LOCAL void doif P((int hash));
+FILE_LOCAL int openinclude P((char *filename, int searchlocal));
+FILE_LOCAL int hasdirectory P((char *source, char *result));
 
 /*
  * Generate (by hand-inspection) a set of unique values for each control
@@ -56,8 +56,8 @@ FILE_LOCAL int hasdirectory _CPP_PROTO((char *source, char *result));
 #endif
 
 int
-control(counter)
-int		counter;	/* Pending newline counter		*/
+control P1(int, counter)
+/*int		counter;*/	/* Pending newline counter		*/
 /*
  * Process #control lines.  Simple commands are processed inline,
  * while complex commands have their own subroutines.
@@ -67,10 +67,10 @@ int		counter;	/* Pending newline counter		*/
  * the end of the previous line if cpp is invoked with the -C option.
  */
 {
-	register int		c;
-	register char		*tp;
-	register int		hash;
-	char			*ep;
+	REGISTER int		c;
+	REGISTER _CONST char	*tp;
+	REGISTER int		hash;
+	_CONST char		*ep;
 
 	c = skipws();
 	if (c == '\n' || c == EOF_CHAR)
@@ -167,7 +167,7 @@ dump_line:	skipnl();			/* Ignore rest of line	*/
 	    if (*tp != EOS) {			/* Got a filename, so:	*/
 		if (*tp == '"' && (ep = strrchr(tp + 1, '"')) != NULL) {
 		    tp++;			/* Skip over left quote	*/
-		    *ep = EOS;			/* And ignore right one	*/
+		    *(char *)ep = EOS;		/* And ignore right one	*/  /* This modifies `work' in place. */
 		}
 		if (infile->progname != NULL)	/* Give up the old name	*/
 		    free(infile->progname);	/* if it's allocated.	*/
@@ -298,8 +298,7 @@ nest_err:	cerror("#%s must be in an #if", token);
 }
 
 FILE_LOCAL
-void doif(hash)
-int		hash;
+void doif P1(int, hash)
 /*
  * Process an #if, #ifdef, or #ifndef.  The latter two are straightforward,
  * while #if needs a subroutine of its own to evaluate the expression.
@@ -309,8 +308,8 @@ int		hash;
  * supresses unnecessary warnings.
  */
 {
-	register int		c;
-	register int		found;
+	REGISTER int		c;
+	REGISTER int		found;
 
 	if ((c = skipws()) == '\n' || c == EOF_CHAR) {
 	    unget();
@@ -344,7 +343,7 @@ badif:	cerror("#if, #ifdef, or #ifndef without an argument", NULLST);
 }
 
 FILE_LOCAL
-void doinclude()
+void doinclude P0()
 /*
  * Process the #include control line.
  * There are three variations:
@@ -360,8 +359,8 @@ void doinclude()
  * This restriction is unnecessary and not implemented.
  */
 {
-	register int		c;
-	register int		delim;
+	REGISTER int		c;
+	REGISTER int		delim;
 #if HOST == SYS_VMS
 	char			def_filename[NAM$C_MAXRSS + 1];
 #endif
@@ -414,9 +413,9 @@ incerr:	cerror("#include syntax error", NULLST);
 }
 
 FILE_LOCAL
-int openinclude(filename, searchlocal)
-char		*filename;		/* Input file name		*/
-int		searchlocal;		/* TRUE if #include "file"	*/
+int openinclude P2(char *, filename, int, searchlocal)
+/*char		*filename;*/		/* Input file name		*/
+/*int		searchlocal;*/		/* TRUE if #include "file"	*/
 /*
  * Actually open an include file.  This routine is only called from
  * doinclude() above, but was written as a separate subroutine for
@@ -426,7 +425,7 @@ int		searchlocal;		/* TRUE if #include "file"	*/
  * if openinclude() fails.  No error message is printed.
  */
 {
-	register char		**incptr;
+	REGISTER char _CONST	**incptr;
 #if HOST == SYS_VMS
 #if NWORK < (NAM$C_MAXRSS + 1)
 #  error NWORK is not greater than NAM$C_MAXRSS
@@ -486,9 +485,9 @@ int		searchlocal;		/* TRUE if #include "file"	*/
 }
 
 FILE_LOCAL
-int hasdirectory(source, result)
-char		*source;	/* Directory to examine			*/
-char		*result;	/* Put directory stuff here		*/
+int hasdirectory P2(char *, source, char *, result)
+/*char		*source;*/	/* Directory to examine			*/
+/*char		*result;*/	/* Put directory stuff here		*/
 /*
  * If a device or directory is found in the source filename string, the
  * node/device/directory part of the string is copied to result and
@@ -496,7 +495,7 @@ char		*result;	/* Put directory stuff here		*/
  */
 {
 #if HOST == SYS_UNIX
-	register char		*tp;
+	REGISTER char		*tp;
 
 	if ((tp = strrchr(source, '/')) == NULL)
 	    return (FALSE);
@@ -517,7 +516,7 @@ char		*result;	/* Put directory stuff here		*/
 	/*
 	 * Random DEC operating system (RSX, RT11, RSTS/E)
 	 */
-	register char		*tp;
+	REGISTER char		*tp;
 
 	if ((tp = strrchr(source, ']')) == NULL
 	 && (tp = strrchr(source, ':')) == NULL)
@@ -541,10 +540,10 @@ char		*result;	/* Put directory stuff here		*/
 #define DEVDIR (NAM$M_EXP_DEV | NAM$M_EXP_DIR)
 
 FILE_LOCAL int
-vmsparse(source, defstring, result)
-char		*source;
-char		*defstring;	/* non-NULL -> default string.		*/
-char		*result;	/* Size is at least NAM$C_MAXRSS + 1	*/
+vmsparse P3(char *, source, char *, defstring, char *, result)
+/*char		*source;*/
+/*char		*defstring;*/	/* non-NULL -> default string.		*/
+/*char		*result;*/	/* Size is at least NAM$C_MAXRSS + 1	*/
 /*
  * Parse the source string, applying the default (properly, using
  * the system parse routine), storing it in result.
@@ -557,7 +556,7 @@ char		*result;	/* Size is at least NAM$C_MAXRSS + 1	*/
 	struct FAB	fab = cc$rms_fab;	/* File access block	*/
 	struct NAM	nam = cc$rms_nam;	/* File name block	*/
 	char		fullname[NAM$C_MAXRSS + 1];
-	register char	*rp;			/* Result pointer	*/
+	REGISTER char	*rp;			/* Result pointer	*/
 
 	fab.fab$l_nam = &nam;			/* fab -> nam		*/
 	fab.fab$l_fna = source;			/* Source filename	*/

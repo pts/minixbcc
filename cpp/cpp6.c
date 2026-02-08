@@ -26,7 +26,7 @@
 #include	"cppdef.h"
 #include	"cpp.h"
 
-FILE_LOCAL void domsg _CPP_PROTO((int argtype, char *severity, char *format, char *sarg, int narg));
+FILE_LOCAL void domsg P((int argtype, _CONST char *severity, _CONST char *format, _CONST char *sarg, int narg));
 
 /*
  * skipnl()	skips over input text to the end of the line.
@@ -122,12 +122,12 @@ OP_LPA,OP_RPA,OP_MUL,OP_ADD,   000,OP_SUB,   DOT,OP_DIV, /* 28 ()*+,-./	*/
    000,   000,   000,   000,   000,   000,   000,   000, /*   80 .. FF	*/
 };
 
-void skipnl()
+void skipnl P0()
 /*
  * Skip to the end of the current input line.
  */
 {
-	register int		c;
+	REGISTER int		c;
 
 	do {				/* Skip to newline	*/
 	    c = get();
@@ -135,12 +135,12 @@ void skipnl()
 }
 
 int
-skipws()
+skipws P0()
 /*
  * Skip over whitespace
  */
 {
-	register int		c;
+	REGISTER int		c;
 
 	do {				/* Skip whitespace	*/
 	    c = get();
@@ -152,15 +152,15 @@ skipws()
 	return (c);
 }
 
-void scanid(c)
-register int	c;				/* First char of id	*/
+void scanid P1(REGISTER int, c)
+/*REGISTER int	c;*/				/* First char of id	*/
 /*
  * Get the next token (an id) into the token buffer.
  * Note: this code is duplicated in lookid().
  * Change one, change both.
  */
 {
-	register char	*bp;
+	REGISTER char	*bp;
 
 	if (c == DEF_MAGIC)			/* Eat the magic token	*/
 	    c = get();				/* undefiner.		*/
@@ -175,8 +175,8 @@ register int	c;				/* First char of id	*/
 }
 
 int
-macroid(c)
-register int		c;
+macroid P1(REGISTER int, c)
+/*REGISTER int		c;*/
 /*
  * If c is a letter, scan the id.  if it's #defined, expand it and scan
  * the next character and try again.
@@ -184,7 +184,7 @@ register int		c;
  * Else, return the character.  If type[c] is a LET, the token is in token.
  */
 {
-	register DEFBUF	*dp;
+	REGISTER DEFBUF	*dp;
 
 	if (infile != NULL && infile->fp != NULL)
 	    recursion = 0;
@@ -196,7 +196,7 @@ register int		c;
 }
 
 int
-catenate()
+catenate P0()
 /*
  * A token was just read (via macroid).
  * If the next character is TOK_SEP, concatenate the next token
@@ -205,8 +205,8 @@ catenate()
  * and return FALSE.
  */
 {
-	register int		c;
-	register char		*token1;
+	REGISTER int		c;
+	REGISTER char		*token1;
 
 #if OK_CONCAT
 	if (get() != TOK_SEP) {			/* Token concatenation	*/
@@ -261,16 +261,18 @@ catenate()
 #endif
 }
 
-int scanstring(delim, outfun)
-register int	delim;				/* ' or "		*/
-void		(*outfun) _CPP_PROTO((int c));	/* Output function	*/
+typedef void (*outfun_t) P((int c));
+
+int scanstring P2(REGISTER int, delim, outfun_t, outfun)
+/*REGISTER int	delim;*/		/* ' or "		*/
+/*void		(*outfun) P((int c));*/	/* Output function	*/
 /*
  * Scan off a string.  Warning if terminated by newline or EOF.
  * outfun() outputs the character -- to a buffer if in a macro.
  * TRUE if ok, FALSE if error.
  */
 {
-	register int		c;
+	REGISTER int		c;
 
 	instring = TRUE;		/* Don't strip comments		*/
 	(*outfun)(delim);
@@ -297,15 +299,15 @@ void		(*outfun) _CPP_PROTO((int c));	/* Output function	*/
 	}
 }
 
-void scannumber(c, outfun)
-register int	c;				/* First char of number	*/
-register void	(*outfun) _CPP_PROTO((int c));	/* Output/store func	*/
+void scannumber P2(REGISTER int, c, REGISTER outfun_t, outfun)
+/*REGISTER int	c;*/			/* First char of number	*/
+/*REGISTER void	(*outfun) P((int c));*/	/* Output/store func	*/
 /*
  * Process a number.  We know that c is from 0 to 9 or dot.
  * Algorithm from Dave Conroy's Decus C.
  */
 {
-	register int	radix;			/* 8, 10, or 16		*/
+	REGISTER int	radix;			/* 8, 10, or 16		*/
 	int		expseen;		/* 'e' seen in floater	*/
 	int		signseen;		/* '+' or '-' seen	*/
 	int		octal89;		/* For bad octal test	*/
@@ -423,8 +425,7 @@ nomore:	unget();				/* Not part of a number	*/
 	    cwarn("Illegal digit in octal number", NULLST);
 }
 
-void save(c)
-register int	c;
+void save P1(REGISTER int, c)
 {
 	if (workp >= &work[NWORK]) {
 	    work[NWORK-1] = '\0';
@@ -434,29 +435,28 @@ register int	c;
 }
 
 char *
-savestring(text)
-char		*text;
+savestring P1(_CONST char *, text)
 /*
  * Store a string into free memory.
  */
 {
-	register char	*result;
+	REGISTER char	*result;
 
 	result = getmem(strlen(text) + 1);
 	strcpy(result, text);
 	return (result);
 }
 
-FILEINFO	*
-getfile(bufsize, name)
-int		bufsize;		/* Line or define buffer size	*/
-char		*name;			/* File or macro name string	*/
+FILEINFO *
+getfile P2(int, bufsize, _CONST char *, name)
+/*int		bufsize;*/		/* Line or define buffer size	*/
+/*char		*name;*/		/* File or macro name string	*/
 /*
  * Common FILEINFO buffer initialization for a new file or macro.
  */
 {
-	register FILEINFO	*file;
-	register int		size;
+	REGISTER FILEINFO	*file;
+	REGISTER int		size;
 
 	size = strlen(name);			/* File/macro name	*/
 	file = (FILEINFO *) getmem(sizeof (FILEINFO) + bufsize + size);
@@ -476,13 +476,12 @@ char		*name;			/* File or macro name string	*/
 }
 
 char *
-getmem(size)
-int		size;
+getmem P1(int, size)
 /*
  * Get a block of free memory.
  */
 {
-	register char	*result;
+	REGISTER char	*result;
 
 	if ((result = (char*) malloc((unsigned) size)) == (char*) 0)
 	    cfatal("Out of memory", NULLST);
@@ -508,16 +507,16 @@ int		size;
 static DEFBUF	*symtab[SBSIZE];	/* Symbol table queue headers	*/
 
 DEFBUF *
-lookid(c)
-int	c;				/* First character of token	*/
+lookid P1(int, c)
+/*int	c;*/				/* First character of token	*/
 /*
  * Look for the next token in the symbol table.  Returns token in "token".
  * If found, returns the table pointer;  Else returns NULL.
  */
 {
-	register int		nhash;
-	register DEFBUF		*dp;
-	register char		*np;
+	REGISTER int		nhash;
+	REGISTER DEFBUF		*dp;
+	REGISTER char		*np;
 	int			temp;
 	int			isrecurse;	/* For #define foo foo	*/
 
@@ -549,19 +548,19 @@ int	c;				/* First character of token	*/
 }
 
 DEFBUF *
-defendel(name, delete)
-char		*name;
-int		delete;			/* TRUE to delete a symbol	*/
+defendel P2(_CONST char *, name, int, delete_)
+/*char		*name;*/
+/*int		delete_;*/		/* TRUE to delete a symbol	*/
 /*
- * Enter this name in the lookup table (delete = FALSE)
- * or delete this name (delete = TRUE).
- * Returns a pointer to the define block (delete = FALSE)
- * Returns NULL if the symbol wasn't defined (delete = TRUE).
+ * Enter this name in the lookup table (delete_ = FALSE)
+ * or delete this name (delete_ = TRUE).
+ * Returns a pointer to the define block (delete_ = FALSE)
+ * Returns NULL if the symbol wasn't defined (delete_ = TRUE).
  */
 {
-	register DEFBUF		*dp;
-	register DEFBUF		**prevp;
-	register char		*np;
+	REGISTER DEFBUF		*dp;
+	REGISTER DEFBUF		**prevp;
+	REGISTER _CONST char	*np;
 	int			nhash;
 	int			temp;
 	int			size;
@@ -586,7 +585,7 @@ int		delete;			/* TRUE to delete a symbol	*/
 	    }
 	    prevp = &dp->link;
 	}
-	if (!delete) {
+	if (!delete_) {
 	    dp = (DEFBUF *) getmem(sizeof (DEFBUF) + size);
 	    dp->link = *prevp;
 	    *prevp = dp;
@@ -600,11 +599,10 @@ int		delete;			/* TRUE to delete a symbol	*/
 
 #if DEBUG
 
-dumpdef(why)
-char		*why;
+void dumpdef P1(char *, why)
 {
-	register DEFBUF		*dp;
-	register DEFBUF		**syp;
+	REGISTER DEFBUF		*dp;
+	REGISTER DEFBUF		**syp;
 
 	printf("CPP symbol table dump %s\n", why);
 	for (syp = symtab; syp < &symtab[SBSIZE]; syp++) {
@@ -617,12 +615,11 @@ char		*why;
 	}
 }
 
-dumpadef(why, dp)
-char		*why;			/* Notation			*/
-register DEFBUF	*dp;
+void dumpadef2 P2(char *, why, REGISTER DEFBUF *, dp)
+/*char		*why;*/			/* Notation			*/
 {
-	register char		*cp;
-	register int		c;
+	REGISTER char		*cp;
+	REGISTER int		c;
 
 	printf(" \"%s\" [%d]", dp->name, dp->nargs);
 	if (why != NULL)
@@ -652,15 +649,15 @@ register DEFBUF	*dp;
  */
 
 int
-get()
+get P0()
 /*
  * Return the next character from a macro or the current file.
  * Handle end of file from #include files.
  */
 {
-	register int		c;
-	register FILEINFO	*file;
-	register int		popped;		/* Recursion fixup	*/
+	REGISTER int		c;
+	REGISTER FILEINFO	*file;
+	REGISTER int		popped;		/* Recursion fixup	*/
 
 	popped = 0;
 get_from_file:
@@ -846,8 +843,7 @@ static char	tritext[] = "=(/)'<!>-\0#[\\]^{|}~";
  *			  this becomes this
  */
 
-void trigraph(in)
-register char		*in;
+void trigraph P1(REGISTER _CONST char *, in)
 /*
  * Perform in-place trigraph replacement on an input text line.
  * This was added to the Draft Standard.  In an input text
@@ -856,7 +852,7 @@ register char		*in;
  * There are problems with trigraphs, and this code may not last long.
  */
 {
-	register char	*tp;
+	REGISTER char	*tp;
 	extern char	*strchr();
 
 	while ((in = strchr(in, '?')) != NULLST) {
@@ -873,7 +869,7 @@ register char		*in;
 }
 #endif
 
-void unget()
+void unget P0()
 /*
  * Backup the pointer to reread the last character.  Fatal error
  * (code bug) if we backup too far.  unget() may be called,
@@ -881,7 +877,7 @@ void unget()
  * be ungotten.  If you need to unget more, call ungetstring().
  */
 {
-	register FILEINFO	*file;
+	REGISTER FILEINFO	*file;
 
 	if ((file = infile) == NULL)
 	    return;			/* Unget after EOF		*/
@@ -891,27 +887,26 @@ void unget()
 	    --line;			/* Unget the line number, too	*/
 }
 
-void ungetstring(text)
-char		*text;
+void ungetstring P1(_CONST char *, text)
 /*
  * Push a string back on the input stream.  This is done by treating
  * the text as if it were a macro.
  */
 {
-	register FILEINFO	*file;
+	REGISTER FILEINFO	*file;
 
 	file = getfile(strlen(text) + 1, "");
 	strcpy(file->buffer, text);
 }
 
 int
-cget()
+cget P0()
 /*
  * Get one character, absorb "funny space" after comments or
  * token concatenation
  */
 {
-	register int	c;
+	REGISTER int	c;
 
 	do {
 	    c = get();
@@ -931,18 +926,18 @@ cget()
  */
 
 FILE_LOCAL
-void domsg(argtype, severity, format, sarg, narg)
-int		argtype;		/* 'S' for string, 'I' for int. */
-char		*severity;		/* "Error", "Warning", "Fatal"	*/
-char		*format;		/* Format for the error message	*/
-char		*sarg;			/* String argument of the format. */
-int		narg;			/* int argument of the format. */
+void domsg P5(int, argtype, _CONST char *, severity, _CONST char *, format, _CONST char *, sarg, int, narg)
+/*int		argtype;*/		/* 'S' for string, 'I' for int. */
+/*char		*severity;*/		/* "Error", "Warning", "Fatal"	*/
+/*char		*format;*/		/* Format for the error message	*/
+/*char		*sarg;*/		/* String argument of the format. */
+/*int		narg;*/			/* int argument of the format. */
 /*
  * Print filenames, macro names, and line numbers for error messages.
  */
 {
-	register char		*tp;
-	register FILEINFO	*file;
+	REGISTER _CONST char	*tp;
+	REGISTER FILEINFO	*file;
 
 	fprintf(stderr, "%sline %d, %s: ", MSG_PREFIX, line, severity);
 	if (argtype == 'S')
@@ -973,9 +968,8 @@ int		narg;			/* int argument of the format. */
 	}
 }
 
-void cerror(format, sarg)
-char		*format;
-char		*sarg;		/* Single string argument		*/
+void cerror P2(_CONST char *, format, _CONST char *, sarg)
+/*char		*sarg;*/	/* Single string argument		*/
 /*
  * Print a normal error message, string argument.
  */
@@ -984,9 +978,8 @@ char		*sarg;		/* Single string argument		*/
 	errors++;
 }
 
-void cierror(format, narg)
-char		*format;
-int		narg;		/* Single numeric argument		*/
+void cierror P2(_CONST char *, format, int, narg)
+/*int		narg;*/		/* Single numeric argument		*/
 /*
  * Print a normal error message, numeric argument.
  */
@@ -995,9 +988,8 @@ int		narg;		/* Single numeric argument		*/
 	errors++;
 }
 
-void cfatal(format, sarg)
-char		*format;
-char		*sarg;			/* Single string argument	*/
+void cfatal P2(_CONST char *, format, _CONST char *, sarg)
+/*char		*sarg;*/		/* Single string argument	*/
 /*
  * A real disaster
  */
@@ -1006,9 +998,8 @@ char		*sarg;			/* Single string argument	*/
 	exit(IO_ERROR);
 }
 
-void cwarn(format, sarg)
-char		*format;
-char		*sarg;			/* Single string argument	*/
+void cwarn P2(_CONST char *, format, _CONST char *, sarg)
+/*char		*sarg;*/		/* Single string argument	*/
 /*
  * A non-fatal error, string argument.
  */
@@ -1016,9 +1007,8 @@ char		*sarg;			/* Single string argument	*/
 	domsg('S', "Warning", format, sarg, 0);
 }
 
-void ciwarn(format, narg)
-char		*format;
-int		narg;			/* Single numeric argument	*/
+void ciwarn P2(_CONST char *, format, int, narg)
+/*int		narg;*/			/* Single numeric argument	*/
 /*
  * A non-fatal error, numeric argument.
  */

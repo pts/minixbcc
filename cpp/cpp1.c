@@ -96,9 +96,9 @@
 #include	"cppdef.h"
 #include	"cpp.h"
 
-FILE_LOCAL void cppmain _CPP_PROTO((void));
-FILE_LOCAL void sharp _CPP_PROTO((void));
-FILE_LOCAL void output _CPP_PROTO((int c));
+FILE_LOCAL void cppmain P((void));
+FILE_LOCAL void sharp P((void));
+FILE_LOCAL void output P((int c));
 
 /*
  * Commonly used global variables:
@@ -205,8 +205,8 @@ char		*ifptr = ifstack;		/* -> current ifstack[] */
  * incdir[] stores the -i directories (and the system-specific
  * #include <...> directories.
  */
-char	*incdir[NINCLUDE];		/* -i directories		*/
-char	**incend = incdir;		/* -> free space in incdir[]	*/
+_CONST char *incdir[NINCLUDE];		/* -i directories		*/
+_CONST char **incend = incdir;		/* -> free space in incdir[]	*/
 
 /*
  * This is the table used to predefine target machine and operating
@@ -214,7 +214,7 @@ char	**incend = incdir;		/* -> free space in incdir[]	*/
  * Note: it is not clear that this is part of the Ansi Standard.
  * The -N option supresses preset definitions.
  */
-char	*preset[] = {			/* names defined at cpp start	*/
+_CONST char *preset[] = {		/* names defined at cpp start	*/
 #ifdef	MACHINE
 	MACHINE,
 #endif
@@ -234,19 +234,17 @@ char	*preset[] = {			/* names defined at cpp start	*/
  * The value of these predefined symbols must be recomputed whenever
  * they are evaluated.  The order must not be changed.
  */
-char	*magic[] = {			/* Note: order is important	*/
+_CONST char *magic[] = {		/* Note: order is important	*/
 	"__LINE__",
 	"__FILE__",
 	NULL				/* Must be last			*/
 };
 
-int main _CPP_PROTO((int argc, char *argv[]));
+int main P((int argc, char *argv[]));
 
-int main(argc, argv)
-int		argc;
-char		*argv[];
+int main P2(int, argc, char **, argv)
 {
-	register int	i;
+	REGISTER int	i;
 
 #if HOST == SYS_VMS
 	argc = getredirection(argc, argv);	/* vms >file and <file	*/
@@ -326,15 +324,15 @@ char		*argv[];
 }
 
 FILE_LOCAL
-void cppmain()
+void cppmain P0()
 /*
  * Main process for cpp -- copies tokens from the current input
  * stream (main file, include file, or a macro) to the output
  * file.
  */
 {
-	register int		c;		/* Current character	*/
-	register int		counter;	/* newlines and spaces	*/
+	REGISTER int		c;		/* Current character	*/
+	REGISTER int		counter;	/* newlines and spaces	*/
 
 	/*
 	 * Explicitly output a #line at the start of cpp output so
@@ -445,8 +443,7 @@ end_line:   if (c == '\n') {			/* Compiling at EOL?	*/
 }
 
 FILE_LOCAL
-void output(c)
-int		c;
+void output P1(int, c)
 /*
  * Output one character to stdout -- output() is passed as an
  * argument to scanstring()
@@ -463,12 +460,12 @@ int		c;
 static char	*sharpfilename = NULL;
 
 FILE_LOCAL
-void sharp()
+void sharp P0()
 /*
  * Output a line number line.
  */
 {
-	register char		*name;
+	REGISTER char		*name;
 
 	if (keepcomments)			/* Make sure # comes on	*/
 	    putchar('\n');			/* a fresh, new line.	*/

@@ -21,8 +21,8 @@
 #include	"cppdef.h"
 #include	"cpp.h"
 
-FILE_LOCAL int expcollect _CPP_PROTO((void));
-FILE_LOCAL void expstuff _CPP_PROTO((DEFBUF *tokenp));
+FILE_LOCAL int expcollect P((void));
+FILE_LOCAL void expstuff P((DEFBUF *tokenp));
 
 /*
  * parm[], parmp, and parlist[] are used to store #define() argument
@@ -33,7 +33,7 @@ static char	*parmp;			/* Free space in parm		*/
 static char	*parlist[LASTPARM];	/* -> start of each parameter	*/
 static int	nargs;			/* Parameters for this macro	*/
 
-void dodefine()
+void dodefine P0()
 /*
  * Called from control when a #define is scanned.  This module
  * parses formal parameters and the replacement string.  When
@@ -72,8 +72,8 @@ void dodefine()
  *		in a manner analogous to textput().
  */
 {
-	register int		c;
-	register DEFBUF		*dp;		/* -> new definition	*/
+	REGISTER int		c;
+	REGISTER DEFBUF		*dp;		/* -> new definition	*/
 	int			isredefine;	/* TRUE if redefined	*/
 	char			*old;		/* Remember redefined	*/
 
@@ -220,9 +220,7 @@ bad_define:
 	inmacro = FALSE;			/* Stop <newline> hack	*/
 }
 
-void checkparm(c, dp)
-register int	c;
-DEFBUF		*dp;
+void checkparm P2(REGISTER int, c, DEFBUF *, dp)
 /*
  * Replace this param if it's defined.  Note that the macro name is a
  * possible replacement token.  We stuff DEF_MAGIC in front of the token
@@ -231,8 +229,8 @@ DEFBUF		*dp;
  * looping if someone writes "#define foo foo".
  */
 {
-	register int		i;
-	register char		*cp;
+	REGISTER int		i;
+	REGISTER char		*cp;
 
 	scanid(c);				/* Get parm to token[]	*/
 	for (i = 0; i < nargs; i++) {		/* For each argument	*/
@@ -248,9 +246,7 @@ DEFBUF		*dp;
 }
 
 #if STRING_FORMAL
-void stparmscan(delim, dp)
-int		delim;
-register DEFBUF	*dp;
+void stparmscan P2(int, delim, REGISTER DEFBUF *, dp)
 /*
  * Scan the string (starting with the given delimiter).
  * The token is replaced if it is the only text in this string or
@@ -258,7 +254,7 @@ register DEFBUF	*dp;
  * Note that scanstring() has approved of the string.
  */
 {
-	register int		c;
+	REGISTER int		c;
 
 	/*
 	 * Warning -- this code hasn't been tested for a while.
@@ -285,14 +281,13 @@ register DEFBUF	*dp;
 	save(c);
 }
 #else
-void stparmscan(delim)
-int		delim;
+void stparmscan P1(int, delim)
 /*
  * Normal string parameter scan.
  */
 {
-	register char		*wp;
-	register int		i;
+	REGISTER char		*wp;
+	REGISTER int		i;
 
 	wp = workp;			/* Here's where it starts	*/
 	if (!scanstring(delim, save))
@@ -312,13 +307,13 @@ int		delim;
 }
 #endif
 
-void doundef()
+void doundef P0()
 /*
  * Remove the symbol from the defined list.
  * Called from the #control processor.
  */
 {
-	register int		c;
+	REGISTER int		c;
 
 	if (type[(c = skipws())] != LET)
 	    cerror("Illegal #undef argument", NULLST);
@@ -332,13 +327,12 @@ void doundef()
 	}
 }
 
-void textput(text)
-char		*text;
+void textput P1(_CONST char *, text)
 /*
  * Put the string in the parm[] buffer.
  */
 {
-	register int	size;
+	REGISTER int	size;
 
 	size = strlen(text) + 1;
 	if ((parmp + size) >= &parm[NPARMWORK])
@@ -349,8 +343,7 @@ char		*text;
 	}
 }
 
-void charput(c)
-register int	c;
+void charput P1(REGISTER int, c)
 /*
  * Put the byte in the parm[] buffer.
  */
@@ -368,8 +361,7 @@ register int	c;
 
 static DEFBUF	*macro;		/* Catches start of infinite macro	*/
 
-void expand(tokenp)
-register DEFBUF	*tokenp;
+void expand P1(REGISTER DEFBUF *, tokenp)
 /*
  * Expand a macro.  Called from the cpp mainline routine (via subroutine
  * macroid()) when a token is found in the symbol table.  It calls
@@ -380,8 +372,8 @@ register DEFBUF	*tokenp;
  * off the end of the macro line, it will dismiss the macro itself.)
  */
 {
-	register int		c;
-	register FILEINFO	*file;
+	REGISTER int		c;
+	REGISTER FILEINFO	*file;
 
 #if DEBUG
 	if (debug)
@@ -465,13 +457,13 @@ register DEFBUF	*tokenp;
 }
 
 FILE_LOCAL
-int expcollect()
+int expcollect P0()
 /*
  * Collect the actual parameters for this macro.  TRUE if ok.
  */
 {
-	register int	c;
-	register int	paren;			/* For embedded ()'s	*/
+	REGISTER int	c;
+	REGISTER int	paren;			/* For embedded ()'s	*/
 
 	for (;;) {
 	    paren = 0;				/* Collect next arg.	*/
@@ -527,15 +519,15 @@ int expcollect()
 }
 
 FILE_LOCAL
-void expstuff(tokenp)
-DEFBUF		*tokenp;		/* Current macro being expanded	*/
+void expstuff P1(DEFBUF *, tokenp)
+/*DEFBUF	*tokenp;*/		/* Current macro being expanded	*/
 /*
  * Stuff the macro body, replacing formal parameters by actual parameters.
  */
 {
-	register int	c;			/* Current character	*/
-	register char	*inp;			/* -> repl string	*/
-	register char	*defp;			/* -> macro output buff	*/
+	REGISTER int	c;			/* Current character	*/
+	REGISTER char	*inp;			/* -> repl string	*/
+	REGISTER char	*defp;			/* -> macro output buff	*/
 	int		size;			/* Actual parm. size	*/
 	char		*defend;		/* -> output buff end	*/
 	int		string_magic;		/* String formal hack	*/
@@ -588,13 +580,12 @@ nospace:	    cfatal("Out of space in macro \"%s\" arg expansion",
 }
 
 #if DEBUG
-dumpparm(why)
-char		*why;
+dumpparm P1(char *, why)
 /*
  * Dump parameter list.
  */
 {
-	register int	i;
+	REGISTER int	i;
 
 	printf("dump of %d parameters (%d bytes total) %s\n",
 	    nargs, parmp - parm, why);

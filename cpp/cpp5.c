@@ -21,12 +21,12 @@
 #include	"cppdef.h"
 #include	"cpp.h"
 
-FILE_LOCAL int evallex _CPP_PROTO((int skip));
-FILE_LOCAL int dosizeof _CPP_PROTO((void));
-FILE_LOCAL int bittest _CPP_PROTO((int value));
-FILE_LOCAL int evalnum _CPP_PROTO((int c));
-FILE_LOCAL int evalchar _CPP_PROTO((int skip));
-FILE_LOCAL int *evaleval _CPP_PROTO((int *valp, int op, int skip));  /* Does actual evaluation. */
+FILE_LOCAL int evallex P((int skip));
+FILE_LOCAL int dosizeof P((void));
+FILE_LOCAL int bittest P((int value));
+FILE_LOCAL int evalnum P((int c));
+FILE_LOCAL int evalchar P((int skip));
+FILE_LOCAL int *evaleval P((int *valp, int op, int skip));  /* Does actual evaluation. */
 
 #define cpp_isascii(c) ((unsigned) (c) <= 127)  /* isascii(...) is not in ANSI C (C89), so we provide our own implementation */
 
@@ -34,7 +34,7 @@ FILE_LOCAL int *evaleval _CPP_PROTO((int *valp, int op, int skip));  /* Does act
  * Evaluate an #if expression.
  */
 
-static char	*opname[] = {		/* For debug and error messages	*/
+static _CONST char *opname[] = {		/* For debug and error messages	*/
 "end of expression", "val", "id",
   "+",   "-",  "*",  "/",  "%",
   "<<", ">>",  "&",  "|",  "^",
@@ -97,15 +97,13 @@ static int	evalue;			/* Current value from evallex()	*/
 
 #ifdef	nomacargs
 FILE_LOCAL int
-isbinary(op)
-register int	op;
+isbinary P1(REGISTER int, op)
 {
 	return (op >= FIRST_BINOP && op <= LAST_BINOP);
 }
 
 FILE_LOCAL int
-isunary(op)
-register int	op;
+isunary P1(REGISTER int, op)
 {
 	return (op >= FIRST_UNOP && op <= LAST_UNOP);
 }
@@ -155,12 +153,12 @@ register int	op;
 #define	S_PDOUBLE	(sizeof (double *))
 #endif
 #ifndef	S_PFPTR
-#define S_PFPTR		(sizeof (int (*) _CPP_PROTO((void))))
+#define S_PFPTR		(sizeof (int (*) P((void))))
 #endif
 
 typedef struct types {
     short	type;			/* This is the bit if		*/
-    char	*name;			/* this is the token word	*/
+    _CONST char	*name;			/* this is the token word	*/
 } TYPES;
 
 static TYPES basic_types[] = {
@@ -204,7 +202,7 @@ SIZES size_table[] = {
 };
 
 int
-eval()
+eval P0()
 /*
  * Evaluate an expression.  Straight-forward operator precedence.
  * This is called from control() on encountering an #if statement.
@@ -218,9 +216,9 @@ eval()
  * if a syntax error is detected.
  */
 {
-	register int	op;		/* Current operator		*/
-	register int	*valp;		/* -> value vector		*/
-	register OPTAB	*opp;		/* Operator stack		*/
+	REGISTER int	op;		/* Current operator		*/
+	REGISTER int	*valp;		/* -> value vector		*/
+	REGISTER OPTAB	*opp;		/* Operator stack		*/
 	int		prec;		/* Op precedence		*/
 	int		binop;		/* Set if binary op. needed	*/
 	int		op1;		/* Operand from stack		*/
@@ -373,8 +371,8 @@ again:	;
 }
 
 FILE_LOCAL
-int evallex(skip)
-int		skip;		/* TRUE if short-circuit evaluation	*/
+int evallex P1(int, skip)
+/*int		skip;*/		/* TRUE if short-circuit evaluation	*/
 /*
  * Return next eval operator or value.  Called from eval().  It
  * calls a special-purpose routines for 'char' strings and
@@ -383,7 +381,7 @@ int		skip;		/* TRUE if short-circuit evaluation	*/
  * evalnum	called to evaluate numbers.
  */
 {
-	register int	c, c1, t;
+	REGISTER int	c, c1, t;
 
 again:  do {					/* Collect the token	*/
 	    c = skipws();
@@ -492,7 +490,7 @@ again:  do {					/* Collect the token	*/
 }
 
 FILE_LOCAL
-int dosizeof()
+int dosizeof P0()
 /*
  * Process the sizeof (basic type) operation in an #if string.
  * Sets evalue to the size and returns
@@ -500,10 +498,10 @@ int dosizeof()
  *	OP_FAIL		bad parse or something.
  */
 {
-	register int	c;
-	register TYPES	*tp;
-	register SIZES	*sizp;
-	register short	*testp;
+	REGISTER int	c;
+	REGISTER TYPES	*tp;
+	REGISTER SIZES	*sizp;
+	REGISTER short	*testp;
 	short		typecode;
 
 	if ((c = skipws()) != '(')
@@ -599,11 +597,10 @@ nogood:	unget();
 }
 
 FILE_LOCAL
-int bittest(value)
+int bittest P1(int, value)
 /*
  * TRUE if value is zero or exactly one bit is set in value.
  */
-int value;
 {
 #if (4096 & ~(-4096)) == 0
 	return ((value & ~(-value)) == 0);
@@ -616,16 +613,15 @@ int value;
 }
 
 FILE_LOCAL
-int evalnum(c)
-register int	c;
+int evalnum P1(REGISTER int, c)
 /*
  * Expand number for #if lexical analysis.  Note: evalnum recognizes
  * the unsigned suffix, but only returns a signed int value.
  */
 {
-	register int	value;
-	register int	base;
-	register int	c1;
+	REGISTER int	value;
+	REGISTER int	base;
+	REGISTER int	c1;
 
 	if (c != '0')
 	    base = 10;
@@ -655,15 +651,15 @@ register int	c;
 }
 
 FILE_LOCAL
-int evalchar(skip)
-int		skip;		/* TRUE if short-circuit evaluation	*/
+int evalchar P1(int, skip)
+/*int		skip;*/			/* TRUE if short-circuit evaluation	*/
 /*
  * Get a character constant
  */
 {
-	register int	c;
-	register int	value;
-	register int	count;
+	REGISTER int	c;
+	REGISTER int	value;
+	REGISTER int	count;
 
 	instring = TRUE;
 	if ((c = cget()) == '\\') {
@@ -758,10 +754,8 @@ int		skip;		/* TRUE if short-circuit evaluation	*/
 }
 
 FILE_LOCAL
-int *evaleval(valp, op, skip)
-register int	*valp;
-int		op;
-int		skip;		/* TRUE if short-circuit evaluation	*/
+int *evaleval P3(REGISTER int *, valp, int, op, int, skip)
+/*int		skip;*/		/* TRUE if short-circuit evaluation	*/
 /*
  * Apply the argument operator to the data on the value stack.
  * One or two values are popped from the value stack and the result
@@ -772,7 +766,7 @@ int		skip;		/* TRUE if short-circuit evaluation	*/
  * evaleval() returns the new pointer to the top of the value stack.
  */
 {
-	register int	v1, v2;
+	REGISTER int	v1, v2;
 
 	v2 = isbinary(op) ? *--valp : 0;  /* Pacify GCC -Wmaybe-uninitialized by initializing v2 to 0. */
 	v1 = *--valp;
@@ -898,11 +892,11 @@ int		skip;		/* TRUE if short-circuit evaluation	*/
 }
 
 #ifdef	DEBUG_EVAL
-dumpstack(opstack, opp, value, valp)
-OPTAB		opstack[NEXP];	/* Operand stack		*/
-register OPTAB	*opp;		/* Operator stack		*/
-int		value[NEXP];	/* Value stack			*/
-register int	*valp;		/* -> value vector		*/
+dumpstack P4(OPTAB *, opstack, REGISTER OPTAB *, opp, int *, value, register int *, valp)
+/*OPTAB		opstack[NEXP];*/	/* Operand stack		*/
+/*REGISTER OPTAB *opp;*/		/* Operator stack		*/
+/*int		value[NEXP];*/		/* Value stack			*/
+/*REGISTER int	*valp;*/		/* -> value vector		*/
 {
 	printf("index op prec skip name -- op stack at %s", infile->bptr);
 	while (opp > opstack) {
