@@ -39,6 +39,29 @@ By being fully open source we mean the combination of the following:
   (such as config, system config or system header files), and there is no
   need to specify any settings (because the defaults are good enough)
 
+The most important differences from original BCC and Dev86 BCC:
+
+* In minixbcc, signed integer division consistently rounds towards 0. This
+  is consistent with C99 and the x86 idiv instruction. C89 allows either
+  rounding down or rounding towards 0. BCC and Dev86 BCC behave
+  inconsistently, depending on the target (i86 and i386), the type (int or
+  long), the divisor (whether it's a power of 2), and the libc with which the
+  compiler was compiled.
+* The latest Dev86 BCC has an optimizer, which makes the assembly output of
+  the C compiler frontend--backend shorter and faster. The output of the
+  optimizer is still assembly, and it is fed to the assembler. minixbcc
+  doesn't have an optimizer.
+* Lots of bugs have been fixed in (and features have also been added to)
+  Dev86 BCC between original BCC, Dev86 0.0.5 (1996-03-24) and Dev86
+  0.16.21f (2015-03-08). Most of these didn't make it to minixbcc.
+* The latest Dev86 BCC targets ELKS (i86), DOS (i86) and Linux (i386).
+  minixbcc targets Minix i86 and Minix i386. The original BCC targets
+  i86, i386 and MC6809.
+* minixbcc doesn't support any operations on floating-point types (float and
+  double). This is to make its code fit to 64 KiB even if compiled with
+  itself, a non-optimizing compiler. Original BCC and Dev86 BCC do support
+  floats.
+
 ## How to try it
 
 If you have a decent, modern Unix-like system (such as Linux, FreeBSD,
