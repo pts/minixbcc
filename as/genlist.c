@@ -82,9 +82,7 @@ FORWARD void paderrorline P((unsigned nspaces));
 
 /* format 1 byte number as 2 hex digits, return ptr to end */
 
-PRIVATE char *build_1hex_number(num, where)
-unsigned num;
-register char *where;
+PRIVATE char *build_1hex_number P2(unsigned, num, REGISTER char *, where)
 {
     static char hexdigits[] = "0123456789ABCDEF";
 
@@ -95,9 +93,7 @@ register char *where;
 
 /* format 2 byte number as 4 hex digits, return ptr to end */
 
-PUBLIC char *build_2hex_number(num, where)
-unsigned num;
-char *where;
+PUBLIC char *build_2hex_number P2(unsigned, num, char *, where)
 {
     return build_1hex_number(num, build_1hex_number(num >> 8, where));
 }
@@ -105,15 +101,12 @@ char *where;
 /* format 2 byte number as decimal with given width (pad with leading '0's) */
 /* return ptr to end */
 
-PUBLIC char *build_number(num, width, where)
-unsigned num;
-unsigned width;
-register char *where;
+PUBLIC char *build_number P3(unsigned, num, unsigned, width, REGISTER char *, where)
 {
     static unsigned powers_of_10[] = {1, 10, 100, 1000, 10000,};
     unsigned char digit;
     unsigned char power;
-    register unsigned power_of_10;
+    REGISTER unsigned power_of_10;
 
     power = 5;			/* actually 1 more than power */
     do
@@ -130,11 +123,10 @@ register char *where;
 
 /* record number and position of error (or error buffer overflow) */
 
-PUBLIC void error(errnum)
-error_pt errnum;
+PUBLIC void error P1(error_pt, errnum)
 {
-    register struct error_s *errptr;
-    register struct error_s *errptrlow;
+    REGISTER struct error_s *errptr;
+    REGISTER struct error_s *errptrlow;
     unsigned char position;
 
     if (errnum < MINWARN || warn.current)
@@ -166,7 +158,7 @@ error_pt errnum;
 /* list 1 line to list file if any errors or flags permit */
 /* list line to console as well if any errors and list file is not console */
 
-PUBLIC void listline()
+PUBLIC void listline P0()
 {
     if (!listpre)
     {
@@ -185,8 +177,7 @@ PUBLIC void listline()
 
 /* list 1 line unconditionally */
 
-PRIVATE void list1(fd)
-fd_t fd;
+PRIVATE void list1 P1(fd_t, fd)
 {
     innum = fd;
     listcode();
@@ -199,7 +190,7 @@ fd_t fd;
 
 /* list object code for 1 line */
 
-PRIVATE void listcode()
+PRIVATE void listcode P0()
 {
     unsigned char count;
     struct code_listing_s *listptr;
@@ -312,14 +303,14 @@ PRIVATE void listcode()
 
 /* list errors, assuming some */
 
-PRIVATE void listerrors()
+PRIVATE void listerrors P0()
 {
     unsigned char column;
     unsigned char errcol;	/* column # in error line */
     unsigned char errcolw;	/* working column in error line */
-    char *errmsg;
+    _CONST char *errmsg;
     struct error_s *errptr;
-    char *linep;
+    _CONST char *linep;
     unsigned char remaining;
 
     paderrorline(CODE_LIST_LENGTH - LINUM_LEN);
@@ -364,8 +355,7 @@ PRIVATE void listerrors()
 
 /* pad out error line to begin under 1st char of source listing */
 
-PRIVATE void paderrorline(nspaces)
-unsigned nspaces;
+PRIVATE void paderrorline P1(unsigned, nspaces)
 {
     int nstars = LINUM_LEN;
 
@@ -377,8 +367,7 @@ unsigned nspaces;
 
 /* write 1 character */
 
-PUBLIC void writec(c)
-int c;
+PUBLIC void writec P1(int, c)
 {
     /* !! On a little-endian system, just do: (void)!write(innum, (char*) &c, 1); */
     char buf[1];
@@ -389,15 +378,14 @@ int c;
 
 /* write newline */
 
-PUBLIC void writenl()
+PUBLIC void writenl P0()
 {
     writes("\n");  /* writec('\n'); */
 }
 
 /* write 1 offset_t, order to suit target */
 
-PUBLIC void writeoff(offset)
-offset_t offset;
+PUBLIC void writeoff P1(offset_t, offset)
 {
     char buf[4];
 
@@ -407,16 +395,14 @@ offset_t offset;
 
 /* write string */
 
-PUBLIC void writes(s)
-char *s;
+PUBLIC void writes P1(_CONST char *, s)
 {
     (void)!write(innum, s, strlen(s));
 }
 
 /* write string followed by newline */
 
-PUBLIC void writesn(s)
-char *s;
+PUBLIC void writesn P1(_CONST char *, s)
 {
     writes(s);
     writenl();
@@ -424,8 +410,7 @@ char *s;
 
 /* write 1 word, order to suit target */
 
-PUBLIC void writew(word)
-unsigned word;
+PUBLIC void writew P1(unsigned, word)
 {
     char buf[2];
 

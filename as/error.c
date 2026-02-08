@@ -8,7 +8,7 @@
 #include "const.h"
 #include "type.h"
 
-PRIVATE char *errormessage[] =
+PRIVATE _CONST char * _CONST errormessage[] =
 {
   /* Syntax errors. */
     /* COMEXP */  "comma expected",
@@ -114,9 +114,7 @@ PRIVATE char *errormessage[] =
 
 /* build null-terminated error message for given error at given spot */
 
-PUBLIC char *build_error_message(errnum, buf)
-unsigned errnum;
-char *buf;
+PUBLIC char *build_error_message P2(unsigned, errnum, char *, buf)
 {
     if (errnum >= sizeof errormessage / sizeof errormessage[0])
 	errnum = sizeof errormessage / sizeof errormessage[0] - 1;

@@ -18,7 +18,7 @@
 #include "file.h"
 #include "globvar.h"
 
-FORWARD int printsym P((register struct sym_s *symptr, unsigned column));
+FORWARD int printsym P((REGISTER struct sym_s *symptr, unsigned column));
 FORWARD void sort P((struct sym_s **array, struct sym_s **top,
 		     bool_pt nameflag));
 
@@ -27,16 +27,16 @@ FORWARD void sort P((struct sym_s **array, struct sym_s **top,
 /* if symbol file, write machine-readable tables to it */
 /* pointers become relative to start of file */
 
-PUBLIC void gensym()
+PUBLIC void gensym P0()
 {
     unsigned column;
     struct sym_s **copyptr;
     struct sym_s **copytop;
-    register struct sym_s **hashptr;
+    REGISTER struct sym_s **hashptr;
     unsigned label_count;	/* number of labels */
     unsigned labels_length;	/* length of all label strings */
     unsigned label_stringptr;	/* offset of label str from start of file */
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
     struct sym_s **symlptr;	/* start of symbol output list */
 
     labels_length = label_count = 0;
@@ -116,12 +116,10 @@ sort_symbols:
 
 /* print symbol nicely formatted for given column */
 
-PRIVATE int printsym(symptr, column)
-register struct sym_s *symptr;
-unsigned column;
+PRIVATE int printsym P2(REGISTER struct sym_s *, symptr, unsigned, column)
 {
     unsigned char length;
-    register struct sym_listing_s *listptr;
+    REGISTER struct sym_listing_s *listptr;
     char *outname;
     char *symname;
 
@@ -164,16 +162,13 @@ unsigned column;
 
 /* shell sort symbols */
 
-PRIVATE void sort(array, top, nameflag)
-struct sym_s **array;
-struct sym_s **top;
-bool_pt nameflag;
+PRIVATE void sort P3(struct sym_s **, array, struct sym_s **, top, bool_pt, nameflag)
 {
     int gap;
     int i;
     int j;
-    register struct sym_s **left;
-    register struct sym_s **right;
+    REGISTER struct sym_s **left;
+    REGISTER struct sym_s **right;
     int size;
     struct sym_s *swap;
 

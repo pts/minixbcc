@@ -33,12 +33,12 @@ PRIVATE struct sym_s *hid_spt[SPTSIZ];	/* hash table */
 
 FORWARD void set_osid P((int new_osid));
 FORWARD void initp1 P((void));
-FORWARD int my_creat P((char *name, char *message));
+FORWARD int my_creat P((_CONST char *name, _CONST char *message));
 FORWARD void process_args P((int argc, char **argv));
 FORWARD void summary P((fd_t fd));
 FORWARD void summ_number P((unsigned num));
 FORWARD void usage P((void));
-FORWARD void set_label_abs P((char *name, offset_t value));
+FORWARD void set_label_abs P((_CONST char *name, offset_t value));
 FORWARD void initblabels P((void));
 
 #ifdef DEBUG_AS
@@ -47,9 +47,7 @@ FORWARD void initblabels P((void));
 #  define D4(msg)
 #endif
 
-PUBLIC int main(argc, argv)
-int argc;
-char **argv;
+PUBLIC int main P2(int, argc, char **, argv)
 {
     D4("M01\n")
     initheap();
@@ -86,8 +84,7 @@ char **argv;
     return 0;
 }
 
-PUBLIC void as_abort(message)
-char *message;
+PUBLIC void as_abort P1(_CONST char *, message)
 {
     (void)!write(STDOUT, "as: ", 4);
     (void)!write(STDOUT, message, strlen(message));
@@ -95,7 +92,7 @@ char *message;
     exit(1);
 }
 
-PUBLIC void finishup()
+PUBLIC void finishup P0()
 {
     bintrailer();
     objtrailer();
@@ -105,23 +102,22 @@ PUBLIC void finishup()
 	summary(lstfil);
     if (lstfil != STDOUT && (toterr != 0 || totwarn != 0))
 	summary(STDOUT);
+#ifdef DEBUG
     statistics();
+#endif
     exit(toterr != 0 ? 1 : 0);	/* should close output files and check */
 }
 
-PRIVATE void set_osid(new_osid)
-register int new_osid;
+PRIVATE void set_osid P1(REGISTER int, new_osid)
 {
 	osid = new_osid;
 	idefsize = defsize = 2 + ((new_osid & 1) << 1);  /* 2 if osid == 0; or 4 if osid == 3. */
 }
 
-PRIVATE void set_label_abs(name, value)
-char *name;
-offset_t value;
+PRIVATE void set_label_abs P2(_CONST char *, name, offset_t, value)
 {
-    register struct sym_s *symptr;
-    char *old_lineptr;
+    REGISTER struct sym_s *symptr;
+    _CONST char *old_lineptr;
     /* char *old_symname; */
 
     old_lineptr = lineptr;
@@ -136,7 +132,7 @@ offset_t value;
 
 /* initialise builtin labels (absolute symbols with constant value) */
 
-PRIVATE void initblabels()
+PRIVATE void initblabels P0()
 {
     set_label_abs("__IBITS__", (offset_t) (idefsize << 3));  /* 16 or 32. This is the initial bits, not the current one. */
     set_label_abs("__OSID__", (offset_t) osid);  /* 0 (for as -0: Minix i86) or 3 (for as -3: Minix i386). */
@@ -144,7 +140,7 @@ PRIVATE void initblabels()
 
 /* initialise constant nonzero values */
 
-PRIVATE void initp1()
+PRIVATE void initp1 P0()
 {
     set_osid(sizeof(char *) > 2 ? 3 : 0);
     lstfil = STDOUT;
@@ -155,9 +151,9 @@ PRIVATE void initp1()
 
 /* initialise nonzero values which start same each pass */
 
-PUBLIC void initp1p2()
+PUBLIC void initp1p2 P0()
 {
-    register struct lc_s *lcp;
+    REGISTER struct lc_s *lcp;
 
     ifflag = TRUE;
     pedata = UNDBIT;		/* program entry point not defined */
@@ -174,9 +170,7 @@ PUBLIC void initp1p2()
     }
 }
 
-PRIVATE int my_creat(name, message)
-char *name;
-char *message;
+PRIVATE int my_creat P2(_CONST char *, name, _CONST char *, message)
 {
     int fd;
 
@@ -185,9 +179,7 @@ char *message;
     return fd;
 }
 
-PRIVATE void process_args(argc, argv)
-int argc;
-char **argv;
+PRIVATE void process_args P2(int, argc, char **, argv)
 {
     char *arg;
     bool_t isnextarg;
@@ -319,8 +311,7 @@ char **argv;
     inidata = (~binaryg & inidata) | (RELBIT | UNDBIT);
 }				/* IMPBIT from inidata unless binaryg */
 
-PRIVATE void summary(fd)
-int fd;
+PRIVATE void summary P1(int, fd)
 {
     innum = fd;
     writenl();
@@ -330,15 +321,14 @@ int fd;
     writesn(" warnings");
 }
 
-PRIVATE void summ_number(num)
-unsigned num;
+PRIVATE void summ_number P1(unsigned, num)
 {
     /* format number like line numbers, build it at free spot heapptr */
     *build_number(num, LINUM_LEN, heapptr) = 0;
     writes(heapptr);
 }
 
-PRIVATE void usage()
+PRIVATE void usage P0()
 {
     as_abort("usage: as [-03agjuw] [-b [bin]] [-lm [list]] [-n name] [-o obj] [-s sym] src");
 }
