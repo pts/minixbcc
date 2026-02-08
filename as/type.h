@@ -75,6 +75,23 @@ struct address_s
     struct sym_s *sym;
 };
 
+/* databuf */
+
+union databuf_u
+{
+    char fcbuf[LINLEN - 6];	/* buffer for fcb and fcc data */
+				/* data is absolute in 1 char pieces */
+				/* limited by FCC\t"" etc on line */
+    struct address_s fdbuf[(LINLEN - 4) / 2];
+				/* buffer for fdb data */
+				/* data can be of any 2-byte adr type */
+				/* limited by FDB\t and commas on line */
+    struct address_s fqbuf[(LINLEN - 4) / 4];
+				/* buffer for fqb data */
+				/* data can be of any 4-byte adr type */
+				/* limited by FQB\t and commas on line */
+};
+
 /* effective address */
 
 struct ea_s

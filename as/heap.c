@@ -57,7 +57,8 @@
 #endif
 
 PRIVATE int trybrk P((char *p));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-PRIVATE int trybrk(p) char *p; {
+PRIVATE int trybrk P1(char *, p)
+{
   /* brk(...) makes sure that a minimmum amount of stack space is still available above the heap. */
   return !brk(p) && brksize >= p;  /* brk(...) also changes brksize. */
 }
@@ -66,11 +67,10 @@ PRIVATE int trybrk(p) char *p; {
 #ifdef DEBUG_MINIXHEAP
 PRIVATE char hextable[] = "0123456789abcdef";
 FORWARD void wh16 P((unsigned u));
-PRIVATE void wh16 (u)
-unsigned u;
+PRIVATE void wh16 P1(unsigned, u)
 {
     char buf[7];
-    register char *p;
+    REGISTER char *p;
 
     p  = buf + sizeof(buf);
     *--p = '\n';
@@ -84,7 +84,7 @@ unsigned u;
 }
 #endif
 
-PUBLIC void initheap()
+PUBLIC void initheap P0()
 {
 #ifdef MINIXHEAP
   unsigned a, b, m;
@@ -142,9 +142,9 @@ PUBLIC void initheap()
   unsigned size;
 
   size = MAXHEAPEXPR;
-  if (!(p = malloc(size))) {  /* If `size' bytes are not available, try smaller amounts. */
-    while (size > 1024 && !(p = malloc((size >>= 1, size += size >> 1)))) {}
-    if (!p && size > 1024 && !(p = malloc(size = 1024))) {
+  if (!(p = (char *) malloc(size))) {  /* If `size' bytes are not available, try smaller amounts. */
+    while (size > 1024 && !(p = (char *) malloc((size >>= 1, size += size >> 1)))) {}
+    if (!p && size > 1024 && !(p = (char *) malloc(size = 1024))) {
       as_abort("cannot allocate memory");  /* Minimum is 1 KiB. */
     }
   }

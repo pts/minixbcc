@@ -14,13 +14,13 @@
 #define hconv(ch) ((unsigned) (unsigned char) (ch) - 0x41)  /* better form for hashing */
 
 #ifdef MNSIZE
-EXTERN char bytesizeops[];
+EXTERN _CONST char bytesizeops[];
 #endif
-EXTERN char ops[];
-EXTERN char page1ops[];
-EXTERN char page2ops[];
-EXTERN char regs[];
-EXTERN char typesizes[];
+EXTERN _CONST char ops[];
+EXTERN _CONST char page1ops[];
+EXTERN _CONST char page2ops[];
+EXTERN _CONST char regs[];
+EXTERN _CONST char typesizes[];
 
 #ifdef DEBUG
 unsigned nhash;
@@ -30,9 +30,9 @@ unsigned nx[30];
 FORWARD void printchain P((void));
 #endif
 
-FORWARD void install P((register char *keyptr, unsigned data));
+FORWARD void install P((REGISTER _CONST char *keyptr, unsigned data));
 
-PUBLIC void inst_keywords()
+PUBLIC void inst_keywords P0()
 {
     install(regs, REGBIT);
     install(typesizes, SIZEBIT);
@@ -44,15 +44,13 @@ PUBLIC void inst_keywords()
 #endif
 }
 
-PRIVATE void install(keyptr, data)
-register char *keyptr;
-unsigned data;
+PRIVATE void install P2(REGISTER _CONST char *, keyptr, unsigned, data)
 {
     char lowcasebuf[20];
     unsigned namelength;
     char *nameptr;
     char *namend;
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
 
     while (*keyptr != 0)
     {
@@ -89,13 +87,13 @@ unsigned data;
  * unless symbol table overflows, when routine aborts.
  */
 
-PUBLIC struct sym_s *lookup()
+PUBLIC struct sym_s *lookup P0()
 {
     struct sym_s **hashptr;
-    register char *nameptr;
-    register struct sym_s *symptr;
-    register unsigned hashval;
-    register unsigned length;
+    REGISTER _CONST char *nameptr;
+    REGISTER struct sym_s *symptr;
+    REGISTER unsigned hashval;
+    REGISTER unsigned length;
 #ifdef DEBUG
     int tries;
 
@@ -188,10 +186,9 @@ PUBLIC struct sym_s *lookup()
 
 #ifdef DEBUG
 
-static void printchain(hashval)
-unsigned hashval;
+static void printchain P1(unsigned, hashval)
 {
-    register struct sym_s *symptr;
+    REGISTER struct sym_s *symptr;
 
     printf("%04x ", hashval);
     for (symptr = spt[hashval]; symptr != (struct sym_s*) 0; symptr = symptr->next)
@@ -201,9 +198,9 @@ unsigned hashval;
 
 #endif
 
-PUBLIC void statistics()
-{
 #ifdef DEBUG
+PUBLIC void statistics P0()
+{
     int i;
     int weight;
 
@@ -218,5 +215,5 @@ PUBLIC void statistics()
     }
     printf("\n");
     printf("weight = %d%d\n", w;
-#endif
 }
+#endif
