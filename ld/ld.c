@@ -15,13 +15,11 @@
 PRIVATE bool_t flag_ary[26];  /* Zero-initialized. */
 #define FLAG(c) (flag_ary[(c) - 'a'])
 
-PUBLIC int main(argc, argv)
-int argc;
-char **argv;
+PUBLIC int main P2(int, argc, char **, argv)
 {
-    register char *arg;
+    REGISTER char *arg;
     int argn;
-    char *outfilename;
+    _CONST char *outfilename;
     char c;
     bool_t bits32;
 

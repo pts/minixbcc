@@ -157,8 +157,8 @@ PUBLIC offset_t dynam_size;   /* desired dynamic memory size (including heap, st
 FORWARD void linkmod P((struct modstruct *modptr));
 FORWARD void linkrefs P((struct modstruct *modptr));
 FORWARD void padmod P((struct modstruct *modptr));
-FORWARD void setsym P((char *name, offset_t value));
-FORWARD void symres P((char *name));
+FORWARD void setsym P((_CONST char *name, offset_t value));
+FORWARD void symres P((_CONST char *name));
 FORWARD void setseg P((unsigned newseg));
 FORWARD void skip P((unsigned countsize));
 FORWARD void writeheader P((void));
@@ -166,8 +166,7 @@ FORWARD void writenulls P((offset_t count));
 
 /* link all symbols connected to entry symbols */
 
-PUBLIC void linksyms(argreloc_output)
-bool_pt argreloc_output;
+PUBLIC void linksyms P1(bool_pt, argreloc_output)
 {
     char needlink;
     struct entrylist *elptr;
@@ -197,7 +196,7 @@ bool_pt argreloc_output;
 	    for (rlptr = redfirst; rlptr != (struct redlist*) 0;
 		 rlptr = (prlptr = rlptr)->rlnext)
 		if (rlptr->rlmodptr->loadflag &&
-		    rlptr->rlmodptr->class > rlptr->rlsymptr->modptr->class)
+		    rlptr->rlmodptr->class_ > rlptr->rlsymptr->modptr->class_)
 		{
 		    rlptr->rlsymptr->modptr = rlptr->rlmodptr;
 		    rlptr->rlsymptr->value = rlptr->rlvalue;
@@ -213,20 +212,17 @@ bool_pt argreloc_output;
 }
 
 PRIVATE void checksize P((void));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-PRIVATE void checksize() {
+PRIVATE void checksize P0() {
     if (!bits32) {
 	if (etextoffset > (offset_t) 0xff00L) fatalerror("a_text too large");  /* This is the actual limit for a_text in Minix 1.5.10 i86. */
 	if (endoffset > (offset_t) 0xffc0L) fatalerror("a_data+a_bss too large");  /* 0x20 bytes for the stack. */
     }
 }
 
-PRIVATE void namecpy P((char *p, char *pend, char *src));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-PRIVATE void namecpy(p, pend, src)
-char *p;
-char *pend;
-char *src;
+PRIVATE void namecpy P((char *p, char *pend, _CONST char *src));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+PRIVATE void namecpy P3(char *, p, char *, pend, _CONST char *, src)
 {
-	register char *q;
+	REGISTER char *q;
 
 	for (q = p; q != pend && (*q++ = *src++) != '\0'; ) {}
 	for (; q != pend; *q++ = '\0') {}
@@ -234,10 +230,9 @@ char *src;
 
 #ifdef ACKFIX  /* Helper function used below. */
 PRIVATE offset_t *addcomseg P((struct symstruct *symptr));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-PRIVATE offset_t *addcomseg(symptr)
-struct symstruct *symptr;
+PRIVATE offset_t *addcomseg P1(struct symstruct *, symptr)
 {
-    register offset_t *comszseg;
+    REGISTER offset_t *comszseg;
 
     symptr->value = *(comszseg = &comsz[symptr->flags & SEGM_MASK]);
     return comszseg;
@@ -246,12 +241,7 @@ struct symstruct *symptr;
 
 /* write binary file */
 
-PUBLIC void writebin(outfilename, argsepid, argbits32, argstripflag, arguzp)
-char *outfilename;
-bool_pt argsepid;
-bool_pt argbits32;
-bool_pt argstripflag;
-bool_pt arguzp;
+PUBLIC void writebin P5(_CONST char *, outfilename, bool_pt, argsepid, bool_pt, argbits32, bool_pt, argstripflag, bool_pt, arguzp)
 {
     char buf4[4];
     char *cptr;
@@ -299,8 +289,8 @@ bool_pt arguzp;
     for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	if (modptr->loadflag)
 	{
-	    register struct symstruct **symparray;
-	    register struct symstruct *symptr;
+	    REGISTER struct symstruct **symparray;
+	    REGISTER struct symstruct *symptr;
 
 #ifdef DEBUG_SIZE
 	    modptr->modcomsz = 0;
@@ -388,8 +378,8 @@ bool_pt arguzp;
     for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	if (modptr->loadflag)
 	{
-	    register struct symstruct **symparray;
-	    register struct symstruct *symptr;
+	    REGISTER struct symstruct **symparray;
+	    REGISTER struct symstruct *symptr;
 
 	    for (symparray = modptr->symparray;
 		 (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
@@ -456,8 +446,8 @@ bool_pt arguzp;
 	for (modptr = modfirst; modptr != (struct modstruct*) 0; modptr = modptr->modnext)
 	    if (modptr->loadflag)
 	    {
-		register struct symstruct **symparray;
-		register struct symstruct *symptr;
+		REGISTER struct symstruct **symparray;
+		REGISTER struct symstruct *symptr;
 
 		for (symparray = modptr->symparray;
 		     (symptr = *symparray) != (struct symstruct*) 0; ++symparray)
@@ -506,8 +496,7 @@ bool_pt arguzp;
     executable();
 }
 
-PRIVATE void linkmod(modptr)
-struct modstruct *modptr;
+PRIVATE void linkmod P1(struct modstruct *, modptr)
 {
     char buf[ABS_TEXT_MAX];
     int command;
@@ -589,11 +578,10 @@ struct modstruct *modptr;
     }
 }
 
-PRIVATE void linkrefs(modptr)
-struct modstruct *modptr;
+PRIVATE void linkrefs P1(struct modstruct *, modptr)
 {
-    register struct symstruct **symparray;
-    register struct symstruct *symptr;
+    REGISTER struct symstruct **symparray;
+    REGISTER struct symstruct *symptr;
 
     modptr->loadflag = TRUE;
     for (symparray = modptr->symparray;
@@ -602,8 +590,7 @@ struct modstruct *modptr;
 	    linkrefs(symptr->modptr);
 }
 
-PRIVATE void padmod(modptr)
-struct modstruct *modptr;
+PRIVATE void padmod P1(struct modstruct *, modptr)
 {
     offset_t count;
     unsigned seg;
@@ -649,9 +636,7 @@ struct modstruct *modptr;
 #endif
 }
 
-PRIVATE void setsym(name, value)
-char *name;
-offset_t value;
+PRIVATE void setsym P2(_CONST char *, name, offset_t, value)
 {
     struct symstruct *symptr;
 
@@ -659,10 +644,9 @@ offset_t value;
 	symptr->value = value;
 }
 
-PRIVATE void symres(name)
-register char *name;
+PRIVATE void symres P1(REGISTER _CONST char *, name)
 {
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
 
     if ((symptr = findsym(name)) != (struct symstruct*) 0)
     {
@@ -676,8 +660,7 @@ register char *name;
 
 /* set new segment */
 
-PRIVATE void setseg(newseg)
-unsigned newseg;
+PRIVATE void setseg P1(unsigned, newseg)
 {
     if (newseg != curseg)
     {
@@ -687,14 +670,13 @@ unsigned newseg;
     }
 }
 
-PRIVATE void skip(countsize)
-unsigned countsize;
+PRIVATE void skip P1(unsigned, countsize)
 {
     writenulls((offset_t) readsize(countsize));
 }
 
 
-PRIVATE void writeheader()
+PRIVATE void writeheader P0()
 {
     char header[A_MINHDR];  /* Minix a.out executable header. */
     offset_t a_total;
@@ -725,8 +707,7 @@ PRIVATE void writeheader()
     writeout(header, A_MINHDR);
 }
 
-PRIVATE void writenulls(count)
-offset_t count;
+PRIVATE void writenulls P1(offset_t, count)
 {
     spos += count;
     while (count--)
