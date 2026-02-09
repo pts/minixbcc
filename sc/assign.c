@@ -16,7 +16,7 @@
 #include "type.h"
 
 FORWARD void blockmove P((struct symstruct *source, struct symstruct *target));
-FORWARD void call3 P((char *funcname, struct symstruct *target,
+FORWARD void call3 P((_CONST char *funcname, struct symstruct *target,
 		      struct symstruct *source, uoffset_t size));
 
 #ifdef NOFP
@@ -25,9 +25,7 @@ FORWARD void call3 P((char *funcname, struct symstruct *target,
   FORWARD void fconvert P((struct symstruct *source, struct typestruct *type));
 #endif
 
-PUBLIC void assign(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void assign P2(struct symstruct *, source, struct symstruct *, target)
 {
     store_pt regpushed;
     store_pt sourcereg;
@@ -139,9 +137,7 @@ struct symstruct *target;
 
 /* block move assumes itypesize == accregsize && BREG size == 1 */
 
-PRIVATE void blockmove(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PRIVATE void blockmove P2(struct symstruct *, source, struct symstruct *, target)
 {
     struct symstruct oldtarget;
     uoffset_t typesize;
@@ -187,11 +183,7 @@ struct symstruct *target;
     *target = oldtarget;
 }
 
-PRIVATE void call3(funcname, target, source, size)
-char *funcname;
-struct symstruct *target;
-struct symstruct *source;
-uoffset_t size;
+PRIVATE void call3 P4(_CONST char *, funcname, struct symstruct *, target, struct symstruct *, source, uoffset_t, size)
 {
     store_pt regpushed;
     offset_t spmark;
@@ -213,9 +205,7 @@ uoffset_t size;
     }
 }
 
-PUBLIC void cast(type, target)
-struct typestruct *type;
-struct symstruct *target;
+PUBLIC void cast P2(struct typestruct *, type, struct symstruct *, target)
 {
     scalar_t newscalar;
     uoffset_t newsize;
@@ -306,8 +296,7 @@ struct symstruct *target;
 
 /* extend char or short to int (unsigned if from unsigned) */
 
-PUBLIC void extend(target)
-struct symstruct *target;
+PUBLIC void extend P1(struct symstruct *, target)
 {
     scalar_t tscalar;
 
@@ -338,9 +327,7 @@ struct symstruct *target;
 }
 
 #ifndef NOFP
-PRIVATE void fconvert(source, type)
-struct symstruct *source;
-struct typestruct *type;
+PRIVATE void fconvert P2(struct symstruct *, source, struct typestruct *, type)
 {
     offset_t spmark;
 

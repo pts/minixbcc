@@ -13,7 +13,7 @@
 #include "table.h"
 #include "type.h"
 
-PUBLIC value_t constexpression()
+PUBLIC value_t constexpression P0()
 {
     struct nodestruct *etmark;
     struct nodestruct *exp;
@@ -32,8 +32,7 @@ PUBLIC value_t constexpression()
     return 1;
 }
 
-PUBLIC void initexpression(type)
-struct typestruct *type;
+PUBLIC void initexpression P1(struct typestruct *, type)
 {
     struct nodestruct *etmark;
     struct nodestruct *exp;
@@ -150,9 +149,7 @@ struct typestruct *type;
     exprptr = exprmark;
 }
 
-PUBLIC struct typestruct *loadexpression(targreg, targtype)
-store_pt targreg;
-struct typestruct *targtype;
+PUBLIC struct typestruct *loadexpression P2(store_pt, targreg, struct typestruct *, targtype)
 {
     struct nodestruct *etmark;
     struct nodestruct *exp;

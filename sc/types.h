@@ -99,6 +99,20 @@ typedef smalu_t weight_t;	/* expression tree node weight */
   the first element of the structures is the one most frequently accessed
 */
 
+struct constant_s  /* value of a constant scanned */
+{
+    union
+    {
+	char *s;
+	value_t v;
+#ifndef NOFP
+	double d;
+#endif
+    }
+      value;
+    struct typestruct *type;
+};
+
 /*
   expression table entry format
 */
@@ -164,7 +178,7 @@ struct typestruct
 				/* avoiding nulls */
     uoffset_t alignmask;	/* alignment mask, typesize - 1 for scalars */
     uoffset_t typesize;		/* size of this type */
-    char *tname;		/* name of scalar type or constructor */
+    _CONST char *tname;		/* name of scalar type or constructor */
     struct typelist *listtype;	/* list of member types */
     struct typestruct *nexttype;
 				/* next in list */

@@ -13,23 +13,23 @@
 
 #define cc_signed(cc) ((cc) >= 4 && (cc) < 8)
 
-PRIVATE char oppcc[] =		/* opposite condition codes LT --> GE etc */
+PRIVATE _CONST char oppcc[] =		/* opposite condition codes LT --> GE etc */
 /*  EQ, NE, RA, RN, LT, GE, LE, GT, LO, HS, LS, HI,  indices */
 {
     NE, EQ, RN, RA, GE, LT, GT, LE, HS, LO, HI, LS,
 };
 
-PRIVATE char reverscc[] =	/* reverse condition codes LT --> GT etc */
+PRIVATE _CONST char reverscc[] =	/* reverse condition codes LT --> GT etc */
 {
     EQ, NE, RN, RA, GT, LE, GE, LT, HI, LS, HS, LO,
 };
 
-PRIVATE char testcc[] =		/* test condition codes LS --> EQ etc */
+PRIVATE _CONST char testcc[] =		/* test condition codes LS --> EQ etc */
 {
     EQ, NE, RA, RN, LT, GE, LE, GT, RN, RA, EQ, NE,
 };
 
-PRIVATE char unsigncc[] =	/* unsigned condition codes LT --> LO etc */
+PRIVATE _CONST char unsigncc[] =	/* unsigned condition codes LT --> LO etc */
 {
     EQ, NE, RA, RN, LO, HS, LS, HI, LO, HS, LS, HI,
 };
@@ -50,10 +50,7 @@ FORWARD void test P((struct symstruct *target, ccode_t *pcondtrue));
 FORWARD void testcond P((struct nodestruct *exp, label_t truelab,
 			  label_t falselab, bool_pt nojump));
 
-PUBLIC void cmp(source, target, pcondtrue)
-struct symstruct *source;
-struct symstruct *target;
-ccode_t *pcondtrue;
+PUBLIC void cmp P3(struct symstruct *, source, struct symstruct *, target, ccode_t *, pcondtrue)
 {
     label_t falselab;
 
@@ -87,10 +84,7 @@ ccode_t *pcondtrue;
     loadlogical(target, falselab);
 }
 
-PRIVATE void cmplocal(source, target, pcondtrue)
-struct symstruct *source;
-struct symstruct *target;
-ccode_t *pcondtrue;
+PRIVATE void cmplocal P3(struct symstruct *, source, struct symstruct *, target, ccode_t *, pcondtrue)
 {
     scalar_t sscalar;
     scalar_t tempscalar;
@@ -169,11 +163,8 @@ ccode_t *pcondtrue;
     movereg(source, target->storage);
 }
 
-PRIVATE void comparecond(exp, truelab, falselab, nojump)
-struct nodestruct *exp;
-label_t truelab;
-label_t falselab;
-bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
+PRIVATE void comparecond P4(struct nodestruct *, exp, label_t, truelab, label_t, falselab, bool_pt, nojump)
+/*bool_pt nojump;*/		/* NB if nonzero, is ~0 so complement is 0 */
 {
     ccode_t condtrue;
     store_t regmark;
@@ -216,8 +207,7 @@ bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
 	lbranch(condtrue, truelab);
 }
 
-PUBLIC void condop(exp)
-struct nodestruct *exp;
+PUBLIC void condop P1(struct nodestruct *, exp)
 {
     label_t exitlab;
     label_t falselab;
@@ -258,11 +248,8 @@ struct nodestruct *exp;
     exp->left.symptr = truesym;
 }
 
-PRIVATE void jumpcond(exp, truelab, falselab, nojump)
-struct nodestruct *exp;
-label_t truelab;
-label_t falselab;
-bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
+PRIVATE void jumpcond P4(struct nodestruct *, exp, label_t, truelab, label_t, falselab, bool_pt, nojump)
+/*bool_pt nojump;*/		/* NB if nonzero, is ~0 so complement is 0 */
 {
     switch (exp->tag)
     {
@@ -289,9 +276,7 @@ bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
     }
 }
 
-PUBLIC void jumpfalse(exp, label)
-struct nodestruct *exp;
-label_t label;
+PUBLIC void jumpfalse P2(struct nodestruct *, exp, label_t, label)
 {
     label_t truelab;
 
@@ -299,9 +284,7 @@ label_t label;
     deflabel(truelab);
 }
 
-PUBLIC void jumptrue(exp, label)
-struct nodestruct *exp;
-label_t label;
+PUBLIC void jumptrue P2(struct nodestruct *, exp, label_t, label)
 {
     label_t falselab;
 
@@ -309,9 +292,7 @@ label_t label;
     deflabel(falselab);
 }
 
-PRIVATE void loadlogical(source, falselab)
-struct symstruct *source;
-label_t falselab;
+PRIVATE void loadlogical P2(struct symstruct *, source, label_t, falselab)
 {
     label_t exitlab;
     struct symstruct *target;
@@ -328,11 +309,8 @@ label_t falselab;
     outnlabel(exitlab);
 }
 
-PRIVATE void logandcond(exp, truelab, falselab, nojump)
-struct nodestruct *exp;
-label_t truelab;
-label_t falselab;
-bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
+PRIVATE void logandcond P4(struct nodestruct *, exp, label_t, truelab, label_t, falselab, bool_pt, nojump)
+/*bool_pt nojump;*/		/* NB if nonzero, is ~0 so complement is 0 */
 {
     label_t andlab;
 
@@ -342,8 +320,7 @@ bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
     jumpcond(exp->right, truelab, falselab, nojump);
 }
 
-PUBLIC void logop(exp)
-struct nodestruct *exp;
+PUBLIC void logop P1(struct nodestruct *, exp)
 {
     label_t falselab;
     struct symstruct *target;
@@ -359,11 +336,8 @@ struct nodestruct *exp;
     exp->left.symptr = target;
 }
 
-PRIVATE void logorcond(exp, truelab, falselab, nojump)
-struct nodestruct *exp;
-label_t truelab;
-label_t falselab;
-bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
+PRIVATE void logorcond P4(struct nodestruct *, exp, label_t, truelab, label_t, falselab, bool_pt, nojump)
+/*bool_pt nojump;*/		/* NB if nonzero, is ~0 so complement is 0 */
 {
     label_t orlab;
 
@@ -373,8 +347,7 @@ bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
     jumpcond(exp->right, truelab, falselab, nojump);
 }
 
-PRIVATE void reduceconst(source)
-struct symstruct *source;
+PRIVATE void reduceconst P1(struct symstruct *, source)
 {
     if (source->storage == CONSTANT && ischarconst(source->offset.offv) &&
 	(source->type->scalar & (CHAR | SHORT | INT | DLONG)) != DLONG)
@@ -386,9 +359,7 @@ struct symstruct *source;
     }
 }
 
-PRIVATE void test(target, pcondtrue)
-struct symstruct *target;
-ccode_t *pcondtrue;
+PRIVATE void test P2(struct symstruct *, target, ccode_t *, pcondtrue)
 {
     store_t targreg;
 
@@ -439,11 +410,8 @@ ccode_t *pcondtrue;
 
 /* test expression and jump depending on NE/EQ */
 
-PRIVATE void testcond(exp, truelab, falselab, nojump)
-struct nodestruct *exp;
-label_t truelab;
-label_t falselab;
-bool_pt nojump;			/* NB if nonzero, is ~0 so complement is 0 */
+PRIVATE void testcond P4(struct nodestruct *, exp, label_t, truelab, label_t, falselab, bool_pt, nojump)
+/*bool_pt nojump;*/		/* NB if nonzero, is ~0 so complement is 0 */
 {
     ccode_t condtrue;
     struct symstruct *source;

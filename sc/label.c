@@ -26,13 +26,13 @@ struct labdatstruct
     ccode_t labcond;		/* condition code for branch */
 };
 
-PRIVATE char lcondnames[][2] =	/* names of long condition codes */
+PRIVATE _CONST char lcondnames[][2] =	/* names of long condition codes */
 {
     { 'e', 'q', }, { 'n', 'e', }, { 'r', ' ', }, { 'r', 'n', },
     { 'l', 't', }, { 'g', 'e', }, { 'l', 'e', }, { 'g', 't', },
     { 'l', 'o', }, { 'h', 'i', }, { 'l', 'o', }, { 'h', 'i' },
 };
-PRIVATE char scondnames[][2] =	/* names of short condition codes */
+PRIVATE _CONST char scondnames[][2] =	/* names of short condition codes */
 {
     { 'e', ' ', }, { 'n', 'e', }, { ' ', ' ', }, { 'n', 0, },
     { 'l', ' ', }, { 'g', 'e', }, { 'l', 'e', }, { 'g', ' ', },
@@ -56,12 +56,9 @@ FORWARD struct labdatstruct *findlabel P((label_t label));
 
 /* add label to circular list */
 
-PRIVATE void addlabel(cond, label, patch)
-ccode_pt cond;
-label_t label;
-char *patch;
+PRIVATE void addlabel P3(ccode_pt, cond, label_t, label, char *, patch)
 {
-    register struct labdatstruct *labptr;
+    REGISTER struct labdatstruct *labptr;
 
     labptr = &vislab[(int) nextvislab];
     labptr->labcond = cond;
@@ -74,31 +71,31 @@ char *patch;
 
 /* bump location counter */
 
-PUBLIC void bumplc()
+PUBLIC void bumplc P0()
 {
     ++lc;
 }
 
 /* bump location counter by 2 */
 
-PUBLIC void bumplc2()
+PUBLIC void bumplc2 P0()
 {
     lc += 2;
 }
 
 /* bump location counter by 3 */
 
-PUBLIC void bumplc3()
+PUBLIC void bumplc3 P0()
 {
     lc += 3;
 }
 
 /* clear out labels in function */
 
-PUBLIC void clearfunclabels()
+PUBLIC void clearfunclabels P0()
 {
-    register struct symstruct *symptr;
-    register struct symstruct *tmp;
+    REGISTER struct symstruct *symptr;
+    REGISTER struct symstruct *tmp;
 
     for (symptr = namedfirst; symptr != (struct symstruct*) 0;)
     {
@@ -114,13 +111,11 @@ PUBLIC void clearfunclabels()
 
 /* clear out labels no longer in buffer */
 
-PUBLIC void clearlabels(patchbuf, patchtop)
-char *patchbuf;
-char *patchtop;
+PUBLIC void clearlabels P2(char *, patchbuf, char *, patchtop)
 {
-    register struct labdatstruct *labptr;
+    REGISTER struct labdatstruct *labptr;
     struct labdatstruct *labtop;
-    register char *labpatch;
+    REGISTER char *labpatch;
 
     for (labptr = &vislab[0], labtop = &vislab[MAXVISLAB];
 	 labptr < labtop; ++labptr)
@@ -130,9 +125,9 @@ char *patchtop;
 
 /* clear out labels in switch statement */
 
-PUBLIC void clearswitchlabels()
+PUBLIC void clearswitchlabels P0()
 {
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
 
     for (symptr = namedfirst; symptr != (struct symstruct*) 0;
 	 symptr = (struct symstruct *) symptr->type)
@@ -145,17 +140,16 @@ PUBLIC void clearswitchlabels()
 
 /* return location counter */
 
-PUBLIC uoffset_t getlc()
+PUBLIC uoffset_t getlc P0()
 {
     return (uoffset_t) lc;
 }
 
 /* define location of label and backpatch references to it */
 
-PUBLIC void deflabel(label)
-label_t label;
+PUBLIC void deflabel P1(label_t, label)
 {
-    char *cnameptr;
+    _CONST char *cnameptr;
     struct labdatstruct *labmin;
     struct labdatstruct *labmax;
     struct labdatstruct *labmid;
@@ -164,8 +158,8 @@ label_t label;
 
     outnlabel(label);
     {
-	register struct labdatstruct *labptr;
-	register char *labpatch;
+	REGISTER struct labdatstruct *labptr;
+	REGISTER char *labpatch;
 
 	labmin = &vislab[0];
 	labmax = &vislab[MAXVISLAB];
@@ -213,10 +207,9 @@ label_t label;
     addlabel((ccode_pt) 0, label, (char *) 0);
 }
 
-PRIVATE struct labdatstruct *findlabel(label)
-label_t label;
+PRIVATE struct labdatstruct *findlabel P1(label_t, label)
 {
-    register struct labdatstruct *labptr;
+    REGISTER struct labdatstruct *labptr;
     struct labdatstruct *labtop;
 
     for (labptr = &vislab[0], labtop = &vislab[MAXVISLAB];
@@ -232,33 +225,30 @@ label_t label;
 
 /* reserve a new label, from top down to temp avoid renumbering low labels */
 
-PUBLIC label_t gethighlabel()
+PUBLIC label_t gethighlabel P0()
 {
     return --lasthighlab;
 }
 
 /* reserve a new label */
 
-PUBLIC label_t getlabel()
+PUBLIC label_t getlabel P0()
 {
     return ++lastlab;
 }
 
 /* jump to label */
 
-PUBLIC void jump(label)
-label_t label;
+PUBLIC void jump P1(label_t, label)
 {
     lbranch(RA, label);
 }
 
 /* long branch on condition to label */
 
-PUBLIC void lbranch(cond, label)
-ccode_pt cond;
-label_t label;
+PUBLIC void lbranch P2(ccode_pt, cond, label_t, label)
 {
-    char *cnameptr;
+    _CONST char *cnameptr;
 
     struct labdatstruct *labptr;
     char *oldoutptr;
@@ -296,7 +286,7 @@ label_t label;
 
 /* look up the name gsname in label space, install it if new */
 
-PUBLIC struct symstruct *namedlabel()
+PUBLIC struct symstruct *namedlabel P0()
 {
     struct symstruct *symptr;
 
@@ -322,8 +312,7 @@ PUBLIC struct symstruct *namedlabel()
 
 /* print label */
 
-PUBLIC void outlabel(label)
-label_t label;
+PUBLIC void outlabel P1(label_t, label)
 {
     outbyte(LABELSTARTCHAR);
     outhexdigs((uoffset_t) label);
@@ -331,8 +320,7 @@ label_t label;
 
 /* print label and newline */
 
-PUBLIC void outnlabel(label)
-label_t label;
+PUBLIC void outnlabel P1(label_t, label)
 {
     outlabel(label);
 #ifdef LABELENDCHAR
@@ -344,11 +332,9 @@ label_t label;
 
 /* short branch on condition to label */
 
-PUBLIC void sbranch(cond, label)
-ccode_pt cond;
-label_t label;
+PUBLIC void sbranch P2(ccode_pt, cond, label_t, label)
 {
-    char *cnameptr;
+    _CONST char *cnameptr;
 
     if ((ccode_t) cond != RN)
     {
@@ -363,7 +349,7 @@ label_t label;
 
 /* reverse bump location counter */
 
-PUBLIC void unbumplc()
+PUBLIC void unbumplc P0()  /* !! Inline these functions as macros? Does it make the sc-generated code shorter? */
 {
     --lc;
 }

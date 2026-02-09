@@ -74,7 +74,7 @@ _PROTOTYPE(void free, (void *pfix));
 static int grow(len)
 unsigned len;
 {
-  register char *p;
+  REGISTER char *p;
 
   ASSERT_MALLOC(NextSlot(_top) == 0);
   p = (char *) Align((malloc_intptr_t) _top + len, BRKALIGN);
@@ -89,8 +89,8 @@ unsigned len;
 void *malloc(size)
 unsigned size;
 {
-  register char *prev, *p, *next, *new;
-  register unsigned len, ntries;
+  REGISTER char *prev, *p, *next, *new;
+  REGISTER unsigned len, ntries;
 
   if (size == 0) size = PTRSIZE;/* avoid slots less that 2*PTRSIZE */
   for (ntries = 0; ntries < 2; ntries++) {
@@ -133,8 +133,8 @@ void *realloc(oldfix, size)
 void *oldfix;
 unsigned size;
 {
-  register char *prev, *p, *next, *new;
-  register unsigned len, n;
+  REGISTER char *prev, *p, *next, *new;
+  REGISTER unsigned len, n;
   char *old = (char *) oldfix;
 
 
@@ -177,7 +177,7 @@ unsigned size;
 void free(pfix)
 void *pfix;
 {
-  register char *prev, *next;
+  REGISTER char *prev, *next;
   char *p = (char *) pfix;
 
   ASSERT_MALLOC(NextSlot(p) > p);

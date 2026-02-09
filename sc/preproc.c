@@ -58,7 +58,7 @@ PRIVATE struct macroposition macrostack[MAX_MACRO];
 
 FORWARD void asmcontrol P((void));
 FORWARD void control P((void));
-FORWARD void defineorundefinestring P((char *str, bool_pt defineflag));
+FORWARD void defineorundefinestring P((_CONST char *str, bool_pt defineflag));
 FORWARD void elsecontrol P((void));
 FORWARD void endif P((void));
 FORWARD fastin_pt getparnames P((void));
@@ -67,7 +67,7 @@ FORWARD void undef P((void));
 
 /* asmcontrol() - process #asm */
 
-PRIVATE void asmcontrol()
+PRIVATE void asmcontrol P0()
 {
     char treasure;		/* to save at least one leading blank */
 
@@ -95,7 +95,7 @@ PRIVATE void asmcontrol()
 	{
 	    if (ctext)
 	    {
-		register char *lptr;
+		REGISTER char *lptr;
 
 		comment();
 		if (treasure != 0)
@@ -128,13 +128,13 @@ PRIVATE void asmcontrol()
 
 /* blanksident() - return nonzero if at blanks followed by an identifier */
 
-PUBLIC bool_pt blanksident()
+PUBLIC bool_pt blanksident P0()
 {
     blanks();
     return isident();
 }
 
-PUBLIC void checknotinif()
+PUBLIC void checknotinif P0()
 {
     while (iflevel != 0)
     {
@@ -148,7 +148,7 @@ PUBLIC void checknotinif()
 
 /* control() - select and switch to control statement */
 
-PRIVATE void control()
+PRIVATE void control P0()
 {
     char sname[NAMESIZE + 1];
     sym_t ctlcase;
@@ -230,7 +230,7 @@ PRIVATE void control()
   This choice works well because EOL cannot occur in a macro string.
 */
 
-PUBLIC void define()
+PUBLIC void define P0()
 {
     char sname[NAMESIZE];
     char quote;
@@ -332,7 +332,7 @@ ts_s_macstring += 2;
 	gch1();
     }
     {
-	register char *rcp;
+	REGISTER char *rcp;
 
 	/* strip trailing blanks, but watch out for parameters */
 	for (rcp = charptr;
@@ -389,9 +389,8 @@ ts_s_defines += sizeof (struct symstruct) + strlen(sname);
     symptr->prev = hashptr;
 }
 
-PRIVATE void defineorundefinestring(str, defineflag)
-char *str;			/* "name[=def]" or "name def" */
-bool_pt defineflag;
+PRIVATE void defineorundefinestring P2(_CONST char *, str, bool_pt, defineflag)
+/*char *str;*/			/* "name[=def]" or "name def" */
 {
     char *fakeline;
     unsigned len;
@@ -405,7 +404,7 @@ ts_s_fakeline += 3 + len + 2 + 2;
 ts_s_fakeline_tot += 3 + len + 2 + 2;
 #endif
     {
-	register char *endfakeline;
+	REGISTER char *endfakeline;
 
 	endfakeline = fakeline + len;
 	endfakeline[0] = EOL;	/* guards any trailing backslash */
@@ -423,7 +422,7 @@ ts_s_fakeline_tot += 3 + len + 2 + 2;
 		*lineptr = ' ';
 	    else if (ch == EOL)
 	    {
-		register char *lptr;
+		REGISTER char *lptr;
 
 		lptr = lineptr;
 		lptr[0] = ' ';
@@ -443,15 +442,15 @@ ts_s_fakeline_tot -= len + 2 + 2;
     ourfree(fakeline - 3);
 }
 
-PUBLIC void definestring(str)
-char *str;			/* "name[=def]" or "name def" */
+PUBLIC void definestring P1(_CONST char *, str)
+/*char *str;*/			/* "name[=def]" or "name def" */
 {
     defineorundefinestring(str, TRUE);
 }
 
 /* docontrol() - process control statement, loop till "#if" is true */
 
-PUBLIC void docontrol()
+PUBLIC void docontrol P0()
 {
     while (TRUE)
     {
@@ -477,7 +476,7 @@ PUBLIC void docontrol()
 
 /* elsecontrol() - process #else */
 
-PRIVATE void elsecontrol()
+PRIVATE void elsecontrol P0()
 {
     if (iflevel == 0)
     {
@@ -490,7 +489,7 @@ PRIVATE void elsecontrol()
 
 /* endif() - process #endif */
 
-PRIVATE void endif()
+PRIVATE void endif P0()
 {
     if (iflevel == 0)
     {
@@ -498,7 +497,7 @@ PRIVATE void endif()
 	return;
     }
     {
-	register struct ifstruct *ifptr;
+	REGISTER struct ifstruct *ifptr;
 
 	ifptr = &ifstack[--iflevel];
 	ifstate.elseflag = ifptr->elseflag;
@@ -508,7 +507,7 @@ PRIVATE void endif()
 
 /* entermac() - switch line ptr to macro string */
 
-PUBLIC void entermac()
+PUBLIC void entermac P0()
 {
     char quote;
     struct symstruct *symptr;
@@ -625,8 +624,8 @@ ts_s_macparam_tot += sizeof *paramlist * nparleft;
 #endif
 		*charptr++ = EOL;
 		{
-		    register char *newparam;
-		    register char *oldparam;
+		    REGISTER char *newparam;
+		    REGISTER char *oldparam;
 		    unsigned size;
 
 		    oldparam = *(paramlist - 1);
@@ -699,7 +698,7 @@ ts_s_macparam_string_tot -= charptr - oldparam;
     }
 
     {
-	register struct macroposition *mpptr;
+	REGISTER struct macroposition *mpptr;
 
 	mpptr = &macrostack[maclevel];
 	mpptr->paramlist = paramhead;
@@ -720,7 +719,7 @@ ts_s_macparam_string_tot -= charptr - oldparam;
 
 /* getparnames() - get parameter names during macro definition, return count */
 
-PRIVATE fastin_pt getparnames()
+PRIVATE fastin_pt getparnames P0()
 {
     fastin_t nparnames;
     struct symstruct *symptr;
@@ -751,8 +750,7 @@ PRIVATE fastin_pt getparnames()
 
 /* ifcontrol - process #if, #ifdef, #ifndef */
 
-PRIVATE void ifcontrol(ifcase)
-sym_pt ifcase;
+PRIVATE void ifcontrol P1(sym_pt, ifcase)
 {
     bool_t iftrue;
     struct symstruct *symptr;
@@ -763,7 +761,7 @@ sym_pt ifcase;
 	return;
     }
     {
-	register struct ifstruct *ifptr;
+	REGISTER struct ifstruct *ifptr;
 
 	ifptr = &ifstack[iflevel++];
 	ifptr->elseflag = ifstate.elseflag;
@@ -797,16 +795,16 @@ sym_pt ifcase;
 
 /* ifinit() - initialise if state */
 
-PUBLIC void ifinit()
+PUBLIC void ifinit P0()
 {
     ifstate.ifflag = TRUE;
 }
 
 /* leavemac() - leave current and further macro substrings till not at end */
 
-PUBLIC void leavemac()
+PUBLIC void leavemac P0()
 {
-    register struct macroposition *mpptr;
+    REGISTER struct macroposition *mpptr;
 
     do
     {
@@ -830,7 +828,7 @@ PUBLIC void leavemac()
 		lineptr = mpptr->maclineptr;
 		if (mpptr->nparam != 0)
 		{
-		    register char **paramlist;
+		    REGISTER char **paramlist;
 
 #ifdef TS
 ts_s_macparam_tot -= sizeof *paramlist * mpptr->nparam;
@@ -853,7 +851,7 @@ ts_s_macparam_string_alloced_tot -= strchr(*paramlist, EOL) - *paramlist + 1;
     while ((ch = *lineptr) == EOL && maclevel != 0);
 }
 
-PUBLIC void predefine()
+PUBLIC void predefine P0()
 {
 #if DIRCHAR == '/'
     definestring("unix 1");  /* For compatibility with earlier (1990-06-09) BCC sc v0 C compiler backend /local/bin/sc */
@@ -864,12 +862,12 @@ PUBLIC void predefine()
     findlorg("__LINE__")->storage = DEF_LINE;
 }
 
-PUBLIC char *savedlineptr()
+PUBLIC char *savedlineptr P0()
 {
     return macrostack[0].maclineptr;
 }
 
-PUBLIC void skipcomment()
+PUBLIC void skipcomment P0()
 {
 /* Skip current char, then everything up to '*' '/' or eof. */
 
@@ -879,13 +877,13 @@ PUBLIC void skipcomment()
 	while (TRUE)
 	{
 	    {
-		register char *reglineptr;
+		REGISTER char *reglineptr;
 
 		reglineptr = lineptr;
-		symofchar['*'] = SPECIALCHAR;
+		symofchar[(unsigned char) '*'] = SPECIALCHAR;
 		while (SYMOFCHAR(*reglineptr) != SPECIALCHAR)
 		    ++reglineptr;
-		symofchar['*'] = STAR;
+		symofchar[(unsigned char) '*'] = STAR;
 		lineptr = reglineptr;
 		if (*reglineptr == '*')
 		    break;
@@ -914,7 +912,7 @@ PUBLIC void skipcomment()
 
 /* skipline() - skip rest of line */
 
-PUBLIC void skipline()
+PUBLIC void skipline P0()
 {
     while (TRUE)
     {
@@ -940,7 +938,7 @@ PUBLIC void skipline()
 
 /* undef() - process #undef */
 
-PRIVATE void undef()
+PRIVATE void undef P0()
 {
     struct symstruct *symptr;
 
@@ -949,8 +947,7 @@ PRIVATE void undef()
 	delsym(symptr);
 }
 
-PUBLIC void undefinestring(str)
-char *str;
+PUBLIC void undefinestring P1(_CONST char *, str)
 {
     defineorundefinestring(str, FALSE);
 }

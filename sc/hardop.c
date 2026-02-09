@@ -14,9 +14,7 @@
 
 FORWARD void sub1 P((struct symstruct *source, struct symstruct *target));
 
-PUBLIC void add(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void add P2(struct symstruct *, source, struct symstruct *, target)
 {
     scalar_t sscalar;
 
@@ -64,9 +62,7 @@ struct symstruct *target;
     target->type = iscalartotype(target->type->scalar | sscalar);
 }
 
-PUBLIC void incdec(op, source)
-op_pt op;
-struct symstruct *source;
+PUBLIC void incdec P2(op_pt, op, struct symstruct *, source)
 {
     offset_t bump;
     bool_t postflag;
@@ -168,8 +164,7 @@ struct symstruct *source;
     target->offset.offi = 0;
 }
 
-PUBLIC void neg(target)
-struct symstruct *target;
+PUBLIC void neg P1(struct symstruct *, target)
 {
     scalar_t scalar;
     struct symstruct *source;
@@ -205,8 +200,7 @@ struct symstruct *target;
     }
 }
 
-PUBLIC void not(target)
-struct symstruct *target;
+PUBLIC void not_ P1(struct symstruct *, target)
 {
     if (target->type->scalar & DLONG)
 	long1op(NOTOP, target);
@@ -220,12 +214,9 @@ struct symstruct *target;
 
 /* 1-byte ops like AND acting on integers (not both constant) */
 
-PUBLIC void op1(op, source, target)
-op_pt op;
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void op1 P3(op_pt, op, struct symstruct *, source, struct symstruct *, target)
 {
-    char *opstr;
+    _CONST char *opstr;
 #ifdef OP1
 # if MAXINDIRECT > 1
     indn_t indcount;
@@ -404,9 +395,7 @@ struct symstruct *target;
     }
 }
 
-PUBLIC void ptrsub(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void ptrsub P2(struct symstruct *, source, struct symstruct *, target)
 {
     label_t exitlab;
     uoffset_t factor;
@@ -441,9 +430,7 @@ struct symstruct *target;
     }
 }
 
-PUBLIC void sub(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void sub P2(struct symstruct *, source, struct symstruct *, target)
 {
     scalar_t sscalar;
 
@@ -473,9 +460,7 @@ struct symstruct *target;
     target->type = iscalartotype(target->type->scalar | sscalar);
 }
 
-PRIVATE void sub1(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PRIVATE void sub1 P2(struct symstruct *, source, struct symstruct *, target)
 {
     if (source->storage == CONSTANT)
 	source->type = itype;

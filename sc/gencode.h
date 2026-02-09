@@ -49,30 +49,30 @@ extern store_pt allregs;	/* mask (in) for registers */
 extern bool_t arg1inreg;	/* nonzero to pass 1st arg in reg */
 extern store_pt calleemask;	/* mask (in) for regs to be saved by callee */
 extern bool_t callersaves;	/* nonzero to make caller save regs */
-extern char *callstring;	/* opcode string for call */
+extern _CONST char callstring[];	/* opcode string for call */
 extern store_pt doubleargregs;	/* mask (in) for regs for 1st arg if double */
 extern store_pt doubleregs;	/* mask (in) for regs to temp contain double */
 extern store_pt doublreturnregs;  /* mask (in) for regs for returning double */
 extern offset_t jcclonger;	/* amount jcc long jumps are longer */
 extern offset_t jmplonger;	/* amount long jumps is longer */
-extern char *jumpstring;	/* opcode string for jump */
-extern char *regpulllist;	/* reg names and sizes (0 store_t bit first) */
-extern char *regpushlist;	/* reg names and sizes (0 store_t bit last) */
+extern _CONST char jumpstring[];  /* opcode string for jump */
+extern _CONST char *regpulllist;  /* reg names and sizes (0 store_t bit first) */
+extern _CONST char *regpushlist;  /* reg names and sizes (0 store_t bit last) */
 extern store_pt regregs;	/* mask (in) for regs which can be reg vars */
 
 /* register names */
 
-extern char *acclostr;
-extern char *accumstr;
-extern char *badregstr;
-extern char *dreg1str;
-extern char *dreg1bstr;
-extern char *dreg2str;
-extern char *ireg0str;
-extern char *ireg1str;
-extern char *ireg2str;
-extern char *localregstr;
-extern char *stackregstr;
+extern _CONST char *acclostr;
+extern _CONST char *accumstr;
+extern _CONST char *badregstr;
+extern _CONST char *dreg1str;
+extern _CONST char *dreg1bstr;
+extern _CONST char *dreg2str;
+extern _CONST char *ireg0str;
+extern _CONST char *ireg1str;
+extern _CONST char *ireg2str;
+extern _CONST char *localregstr;
+extern _CONST char *stackregstr;
 
 /* register sizes */
 

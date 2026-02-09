@@ -47,14 +47,12 @@ FORWARD void initarray P((struct typestruct *type));
 FORWARD void inititem P((struct typestruct *type));
 FORWARD void initstruct P((struct typestruct *type));
 FORWARD void lbrace P((void));
-FORWARD void multidecl P((char *sname));
+FORWARD void multidecl P((_CONST char *sname));
 FORWARD void need P((int charneeded));
 FORWARD void rdeclarator P((void));
 FORWARD bool_pt regdecl P((void));
 
-PRIVATE struct typestruct *chainprefix(pretype, sufftype)
-struct typestruct *pretype;
-struct typestruct *sufftype;
+PRIVATE struct typestruct *chainprefix P2(struct typestruct *, pretype, struct typestruct *, sufftype)
 {
     if (pretype->nexttype != (struct typestruct*) 0)
     {
@@ -69,7 +67,7 @@ struct typestruct *sufftype;
     return sufftype;
 }
 
-PUBLIC void colon()
+PUBLIC void colon P0()
 {
     if (sym != COLON)
 	need(':');
@@ -82,7 +80,7 @@ PUBLIC void colon()
 /* list and declaration */
 /* the different cases are and ";" at the end are decided by idecllist() */
 
-PUBLIC void decllist()
+PUBLIC void decllist P0()
 {
     while (declspec())
     {
@@ -92,7 +90,7 @@ PUBLIC void decllist()
     }
 }
 
-PRIVATE void declaf()
+PRIVATE void declaf P0()
 {
     uoffset_t asize;
     bool_t levelnew;
@@ -220,7 +218,7 @@ PRIVATE void declaf()
     }
 }
 
-PRIVATE void declarator()
+PRIVATE void declarator P0()
 {
     rdeclarator();
     if (gvartype->constructor == STRUCTU && gvartype->typesize == 0 &&
@@ -228,7 +226,7 @@ PRIVATE void declarator()
 	error("undefined structure");
 }
 
-PRIVATE void declarg()
+PRIVATE void declarg P0()
 {
     if (gvarsymptr->level != ARGLEVEL)
 	error2error(gvarname, " not in argument list");
@@ -254,10 +252,10 @@ enumerator =
 	| identifier = constant-expression.
 */
 
-PRIVATE struct typestruct *declenum()
+PRIVATE struct typestruct *declenum P0()
 {
-    register struct symstruct *esymptr;
-    register struct typestruct *enumtype;
+    REGISTER struct symstruct *esymptr;
+    REGISTER struct typestruct *enumtype;
     offset_t ordinal;
 
     nextsym();
@@ -317,10 +315,7 @@ PRIVATE struct typestruct *declenum()
 
 /* declselt - get list of declarations for a structure/union member */
 
-PRIVATE void declselt(structype, psoffset, ptypelist)
-struct typestruct *structype;
-offset_t *psoffset;
-struct typelist **ptypelist;
+PRIVATE void declselt P3(struct typestruct *, structype, offset_t *, psoffset, struct typelist **, ptypelist)
 {
     struct typestruct *basetype;
     value_t fieldwidth;
@@ -390,7 +385,7 @@ struct typelist **ptypelist;
 			  (offset+ ~gvartype->alignmask) & gvartype->alignmask)
 			  + gvartype->typesize;
 		{
-		    register struct typelist *newtypelist;
+		    REGISTER struct typelist *newtypelist;
 
 		    newtypelist = (struct typelist*) qmalloc(sizeof *newtypelist);
 #ifdef TS
@@ -415,7 +410,7 @@ ts_s_newtypelist += sizeof *newtypelist;
     *psoffset = offset;
 }
 
-PRIVATE bool_pt declspec()
+PRIVATE bool_pt declspec P0()
 {
     unsigned nsc;
     unsigned ntype;
@@ -524,7 +519,7 @@ break2:
 
 /* declsu - get structure or union name and/or declaration, return type */
 
-PRIVATE struct typestruct *declsu()
+PRIVATE struct typestruct *declsu P0()
 {
     sym_t ogvarsc;
     offset_t soffset;
@@ -579,7 +574,7 @@ PRIVATE struct typestruct *declsu()
 
 /* declfunc() - function name and parameter list */
 
-PRIVATE void declfunc()
+PRIVATE void declfunc P0()
 {
     offset_t argsp;
     uoffset_t argsize;
@@ -594,9 +589,9 @@ PRIVATE void declfunc()
     gvarsymptr->flags = INITIALIZED;	/* show full declare */
     cseg();
     if (gvarsc == STATICDECL)
-	private(gvarname);	/* don't need to put STATIC in flags */
+	private_(gvarname);	/* don't need to put STATIC in flags */
     else
-	public(gvarname);
+	public_(gvarname);
     callee1mask = calleemask;
 #ifdef FRAMEPOINTER
     frame1list = framelist;
@@ -664,7 +659,7 @@ PRIVATE void declfunc()
 /* and list( type-declaration ) ";" */
 /* and complete declarations of functions */
 
-PRIVATE void idecllist()
+PRIVATE void idecllist P0()
 {
     struct typestruct *basetype;
     struct typestruct *inittype;
@@ -792,12 +787,12 @@ PRIVATE void idecllist()
 		if (gvarsc == STATICDECL)
 		{
 		    if (level == GLBLEVEL)
-			private(gvarname);
+			private_(gvarname);
 		    else
 			outnlabel(gvarsymptr->offset.offlabel);
 		}
 		else
-		    public(gvarname);
+		    public_(gvarname);
 		initlistflag = TRUE;
 		if (sym != LBRACE)
 		    initlistflag = FALSE;
@@ -849,8 +844,7 @@ PRIVATE void idecllist()
     argsallowed = FALSE;
 }
 
-PRIVATE void initarray(type)
-struct typestruct *type;
+PRIVATE void initarray P1(struct typestruct *, type)
 {
     uoffset_t basesize;
     struct typestruct *basetype;
@@ -891,8 +885,7 @@ struct typestruct *type;
 	defnulls(remaining * basesize);
 }
 
-PRIVATE void inititem(type)
-struct typestruct *type;
+PRIVATE void inititem P1(struct typestruct *, type)
 {
     sym_t startsym;
 
@@ -924,8 +917,7 @@ struct typestruct *type;
     }
 }
 
-PRIVATE void initstruct(type)
-struct typestruct *type;
+PRIVATE void initstruct P1(struct typestruct *, type)
 {
     struct typestruct *memtype;
     uoffset_t newoffset;
@@ -948,7 +940,7 @@ struct typestruct *type;
     defnulls(type->typesize - offset);
 }
 
-PRIVATE void lbrace()
+PRIVATE void lbrace P0()
 {
     if (sym != LBRACE)
 	need('{');
@@ -956,7 +948,7 @@ PRIVATE void lbrace()
 	nextsym();
 }
 
-PUBLIC void lparen()
+PUBLIC void lparen P0()
 {
     if (sym != LPAREN)
 	need('(');
@@ -964,14 +956,12 @@ PUBLIC void lparen()
 	nextsym();
 }
 
-PRIVATE void multidecl(sname)
-char *sname;
+PRIVATE void multidecl P1(_CONST char *, sname)
 {
     error2error(sname, " already declared");
 }
 
-PRIVATE void need(charneeded)
-int charneeded;
+PRIVATE void need P1(int, charneeded)
 {
     static char message[] = "need 'x'";
 
@@ -979,13 +969,13 @@ int charneeded;
     error(message);
 }
 
-PUBLIC void needvarname()
+PUBLIC void needvarname P0()
 {
     error("need variable name");
     nextsym();
 }
 
-PUBLIC void program()
+PUBLIC void program P0()
 {
     if (orig_cppmode)
 	cppscan();
@@ -1000,7 +990,7 @@ PUBLIC void program()
     }
 }
 
-PUBLIC void rbrace()
+PUBLIC void rbrace P0()
 {
     if (sym != RBRACE)
 	need('}');
@@ -1008,7 +998,7 @@ PUBLIC void rbrace()
 	nextsym();
 }
 
-PUBLIC void rbracket()
+PUBLIC void rbracket P0()
 {
     if (sym != RBRACKET)
 	need(']');
@@ -1016,7 +1006,7 @@ PUBLIC void rbracket()
 	nextsym();
 }
 
-PRIVATE void rdeclarator()
+PRIVATE void rdeclarator P0()
 {
     while (sym == STAR)
     {
@@ -1052,7 +1042,7 @@ PRIVATE void rdeclarator()
     declaf();
 }
 
-PRIVATE bool_pt regdecl()
+PRIVATE bool_pt regdecl P0()
 {
     store_t regavail;
 
@@ -1069,7 +1059,7 @@ PRIVATE bool_pt regdecl()
     return TRUE;
 }
 
-PUBLIC void rparen()
+PUBLIC void rparen P0()
 {
     if (sym != RPAREN)
 	need(')');
@@ -1077,7 +1067,7 @@ PUBLIC void rparen()
 	nextsym();
 }
 
-PUBLIC void semicolon()
+PUBLIC void semicolon P0()
 {
     if (sym != SEMICOLON)
 	need(';');
@@ -1085,7 +1075,7 @@ PUBLIC void semicolon()
 	nextsym();
 }
 
-PUBLIC struct typestruct *typename()
+PUBLIC struct typestruct *typename_ P0()
 {
     char ogvarname[NAMESIZE];
     sym_t ogvarsc;

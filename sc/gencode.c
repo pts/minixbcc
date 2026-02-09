@@ -41,36 +41,36 @@ PUBLIC uoffset_t alignmask = ~(uoffset_t) 0x0001;
 PUBLIC bool_t arg1inreg = FALSE;
 PUBLIC store_pt calleemask = INDREG1 | INDREG2;
 PUBLIC bool_t callersaves = FALSE;
-PUBLIC char *callstring = "call\t";
+PUBLIC _CONST char callstring[] = "call\t";
 PUBLIC store_pt doubleargregs = DREG | INDREG0 | INDREG1 | INDREG2;
 PUBLIC store_pt doubleregs = DREG | INDREG0 | INDREG1 | INDREG2;
 PUBLIC store_pt doublreturnregs = DREG | INDREG0 | INDREG1 | INDREG2;
 PUBLIC offset_t jcclonger = 3;
 PUBLIC offset_t jmplonger = 1;
-PUBLIC char *jumpstring = "br \t";
-PUBLIC char *regpulllist = "f2ax2ax2bx2si2di2bp2qx2qx2cx2dx2";
-PUBLIC char *regpushlist = "dx2cx2qx2qx2bp2di2si2bx2ax2ax2f2";
+PUBLIC _CONST char jumpstring[] = "br \t";
+PUBLIC _CONST char *regpulllist = "f2ax2ax2bx2si2di2bp2qx2qx2cx2dx2";
+PUBLIC _CONST char *regpushlist = "dx2cx2qx2qx2bp2di2si2bx2ax2ax2f2";
 #if NOTFINISHED
 PUBLIC store_pt regregs = INDREG1 | INDREG2 | DATREG1 | DATREG2;
 #else
 PUBLIC store_pt regregs = INDREG1 | INDREG2;
 #endif
 
-PUBLIC char *acclostr = "al";
-PUBLIC char *accumstr = "ax";
-PUBLIC char *badregstr = "qx";
-PUBLIC char *dreg1str = "cx";
-PUBLIC char *dreg1bstr = "cl";
-PUBLIC char *dreg2str = "dx";
-PUBLIC char *ireg0str = "bx";
-PUBLIC char *ireg1str = "si";
-PUBLIC char *ireg2str = "di";
+PUBLIC _CONST char *acclostr = "al";
+PUBLIC _CONST char *accumstr = "ax";
+PUBLIC _CONST char *badregstr = "qx";
+PUBLIC _CONST char *dreg1str = "cx";
+PUBLIC _CONST char *dreg1bstr = "cl";
+PUBLIC _CONST char *dreg2str = "dx";
+PUBLIC _CONST char *ireg0str = "bx";
+PUBLIC _CONST char *ireg1str = "si";
+PUBLIC _CONST char *ireg2str = "di";
 #ifdef FRAMEPOINTER
-PUBLIC char *localregstr = "bp";
+PUBLIC _CONST char *localregstr = "bp";
 #else
-PUBLIC char *localregstr = "sp";
+PUBLIC _CONST char *localregstr = "sp";
 #endif
-PUBLIC char *stackregstr = "sp";
+PUBLIC _CONST char *stackregstr = "sp";
 
 PUBLIC uoffset_t accregsize = 2;
 #ifdef FRAMEPOINTER
@@ -93,7 +93,7 @@ PUBLIC uvalue_t shortmaskto = (uvalue_t) 0xFFFFL;
 PRIVATE store_pt callermask;
 PRIVATE offset_t lastargsp;
 
-PRIVATE smalin_t opdata[] =
+PRIVATE _CONST smalin_t opdata[] =
 {
 /*	GTOP, LTOP, ADDOP, DIVOP, */
     GT, LT, 0, 0,
@@ -122,10 +122,7 @@ FORWARD void tcheck P((struct nodestruct *exp));
 #  define GET_OPDATA_FIRST(op) (opdata[(op) - FIRSTOPDATA])  /* This is correct C (without undefined behavior), but __BCC__ would generate longer code for it. */
 #endif
 
-PRIVATE void abop(op, source, target)
-op_pt op;
-struct symstruct *source;
-struct symstruct *target;
+PRIVATE void abop P3(op_pt, op, struct symstruct *, source, struct symstruct *, target)
 {
     store_pt regmark;
     store_pt regpushed;
@@ -183,8 +180,7 @@ struct symstruct *target;
     recovlist(regpushed);
 }
 
-PUBLIC void bileaf(exp)
-struct nodestruct *exp;
+PUBLIC void bileaf P1(struct nodestruct *, exp)
 {
     bool_t commutop;
     bool_t tookaddress;
@@ -341,10 +337,9 @@ struct nodestruct *exp;
     }
 }
 
-PUBLIC fastin_pt bitcount(number)
-register uvalue_t number;
+PUBLIC fastin_pt bitcount P1(REGISTER uvalue_t, number)
 {
-    register fastin_pt count;
+    REGISTER fastin_pt count;
 
     for (count = 0; number != 0; number >>= 1)
 	if (number & 1)
@@ -352,7 +347,7 @@ register uvalue_t number;
     return count;
 }
 
-PUBLIC void codeinit()
+PUBLIC void codeinit P0()
 {
     if (i386_32)
     {
@@ -420,18 +415,16 @@ PUBLIC void codeinit()
 #endif
 }
 
-PUBLIC fastin_pt highbit(number)
-register uvalue_t number;
+PUBLIC fastin_pt highbit P1(REGISTER uvalue_t, number)
 {
-    register fastin_pt bit;
+    REGISTER fastin_pt bit;
 
     for (bit = -1; number != 0; number >>= 1)
 	++bit;
     return bit;
 }
 
-PUBLIC void makeleaf(exp)
-struct nodestruct *exp;
+PUBLIC void makeleaf P1(struct nodestruct *, exp)
 {
     ccode_t condtrue;
     op_pt op;
@@ -603,7 +596,7 @@ struct nodestruct *exp;
 	neg(target);
 	break;
     case NOTOP:
-	not(target);
+	not_(target);
 	break;
     case POSTDECOP:
     case POSTINCOP:
@@ -656,8 +649,7 @@ struct nodestruct *exp;
 #endif
 }
 
-PRIVATE void smakeleaf(exp)
-struct nodestruct *exp;
+PRIVATE void smakeleaf P1(struct nodestruct *, exp)
 {
     struct nodestruct *left;
 
@@ -680,10 +672,9 @@ struct nodestruct *exp;
 
 #ifdef SELFTYPECHECK
 
-PRIVATE void tcheck(exp)
-register struct nodestruct *exp;
+PRIVATE void tcheck P1(REGISTER struct nodestruct *, exp)
 {
-    register struct symstruct *target;
+    REGISTER struct symstruct *target;
 
     if (exp->nodetype != (target = exp->left.symptr)->type)
     {
