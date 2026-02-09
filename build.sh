@@ -68,7 +68,7 @@ if test "$1" = auto; then  # Detect if our best bet is cross-compilation with GC
 fi
 
 # Cross-compilation with GCC (gcc) or Clang (clang) (e.g. on Linux, FreeBSD, macOS), OpenWatcom v2 (owcc) on Linux, minilibc686 minicc on Linux, or a generic Unix C compiler (cc) on Unix.
-if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minicc || test "$1" = bbcc || test "$1" = cross || test "$1" = zig; then
+if test "$1" = gcc || test "$1" = g++ || test "$1" = clang || test "$1" = clang++ || test "$1" = owcc || test "$1" = minicc || test "$1" = bbcc || test "$1" = cross || test "$1" = zig; then
   # GCC is known to work with GCC 4.3--4.9 and GCC 7.5.0.
   # Clang is known to work with Clang 6.0.0.
   # Example invocation for OpenWatcom v2 on Linux: ./build.sh owcc
@@ -100,6 +100,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
     # Even -Wno-unused-command-line-argument wouldn't silence this warning when `zig cc -target powerpc64-linux-musl -s -O2 -W -Wall ...' is compiling the libc:  zig: warning: argument unused during compilation: '-mred-zone' [-Wunused-command-line-argument]
     if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-O -fno-lto"  # Example: ./build.sh zig cc
     elif test "$1" = minicc; then cc="$1"; shift; cflags=  # It optimizes for size better by default than with -O.
+    elif test "$1" = clang++; then cc="$1"; shift; cflags="-x c++ -O"  # `-x c++' to pacify the Clang clang++ warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
     elif test "$1" = cross; then cc=cc; shift; cflags=-O  # A generic Unix C compiler named `cc'.
     else cc="$1"; shift; cflags=-O
     fi
