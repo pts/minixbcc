@@ -134,13 +134,17 @@ int main P2(int, argc, char **, argv)
   (void)argc;
 
   /* Pacify OpenWatcom v2 (owcc -W -Wall -Werror) warning `W201: Unreachable code' int the lines defining the labels. None of the conditions below are true. */
-  if (argc < -5) goto ur4;
-  if (argc < -4) goto ur5;
+  if (argc < -7) goto ur7;
+  if (argc < -6) goto ur6;
+  if (argc < -5) goto ur5;
+  if (argc < -4) goto ur4;
   if (argc < -3) goto ur3;
   if (argc < -2) goto ur2;
   if (argc < -1) goto ur1;
 
-  if ((int) ~(unsigned) 0 != -1 || (-1 & 3) != 3) ur1: write_str(STDOUT_FILENO, "-DBADSIGNED ");  /* int is not two's complement. */
+  if ('z' - 'a' != 26 - 1 || 'Z' - 'A' != 26 - 1 || '9' - '0' != 9) ur7: write_str(STDOUT_FILENO, "-DBADASCIIISH ");  /* Letters and digits must be consecutive. This fails for EBCDIC. */
+  if (' ' != 32 || '!' != 33 || '0' != 48 || 'A' != 65 || 'a' != 97 || '~' != 126) ur6: write_str(STDOUT_FILENO, "-DBADASCII ");  /* Some parts of minixbcc rely on ASCII. */
+  if ((int) ~(unsigned) 0 != -1 || (-1 & 3) != 3) ur1: write_str(STDOUT_FILENO, "-DBADSIGNED ");  /* int is not two's complement; the result of (-1 & 3) is 1 in sign-magnitude representation, and 2 on a one's complement system.  */
   u = (unsigned) 1 << (sizeof(unsigned) * 4);  /* Separate assignment to avoid warning in Minix 1.5.10 i86 ACK 3.1 C compiler: overflow in unsigned constant expression. */
   if (((unsigned) 1 << (sizeof(unsigned) * 8 - 1)) == 0 || (u << (sizeof(unsigned) * 4))) ur2: write_str(STDOUT_FILENO, "-DBADBYTE ");  /* 1 byte is not 8 bits. */
   if (sizeof(char) != 1) ur3: write_str(STDOUT_FILENO, "-DBADCHAR ");  /* char is not 1 byte. */
