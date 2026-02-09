@@ -1,5 +1,9 @@
 /* type.h - types for assembler */
 
+#ifndef _AUTOC_H
+#  include "autoc.h"  /* For INT32T. */
+#endif
+
 typedef unsigned short u2_t;
 typedef unsigned u2_pt;
 typedef unsigned INT32T u4_t;

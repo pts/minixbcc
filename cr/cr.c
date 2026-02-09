@@ -12,6 +12,9 @@
 #  include <string.h>
 #  include <stdlib.h>
 #endif
+#ifndef _AUTOC_H
+#  include "autoc.h"  /* For INT32T. */
+#endif
 
 #if __STDC__
 #  define CONST const

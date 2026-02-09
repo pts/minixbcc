@@ -2,6 +2,10 @@
 
 /* Copyright (C) 1992 Bruce Evans */
 
+#ifndef _AUTOC_H
+#  include "autoc.h"  /* For INT32T. */
+#endif
+
 /*
   source types big enough to handle target quantities
   these have to be match the source compiler and target machine

@@ -8,6 +8,9 @@
 #  include <stdlib.h>
 #  include <unistd.h>
 #endif
+#ifndef _AUTOC_H
+#  include "autoc.h"  /* For INT32T. */
+#endif
 
 #define MAXLINE 256		/* when this is made bigger, fix pfcc not
 				 * to store the string length in a byte-

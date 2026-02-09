@@ -160,7 +160,7 @@ char **argv;
    * instruction. We don't use `(char *) argc' either, to avoid the GCC and
    * Clang warning -Wint-to-pointer-cast.
    */
-  if (alignptrcheck((char *) 1)) write_str(STDOUT_FILENO, "-DPORTALIGN ");
+  write_str(STDOUT_FILENO, alignptrcheck((char *) 1) ? "-DNOPORTALIGN=0 " : "-DNOPORTALIGN=1 ");
 
   if (argv[0] && (filename = argv[1])) {
     if (argv[2]) fatal2("too many command-line arguments", (CONST char*)0);

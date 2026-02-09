@@ -159,7 +159,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   # * There is 140 KiB of virtual memory for each process (total of: .text, .rodata, .data, .bss, stack). This doesn't hold for ELKS and Minix i86.
   # * malloc(...) can allocate 192 KiB on top of that. This doesn't hold for ELKS and Minix i86.
   # * There is no need to declare the maximum memory use of a program (including the use of malloc(...)) at compile time. This doesn't hold for ELKS, Minix i86 and Minix i386. For these system, chmem (or `ld -h ...') has to be used. !! Autodetect this.
-  # !! make new enough GCC and Clang work without sysdet, e.g. with __SIZEOF_INT__, __SIZEOF_LONG__, __UINTPTR_TYPE__, __i386__ or __code_model_small__ etc. for PORTALIGN
+  # !! make new enough GCC and Clang work without sysdet, e.g. with __SIZEOF_INT__, __SIZEOF_LONG__, __UINTPTR_TYPE__, __i386__ or __code_model_small__ etc. for -DNOPORTALIGN=1
   rm -f sysdet
   cc2=
   if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-unused-command-line-argument -Wno-strict-prototypes -fno-lto"  # Example: ./build.sh zig cc
@@ -169,7 +169,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   fi
   test "$1" = -O0 && shift && cflags=  # Cancel the -O, in case the C compiler doesn't support it.
   "$cc" $cc2 $cflags "$@" -o sysdet sysdet.c || exit "$?"
-  sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DPORTALIGN"  # !! Add -DMINALIGNBYTES=1
+  sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DNOPORTALIGN=0"  # !! Add -DMINALIGNBYTES=1
   test "$?" = 0 || exit 2
   rm -f sysdet
   case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac
@@ -179,7 +179,7 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   "$cc" $cc2 $cflags $sysdet "$@" -o as.cross as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
   "$cc" $cc2 $cflags $sysdet "$@" -o ld.cross ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
   "$cc" $cc2 $cflags $sysdet "$@" -o cr.cross cr/cr.c || exit "$?"
-  "$cc" $cc2 $cflags "$@" -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  "$cc" $cc2 $cflags "$@" -o cpp.cross cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
 
   set cc  # For subsequent `test "$1" = ...'.
   sc=./sc.cross
@@ -242,16 +242,16 @@ if test "$1" = ack0; then  # Minix 1.5.10 i86 ACK 3.1 C compiler with either the
   rm -f sc.mx as.mx ld.mx cr.mx cpp.mx
   # -i for separate I&D (BCC has it by default)
   # -s for adding symbols (opposite meaning as in BCC bcc and GCC gcc)
-  cc -i    -O $cflags -DOPEN00 -DNOUNIONINIT -DACKFIX -DSBRK -DLIBCH -c sc/mxmalloc.c sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+  cc -i    -O $cflags -DOPEN00 -DNOUNIONINIT -DACKFIX -DSBRK -DLIBCH -DMXMALLOC -c sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
   # This old asld (but not the new asld) would run out of memory if we used the Minix 1.5.10 libc (/usr/lib/crtso.c ... /usr/lib/libc.a /usr/lib/end.s).
-  # We work it around by using a small, custom libc tailored for sc (lsca.s mxmalloc.c ... lsce.s).
-  asld -i -o sc.mx sc/lsca.s mxmalloc.s bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s sc/lsce.s || exit "$?"
-  rm -f mxmalloc.s bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s
+  # We work it around by using a small, custom libc tailored for sc (lsca.s bcc-cc1. ... lsce.s).
+  asld -i -o sc.mx sc/lsca.s bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s sc/lsce.s || exit "$?"
+  rm -f bcc-cc1.s assign.s codefrag.s debug.s declare.s express.s exptree.s floatop.s function.s gencode.s genloads.s glogcode.s hardop.s input.s label.s loadexp.s longop.s output.s preproc.s preserve.s scan.s softop.s state.s table.s type.s
   cc -i -s -O $cflags -DMINIXHEAP -DBRKSIZE -o as.mx as/as.c as/assemble.c as/error.c as/express.c as/genbin.c as/genlist.c as/genobj.c as/gensym.c as/heap.c as/keywords.c as/macro.c as/mops.c as/pops.c as/readsrc.c as/scan.c as/table.c as/typeconv.c || exit "$?"
   cc -i -s -O $cflags -DMINIXHEAP -DBRKSIZE -DACKFIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
   cc -i -s -O $cflags -o cr.mx cr/cr.c || exit "$?"
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
-  cc -i -s -O -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  cc -i -s -O -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
 
   sc=./sc.mx
   as=./as.mx
@@ -279,13 +279,13 @@ if test "$1" = acka0 || test "$1" = acka3; then  # Minix >=1.7.0 i86 ACK ANSI C 
   # frontend (/usr/src/commands/i86/cc.c).
   #
   # /usr/lib/ncpp -D_EM_WSIZE=2 -D_EM_PSIZE=2 -D_EM_SSIZE=2 -D_EM_LSIZE=4 -D_EM_FSIZE=4 -D_EM_DSIZE=8 -D__ACK__ -D__minix -D__i86 hello.c >/tmp/cc230000.i
-  (cd sc && cc -i -s -O -m $cflags -DACKFIX -o ../sc.mx mxmalloc.c bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
+  (cd sc && cc -i -s -O -m $cflags -DACKFIX -o ../sc.mx bcc-cc1.c assign.c codefrag.c debug.c declare.c express.c exptree.c floatop.c function.c gencode.c genloads.c glogcode.c hardop.c input.c label.c loadexp.c longop.c output.c preproc.c preserve.c scan.c softop.c state.c table.c type.c) || exit "$?"
   (cd as && cc -i -s -O -m $cflags -DMINIXHEAP -o ../as.mx as.c assemble.c error.c express.c genbin.c genlist.c genobj.c gensym.c heap.c keywords.c macro.c mops.c pops.c readsrc.c scan.c table.c typeconv.c) || exit "$?"
   (cd ld && cc -i -s -O -m $cflags -DMINIXHEAP -DACKFIX -o ../ld.mx dumps.c heap.c io.c ld.c readobj.c table.c typeconv.c writebin.c) || exit "$?"
   (cd cr && cc -i -s -O -m $cflags -o ../cr.mx cr.c) || exit "$?"
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
   # -wo is specified to omit the ACK ANSI C compiler 1.202 warnings: ... old-fashioned function declaration; ... old-fashioned function definition
-  (cd cpp && cc -i -s -O -m -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"
+  (cd cpp && cc -i -s -O -m -o ../cpp.mx cpp1.c cpp2.c cpp3.c cpp4.c cpp5.c cpp6.c) || exit "$?"
 
   h=0r  # Host system is Minix i86.
   sc=./sc.mx
@@ -327,14 +327,14 @@ if test "$1" = bcc0; then  # BCC (v0 or v3) on Minix i86, targeting Minix i86: s
   cp ld/globvar.h ld/globvar  # sc v0 i86 (but not i386) has a bug: it can't find #include files with basenames this long when included from ld/io.c. We work it around by using a copy with -DGLOBVARI.
   # This would create an executable sc.mx which crashes at startup time because it contains too much code: its a.out a_text header value is >0xff00:
   #   "$bcc" -i -0 -DSMALLMEM -DLIBCH -o sc.mx sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
-  # We work it around by using a custom, smaller libc (lscs0.s and mxmalloc.c) instead of the default libc.a.
-  sco="lscs0i.o mxmalloc.o bcc-cc1.o assign.o codefrag.o debug.o declare.o express.o exptree.o floatop.o function.o gencode.o genloads.o glogcode.o hardop.o input.o label.o loadexp.o longop.o output.o preproc.o preserve.o scan.o softop.o state.o table.o type.o"
+  # We work it around by using a custom, smaller libc (lscs0.s and *malloc.c) instead of the default libc.a.
+  sco="lscs0i.o bcc-cc1.o assign.o codefrag.o debug.o declare.o express.o exptree.o floatop.o function.o gencode.o genloads.o glogcode.o hardop.o input.o label.o loadexp.o longop.o output.o preproc.o preserve.o scan.o softop.o state.o table.o type.o"
   rm -f $sco
   sed "s/^include.*//" <lscs0.s >lscs0i.s || exit "$?"  # as v0 abort()s on the include pseudo-op, so we manually process it with sed+cat.
   cat libt0.si >>lscs0i.s || exit "$?"
 
   cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4"
-  "$bcc" -i -0 $cflags -DOPEN00 -DSBRK -DLIBCH -c lscs0i.s sc/mxmalloc.c sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
+  "$bcc" -i -0 $cflags -DOPEN00 -DSBRK -DMXMALLOC -DLIBCH -c lscs0i.s sc/bcc-cc1.c sc/assign.c sc/codefrag.c sc/debug.c sc/declare.c sc/express.c sc/exptree.c sc/floatop.c sc/function.c sc/gencode.c sc/genloads.c sc/glogcode.c sc/hardop.c sc/input.c sc/label.c sc/loadexp.c sc/longop.c sc/output.c sc/preproc.c sc/preserve.c sc/scan.c sc/softop.c sc/state.c sc/table.c sc/type.c || exit "$?"
   "$fld" -0 -i -o sc.mx $sco || exit "$?"
   rm -f $sco
   sco=
@@ -343,7 +343,7 @@ if test "$1" = bcc0; then  # BCC (v0 or v3) on Minix i86, targeting Minix i86: s
   "$bcc" -i -0 $cflags -DMINIXHEAP -DBRKSIZE -DGLOBVARI -DLIBCH -DLIBCHMINIX -DBCCALIGNFIX -o ld.mx ld/dumps.c ld/heap.c ld/io.c ld/ld.c ld/readobj.c ld/table.c ld/typeconv.c ld/writebin.c || exit "$?"
   "$bcc" -i -0 $cflags -DLIBCH -o cr.mx cr/cr.c || exit "$?"
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
-  "$bcc" -i -0 -DOLD_PREPROCESSOR -DNOSTDLIBH -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  "$bcc" -i -0 -DNOSTDLIBH -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
 
   h=0r  # Host system is Minix i86.
   sc=./sc.mx
@@ -369,7 +369,7 @@ if test "$1" = bcc3; then  # BCC (v0 or v3) on Minix i386, targeting Minix i386:
   chmem =40000 cr.mx || exit "$?"  # Library builder.
 
   # A working cpp is not needed for building minixbcc, we can build it later using the fully built minixbcc. !! We use it just to get rid of the warnings. Comment it out.
-  "$bcc" -i -DOLD_PREPROCESSOR -DNOSTDLIBH -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
+  "$bcc" -i -DNOSTDLIBH -o cpp.mx cpp/cpp1.c cpp/cpp2.c cpp/cpp3.c cpp/cpp4.c cpp/cpp5.c cpp/cpp6.c || exit "$?"
   chmem =150000 cpp.mx || exit "$?"  # C preprocessor.
 
   h=3r  # Host system is Minix i386.
@@ -547,7 +547,7 @@ cru="$cr"; case "$cr" in /*) ;; */*) cru="../$cr" ;; esac  # "$cru" is "$cr", bu
 "$cmp" 0/lcpps.o 0g/lcpps.n || exit "$?"
 for a03 in 0 3; do
   for b in cpp1 cpp2 cpp3 cpp4 cpp5 cpp6; do
-    "$sc" -"$a03" "$idirflag" -DOLD_PREPROCESSOR -Dunix -DHOST=1 -DTARGET=0 -DMACHINE=\"i8088\" -DSYSTEM=\"minix\" -DCOMPILER=\"__STD_CC__\" -o "$a03"/cpp"$b".s cpp/"$b".c || exit "$?"
+    "$sc" -"$a03" "$idirflag" -o "$a03"/cpp"$b".s cpp/"$b".c || exit "$?"
     "$diff" "$a03"/cpp"$b".s "$a03"g/cpp"$b".r || exit "$?"
     "$as" -"$a03" -u -w -o "$a03"/cpp"$b".o "$a03"/cpp"$b".s || exit "$?"
     "$cmp"  "$a03"/cpp"$b".o "$a03"g/cpp"$b".n || exit "$?"

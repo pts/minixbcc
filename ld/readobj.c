@@ -5,6 +5,9 @@
 #else
 #  include <string.h>
 #endif
+#ifndef _AUTOC_H
+#  include "autoc.h"  /* For INT32T. */
+#endif
 #include "const.h"
 #include "obj.h"
 #include "type.h"

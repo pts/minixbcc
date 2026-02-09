@@ -3,7 +3,7 @@
 /* Copyright (C) 1992 Bruce Evans */
 
 /*
-  the compiler is not very portable in this area
+  the compiler is somewhat portable in this area
   it only directly supports Intel i86 (8086) and i386
   it assumes
       sizeof(source INT32T) >= sizeof(target long)

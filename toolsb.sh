@@ -21,8 +21,8 @@ if test "$cmp" = tcmp; then
   a='tcmp( ) { cmp  "$1" "$2" >>tools.diff || echo "cp -p \"$1\" \"$2\""; }'; eval "$a"  # eval to make Minix /bin/sh skip it.
   a='tdiff() { diff "$1" "$2" >>tools.diff || echo "cp -p \"$1\" \"$2\""; }'; eval "$a"  # eval to make Minix /bin/sh skip it.
 fi
-if test "$a03" = 0; then aa=-a; cflags="-DSMALLMEM -DINT32T=long -DINTPTRT=int -DALIGNBYTES=4 -DSC_ALIGNMENT=1 -DLD_ALIGNMENT=1 -DAS_ALIGNMENT=1 $cflags"  # For Minix i86. Save memory by using a small alignment.
-else                     aa=;   cflags="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 $cflags"
+if test "$a03" = 0; then aa=-a; cflags="-DSMALLMEM -DSC_ALIGNMENT=1 -DLD_ALIGNMENT=1 -DAS_ALIGNMENT=1 $cflags"  # For Minix i86. Save memory by using a small alignment.
+else                     aa=;   cflags="$cflags"
 fi
 
 if test "$sedi"; then  # as v0 abort()s on the include pseudo-op, so we manually process it with sed+cat.
@@ -31,8 +31,8 @@ if test "$sedi"; then  # as v0 abort()s on the include pseudo-op, so we manually
 fi
 "$as" -"$a03" $aa -w -o "$a03"/lscs.o sc/lscs"$a03$sedi".s || exit "$?"
 "$cmp" "$a03"/lscs.o "$a03"g/lscs.n || exit "$?"
-for b in mxmalloc bcc-cc1 assign codefrag debug declare express exptree floatop function gencode genloads glogcode hardop input label loadexp longop output preproc preserve scan softop state table type; do
-  "$sc" -"$a03" $cflags -DOPEN00 -DSBRK -DLIBCH -o "$a03"/sc"$b".s sc/"$b".c || exit "$?"
+for b in bcc-cc1 assign codefrag debug declare express exptree floatop function gencode genloads glogcode hardop input label loadexp longop output preproc preserve scan softop state table type; do
+  "$sc" -"$a03" $cflags -DOPEN00 -DSBRK -DMXMALLOC -DLIBCH -o "$a03"/sc"$b".s sc/"$b".c || exit "$?"
   "$diff" "$a03"/sc"$b".s "$a03"g/sc"$b".r || exit "$?"
   "$as" -"$a03" -u -w -o "$a03"/sc"$b".o "$a03"/sc"$b".s || exit "$?"
   "$cmp"  "$a03"/sc"$b".o "$a03"g/sc"$b".n || exit "$?"
@@ -40,7 +40,7 @@ done
 rm -f sc.tool
 if test "$a03" = 3; then cv=150000; else cv=; fi  # chmem =150000 sc || exit "$?"  # C compiler backend.
 if test "$sedi"; then hflag=; elif test "$cv"; then hflag="-h $cv"; cv=; else hflag=; fi
-"$ld" -"$a03" -i $hflag -o sc.tool "$a03"/lscs.o "$a03"/scmxmalloc.o "$a03"/scbcc-cc1.o "$a03"/scassign.o "$a03"/sccodefrag.o "$a03"/scdebug.o "$a03"/scdeclare.o "$a03"/scexpress.o "$a03"/scexptree.o "$a03"/scfloatop.o "$a03"/scfunction.o "$a03"/scgencode.o "$a03"/scgenloads.o "$a03"/scglogcode.o "$a03"/schardop.o "$a03"/scinput.o "$a03"/sclabel.o "$a03"/scloadexp.o "$a03"/sclongop.o "$a03"/scoutput.o "$a03"/scpreproc.o "$a03"/scpreserve.o "$a03"/scscan.o "$a03"/scsoftop.o "$a03"/scstate.o "$a03"/sctable.o "$a03"/sctype.o || exit "$?"
+"$ld" -"$a03" -i $hflag -o sc.tool "$a03"/lscs.o "$a03"/scbcc-cc1.o "$a03"/scassign.o "$a03"/sccodefrag.o "$a03"/scdebug.o "$a03"/scdeclare.o "$a03"/scexpress.o "$a03"/scexptree.o "$a03"/scfloatop.o "$a03"/scfunction.o "$a03"/scgencode.o "$a03"/scgenloads.o "$a03"/scglogcode.o "$a03"/schardop.o "$a03"/scinput.o "$a03"/sclabel.o "$a03"/scloadexp.o "$a03"/sclongop.o "$a03"/scoutput.o "$a03"/scpreproc.o "$a03"/scpreserve.o "$a03"/scscan.o "$a03"/scsoftop.o "$a03"/scstate.o "$a03"/sctable.o "$a03"/sctype.o || exit "$?"
 test -z "$cv" || chmem "=$cv" sc.tool || exit "$?"
 ls -l sc.tool >&2 || exit "$?"
 test -x sc.tool || exit "$?"
