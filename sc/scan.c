@@ -101,9 +101,9 @@ PRIVATE void newstringorcharconst P((void));
 
 /* skip white space up to end of line (skip EOL's if in comments) */
 
-PUBLIC void blanks()
+PUBLIC void blanks P0()
 {
-    register char *reglineptr;
+    REGISTER char *reglineptr;
 
     while (TRUE)
     {
@@ -135,7 +135,7 @@ PUBLIC void blanks()
     }
 }
 
-PUBLIC void cppscan()
+PUBLIC void cppscan P0()
 {
     while (TRUE)
     {
@@ -235,20 +235,19 @@ PUBLIC void cppscan()
     }
 }
 
-PUBLIC void eofin(message)
-char *message;
+PUBLIC void eofin P1(_CONST char *, message)
 {
     error2error("end of file in ", message);
 }
 
 /* get identifier in gsname == gs2name + 2 */
 
-PRIVATE void getident()
+PRIVATE void getident P0()
 {
-    register int c;
-    register char *idptr;
-    register int length;
-    register char *reglineptr;
+    REGISTER int c;
+    REGISTER char *idptr;
+    REGISTER int length;
+    REGISTER char *reglineptr;
 
     idptr = gsname;
     length = NAMESIZE;
@@ -278,7 +277,7 @@ more:
 
 /* return nonzero if at an identifier */
 
-PUBLIC bool_pt isident()
+PUBLIC bool_pt isident P0()
 {
     if (SYMOFCHAR(ch) != IDENT)
 	return FALSE;
@@ -286,11 +285,11 @@ PUBLIC bool_pt isident()
     return TRUE;
 }
 
-PRIVATE void intconst()
+PRIVATE void intconst P0()
 {
     unsigned char base;
     fastin_t digit;
-    register char *digptr;
+    REGISTER char *digptr;
     fastin_t lcount;
     fastin_t ucount;
     bool_t dflag;
@@ -401,10 +400,10 @@ PRIVATE void intconst()
 	error("junk at end of integer constant");
 }
 
-PUBLIC void nextsym()
+PUBLIC void nextsym P0()
 {
     static char lastch;
-    register char *reglineptr;
+    REGISTER char *reglineptr;
 
     while (TRUE)		/* exit with short, fast returns */
     {
@@ -671,7 +670,7 @@ PUBLIC void nextsym()
     }
 }
 
-PRIVATE void ppnumber()
+PRIVATE void ppnumber P0()
 {
     constant.value.s = charptr;
     while (TRUE)
@@ -693,7 +692,7 @@ PRIVATE void ppnumber()
     *charptr = 0;
 }
 
-PUBLIC void stringorcharconst()
+PUBLIC void stringorcharconst P0()
 {
     char terminator;
 
@@ -732,13 +731,13 @@ PUBLIC void stringorcharconst()
     }
 }
 
-PRIVATE void newstringorcharconst()
+PRIVATE void newstringorcharconst P0()
 {
     char *endinptr;
     int escvalue;
     fastin_t maxdigits;
-    register char *inptr;
-    register char *outptr;
+    REGISTER char *inptr;
+    REGISTER char *outptr;
 
     outptr = constant.value.s;
     inptr = charptr - 1;

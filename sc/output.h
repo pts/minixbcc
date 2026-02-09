@@ -3,7 +3,7 @@
 /* Copyright (C) 1992 Bruce Evans */
 
 #define OUTBYTE(ch) \
-    do {register char *outp = outbufptr; *outp++ = (ch); \
+    do {REGISTER char *outp = outbufptr; *outp++ = (ch); \
 	outbufptr = outp; if (outp >= outbuftop) flushout(); } while (0)
 
 EXTERN bool_t ctext;		/* nonzero to intermix C source */

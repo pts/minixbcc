@@ -84,7 +84,7 @@ FORWARD void opregadr P((void));
 #define sr1() (outsr(), outaccum(), outnc1())
 #define subfactor(reg) (outsub(), outregname(reg), outncregname(DXREG))
 #define usr1() (outusr(), outaccum(), outnc1())
-PRIVATE void adjcarry()
+PRIVATE void adjcarry P0()
 {
     outop3str("rcl\t");
     outregname(DXREG);
@@ -95,17 +95,17 @@ PRIVATE void adjcarry()
     outregname(DXREG);
     outncimmadr((offset_t) 0x100);
 }
-PUBLIC void clrBreg()
+PUBLIC void clrBreg P0()
 {
     outxor();
     outstr(acclostr);
     outncregname(BREG);
 }
-PUBLIC void comment()
+PUBLIC void comment P0()
 {
     outstr("! ");
 }
-PUBLIC void ctoi()
+PUBLIC void ctoi P0()
 {
     if (i386_32)
     {
@@ -122,37 +122,37 @@ PUBLIC void ctoi()
 	outnl();
     }
 }
-PUBLIC void defbyte()
+PUBLIC void defbyte P0()
 {
     outop0str(".byte\t");
 }
-PUBLIC void defword()
+PUBLIC void defword P0()
 {
     outop0str(".word\t");
 }
-PUBLIC void defdword()
+PUBLIC void defdword P0()
 {
     outop0str("dd\t");
 }
-PUBLIC void even()
+PUBLIC void even P0()
 {
     outop0str(".even\n");
 }
-PUBLIC void negDreg()
+PUBLIC void negDreg P0()
 {
     outop2str("neg\t");
     outnregname(DREG);
 }
-PUBLIC void comDreg()
+PUBLIC void comDreg P0()
 {
     outop2str("not\t");
     outnregname(DREG);
 }
-PUBLIC void outadd()
+PUBLIC void outadd P0()
 {
     outop2str("add\t");
 }
-PUBLIC void outaddsp()
+PUBLIC void outaddsp P0()
 {
     outadd();
     outstackreg();
@@ -160,126 +160,126 @@ PUBLIC void outaddsp()
     outimmed();
     bumplc2();
 }
-PRIVATE void outand()
+PRIVATE void outand P0()
 {
     outop2str(ANDSTRING);
 }
-PUBLIC void outcalladr()
+PUBLIC void outcalladr P0()
 {
     outop2str("call\t");
 }
-PUBLIC void outcmp()
+PUBLIC void outcmp P0()
 {
     outop2str("cmp\t");
 }
-PUBLIC void outdec()
+PUBLIC void outdec P0()
 {
     outop1str("dec\t");
 }
-PUBLIC void outdword()
+PUBLIC void outdword P0()
 {
     outstr("dword ");
 }
-PRIVATE void outequate()
+PRIVATE void outequate P0()
 {
     outop0str("\t=\t");
 }
-PUBLIC void outfail()
+PUBLIC void outfail P0()
 {
     outop0str(".fail\t");
 }
-PUBLIC void outinc()
+PUBLIC void outinc P0()
 {
     outop1str("inc\t");
 }
-PUBLIC void outindleft()
+PUBLIC void outindleft P0()
 {
     outbyte('[');
 }
-PUBLIC void outindright()
+PUBLIC void outindright P0()
 {
     outbyte(']');
 }
 #ifndef FRAMEPOINTER
-PUBLIC void outindstackreg()
+PUBLIC void outindstackreg P0()
 {
     outindleft();
     outregname(STACKREG);
     outindright();
 }
 #endif
-PUBLIC void outldaccum()
+PUBLIC void outldaccum P0()
 {
     outload();
     outaccum();
     outcomma();
 }
-PUBLIC void outldmulreg()
+PUBLIC void outldmulreg P0()
 {
     outload();
     outregname(MULREG);
     outcomma();
 }
-PUBLIC void outlea()
+PUBLIC void outlea P0()
 {
     outop2str("lea\t");
 }
-PUBLIC void outleasp()
+PUBLIC void outleasp P0()
 {
     outlea();
     outstackreg();
     outcomma();
 }
-PUBLIC void outload()
+PUBLIC void outload P0()
 {
     outop2str("mov\t");
 }
-PRIVATE void outmovsx()
+PRIVATE void outmovsx P0()
 {
     outop3str("movsx\t");
 }
-PRIVATE void outmovzx()
+PRIVATE void outmovzx P0()
 {
     outop3str("movzx\t");
 }
-PUBLIC void outmulmulreg()
+PUBLIC void outmulmulreg P0()
 {
     outop2str("mul\t");
     outnregname(MULREG);
 }
-PUBLIC void outopsep()
+PUBLIC void outopsep P0()
 {
     outcomma();
 }
-PUBLIC void outpshs()
+PUBLIC void outpshs P0()
 {
     outop1str("push");
 }
-PUBLIC void outpuls()
+PUBLIC void outpuls P0()
 {
     outop1str("pop");
 }
-PUBLIC void outreturn()
+PUBLIC void outreturn P0()
 {
     outnop1str("ret");
 }
-PUBLIC void outstore()
+PUBLIC void outstore P0()
 {
     outload();
 }
-PUBLIC void outsub()
+PUBLIC void outsub P0()
 {
     outop2str("sub\t");
 }
-PUBLIC void outtest()
+PUBLIC void outtest P0()
 {
     outop2str("test\t");
 }
-PUBLIC void outword()
+PUBLIC void outword P0()
 {
     outstr("word ");
 }
-PUBLIC void sctoi()
+PUBLIC void sctoi P0()
 {
     if (i386_32)
     {
@@ -289,11 +289,11 @@ PUBLIC void sctoi()
     else
 	outnop1str("cbw");
 }
-PUBLIC void stoi()
+PUBLIC void stoi P0()
 {
     outnop1str("cwde");
 }
-PRIVATE void tfrhilo()
+PRIVATE void tfrhilo P0()
 {
     outload();
     outstr(acclostr);
@@ -301,13 +301,13 @@ PRIVATE void tfrhilo()
     outhiaccum();
     outnl();
 }
-PRIVATE void tfrlohi()
+PRIVATE void tfrlohi P0()
 {
     outload();
     outhiaccum();
     outncregname(BREG);
 }
-PUBLIC void ustoi()
+PUBLIC void ustoi P0()
 {
     outmovzx();
     outaccum();
@@ -317,7 +317,7 @@ PUBLIC void ustoi()
 }
 
 #ifdef FRAMEREG
-PUBLIC void outindframereg()
+PUBLIC void outindframereg P0()
 {
     outindleft();
     outregname(FRAMEREG);
@@ -331,7 +331,7 @@ PRIVATE seg_t segment;		/* current seg, depends on init to CSEG = 0 */
 
 /* add carry resulting from char addition */
 
-PUBLIC void adc0()
+PUBLIC void adc0 P0()
 {
     if (i386_32)
     {
@@ -350,9 +350,7 @@ PUBLIC void adc0()
 
 /* add constant to register */
 
-PUBLIC void addconst(offset, reg)
-offset_t offset;
-store_pt reg;
+PUBLIC void addconst P2(offset_t, offset, store_pt, reg)
 {
     /* !! Optimize this condition for code size. */
     if ((i386_32 && (uoffset_t) offset + 1 <= 2)	/* do -1 to 1 by dec/inc */
@@ -385,9 +383,7 @@ store_pt reg;
 
 /* adjust lc for signed offset */
 
-PUBLIC void adjlc(offset, reg)
-offset_t offset;
-store_pt reg;
+PUBLIC void adjlc P2(offset_t, offset, store_pt, reg)
 {
     if (!(reg & CHARREGS))
     {
@@ -404,8 +400,7 @@ store_pt reg;
 
 /* adjust stack ptr by adding a labelled constant less current sp */
 
-PUBLIC void adjsp(label)
-label_t label;
+PUBLIC void adjsp P1(label_t, label)
 {
     outaddsp();
     outbyte(LOCALSTARTCHAR);
@@ -427,8 +422,7 @@ label_t label;
 
 /* and accumulator with constant; this only touches AL if the constat is small */
 
-PUBLIC void andconst(offset)
-offset_t offset;
+PUBLIC void andconst P1(offset_t, offset)
 {
     char_t botbits;
     uoffset_t topbits;
@@ -459,7 +453,7 @@ offset_t offset;
 
 /* set bss segment */
 
-PUBLIC void bssseg()
+PUBLIC void bssseg P0()
 {
     if (segment != BSSSEG)
     {
@@ -470,7 +464,7 @@ PUBLIC void bssseg()
 
 /* jump to case of switch */
 
-PUBLIC label_t casejump()
+PUBLIC label_t casejump P0()
 {
     label_t jtablelab;
 
@@ -485,16 +479,14 @@ PUBLIC label_t casejump()
 
 /* clear register to 0 */
 
-PRIVATE void clr(reg)
-store_pt reg;
+PRIVATE void clr P1(store_pt, reg)
 {
     loadconst((offset_t) 0, reg);
 }
 
 /* define common storage */
 
-PUBLIC void common(name)
-char *name;
+PUBLIC void common P1(_CONST char *, name)
 {
     outcommon();
     outccname(name);
@@ -503,7 +495,7 @@ char *name;
 
 /* set code segment */
 
-PUBLIC void cseg()
+PUBLIC void cseg P0()
 {
     if (segment != CSEG)
     {
@@ -514,8 +506,7 @@ PUBLIC void cseg()
 
 /* define long */
 
-PUBLIC void deflong(value)
-uoffset_t value;
+PUBLIC void deflong P1(uoffset_t, value)
 {
     uoffset_t longhigh;
     uoffset_t longlow;
@@ -538,8 +529,7 @@ uoffset_t value;
 
 /* define null storage */
 
-PUBLIC void defnulls(nullcount)
-uoffset_t nullcount;
+PUBLIC void defnulls P1(uoffset_t, nullcount)
 {
     if (nullcount != 0)
     {
@@ -550,10 +540,7 @@ uoffset_t nullcount;
 
 /* define string */
 
-PUBLIC label_t defstr(sptr, stop, dataflag)
-char *sptr;
-char *stop;
-bool_pt dataflag;
+PUBLIC label_t defstr P3(char *, sptr, char *, stop, bool_pt, dataflag)
 {
     int byte;			/* promoted char for output */
     label_t strlab;
@@ -626,23 +613,21 @@ FORWARD void outsxaccum P((void));
 
 /* Sign-extend the accumulator to DATAREG2. */
 
-PRIVATE void outsxaccum()
+PRIVATE void outsxaccum P0()
 {
     outnop1str(i386_32 ? "cdq" : "cwd");  /* !! Replace outcwd() with outsxaccum(), even for i386_32. */
 }
 
 FORWARD void outaccandreg2n P((void));
 
-PRIVATE void outaccandreg2n()
+PRIVATE void outaccandreg2n P0()
 {
 	outaccum(); outcomma(); outnstr(dreg2str);  /* This desn't call bumplc(). */
 }
 
 /* divide D register by a constant if it is easy to do with shifts */
 
-PUBLIC bool_pt diveasy(divisor, uflag)
-value_t divisor;
-bool_pt uflag;
+PUBLIC bool_pt diveasy P2(value_t, divisor, bool_pt, uflag)
 {
     int hb;
 
@@ -713,7 +698,7 @@ bool_pt uflag;
 
 /* set data segment */
 
-PUBLIC void dseg()
+PUBLIC void dseg P0()
 {
     if (segment != DSEG)
     {
@@ -724,9 +709,7 @@ PUBLIC void dseg()
 
 /* equate a name to an EOL-terminated string */
 
-PUBLIC void equ(name, string)
-char *name;
-char *string;
+PUBLIC void equ P2(_CONST char *, name, _CONST char *, string)
 {
     outstr(name);
     outequate();
@@ -735,9 +718,7 @@ char *string;
 
 /* equate a local label to a value */
 
-PUBLIC void equlab(label, offset)
-label_t label;
-offset_t offset;
+PUBLIC void equlab P2(label_t, label, offset_t, offset)
 {
     outbyte(LOCALSTARTCHAR);
     outlabel(label);
@@ -748,8 +729,7 @@ offset_t offset;
 
 /* import or export a variable */
 
-PUBLIC void globl(name)
-char *name;
+PUBLIC void globl P1(_CONST char *, name)
 {
     outglobl();
     outnccname(name);
@@ -757,8 +737,7 @@ char *name;
 
 /* import a variable */
 
-PUBLIC void import(name)
-char *name;
+PUBLIC void import P1(_CONST char *, name)
 {
     outimport();
     outnccname(name);
@@ -766,8 +745,7 @@ char *name;
 
 /* extend an int to a long */
 
-PUBLIC void itol(reg)
-store_pt reg;
+PUBLIC void itol P1(store_pt, reg)
 {
 #define TEMP_LABEL_FOR_REGRESSION_TESTS
 #ifdef TEMP_LABEL_FOR_REGRESSION_TESTS
@@ -788,15 +766,13 @@ store_pt reg;
 
 /* define local common storage */
 
-PUBLIC void lcommlab(label)
-label_t label;
+PUBLIC void lcommlab P1(label_t, label)
 {
     outlabel(label);
     outlcommon();
 }
 
-PUBLIC void lcommon(name)
-char *name;
+PUBLIC void lcommon P1(_CONST char *, name)
 {
     outccname(name);
     outlcommon();
@@ -804,9 +780,7 @@ char *name;
 
 /* load constant into given register */
 
-PUBLIC void loadconst(offset, reg)
-offset_t offset;
-store_pt reg;
+PUBLIC void loadconst P2(offset_t, offset, store_pt, reg)
 {
     if (offset == 0)
     {
@@ -830,16 +804,14 @@ store_pt reg;
 
 /* convert index half of long reg pair into low half of pair */
 
-PRIVATE bool_pt lowregisDreg()  /* !! inline */
+PRIVATE bool_pt lowregisDreg P0()  /* !! inline */
 {
 	return TRUE;
 }
 
 /* partially long shift left register by a constant (negative = infinity) */
 
-PUBLIC int lslconst(shift, reg)
-value_t shift;
-store_pt reg;
+PUBLIC int lslconst P2(value_t, shift, store_pt, reg)
 {
     if ((uvalue_t) shift >= INT16BITSTO)
     {
@@ -861,10 +833,7 @@ store_pt reg;
 
 /* partially long shift right register by a constant (negative = infinity) */
 
-PUBLIC int lsrconst(shift, reg, uflag)
-value_t shift;
-store_pt reg;
-bool_pt uflag;
+PUBLIC int lsrconst P3(value_t, shift, store_pt, reg, bool_pt, uflag)
 {
     if ((uvalue_t) shift >= INT16BITSTO)
     {
@@ -899,9 +868,7 @@ FORWARD void andrconst P((bool_pt is_accum, value_t value));
 
 /* and REG (is_accum) or DATAREG2 with the specified constant. */
 
-PRIVATE void andrconst(is_accum, value)
-bool_pt is_accum;
-value_t value;
+PRIVATE void andrconst P2(bool_pt, is_accum, value_t, value)
 {
     if (value == 0) { clr(is_accum ? DREG : DATREG2); return; }
     outand();  /* Calls 2 * bumplc(). */
@@ -930,9 +897,7 @@ value_t value;
 
 /* take D register modulo a constant if it is easy to do with a mask */
 
-PUBLIC bool_pt modeasy(divisor, uflag)
-value_t divisor;
-bool_pt uflag;
+PUBLIC bool_pt modeasy P2(value_t, divisor, bool_pt, uflag)
 {
     bool_pt is_div_by_2;
 
@@ -997,9 +962,7 @@ bool_pt uflag;
 
 /* multiply register by a constant if it is easy to do with shifts */
 
-PUBLIC bool_pt muleasy(factor, reg)
-uvalue_t factor;
-store_pt reg;
+PUBLIC bool_pt muleasy P2(uvalue_t, factor, store_pt, reg)
 {
     int mulstack[MAXINTBITSTO / 2 + 1];	/* must be signed, not a fastin_t */
     fastin_pt count;
@@ -1069,8 +1032,7 @@ store_pt reg;
 
 /* negate a register */
 
-PUBLIC void negreg(reg)
-store_pt reg;
+PUBLIC void negreg P1(store_pt, reg)
 {
     if ((store_t) reg == BREG)
 	extBnegD();
@@ -1080,8 +1042,7 @@ store_pt reg;
 
 /* return string of operator */
 
-PUBLIC char *opstring(op)
-op_pt op;
+PUBLIC _CONST char *opstring P1(op_pt, op)
 {
     switch (op)
     {
@@ -1097,15 +1058,14 @@ op_pt op;
 
 /* print DREG (accumulator) */
 
-PRIVATE void outaccum()
+PRIVATE void outaccum P0()
 {
     outstr(accumstr);
 }
 
 /* print a c compiler name with leading CCNAMEPREXFIX */
 
-PUBLIC void outccname(name)
-char *name;
+PUBLIC void outccname P1(_CONST char *, name)
 {
     outbyte(CCNAMEPREFIX);
     outstr(name);
@@ -1113,15 +1073,14 @@ char *name;
 
 /* print high byte of word accumulator */
 
-PUBLIC void outhiaccum()
+PUBLIC void outhiaccum P0()
 {
     outstr(ACCHISTR);
 }
 
 /* print immediate address */
 
-PUBLIC void outimmadr(offset)
-offset_t offset;
+PUBLIC void outimmadr P1(offset_t, offset)
 {
     if (!isbyteoffset(offset))
 	outimmed();
@@ -1132,9 +1091,7 @@ offset_t offset;
 
 /* print register, comma, immediate address and adjust lc */
 
-PUBLIC void outimadj(offset, targreg)
-offset_t offset;
-store_pt targreg;
+PUBLIC void outimadj P2(offset_t, offset, store_pt, targreg)
 {
     outregname(targreg);
     adjlc(offset, targreg);
@@ -1143,12 +1100,12 @@ store_pt targreg;
 
 /* print immediate address designator */
 
-PUBLIC void outimmed()
+PUBLIC void outimmed P0()
 {
     outbyte('#');
 }
 
-PUBLIC void outjumpstring()
+PUBLIC void outjumpstring P0()
 {
     outop3str(jumpstring);
     if (i386_32)
@@ -1157,8 +1114,7 @@ PUBLIC void outjumpstring()
 
 /* print cc name, then newline */
 
-PUBLIC void outnccname(name)
-char *name;
+PUBLIC void outnccname P1(_CONST char *, name)
 {
     outccname(name);
     outnl();
@@ -1166,8 +1122,7 @@ char *name;
 
 /* print separator, immediate address, newline */
 
-PUBLIC void outncimmadr(offset)
-offset_t offset;
+PUBLIC void outncimmadr P1(offset_t, offset)
 {
     outcomma();
     outimmadr(offset);
@@ -1176,8 +1131,7 @@ offset_t offset;
 
 /* print signed offset and adjust lc */
 
-PUBLIC void outoffset(offset)
-offset_t offset;
+PUBLIC void outoffset P1(offset_t, offset)
 {
     adjlc(offset, INDREG0);
     outshex(offset);
@@ -1185,13 +1139,12 @@ offset_t offset;
 
 /* print stack register */
 
-PRIVATE void outstackreg()
+PRIVATE void outstackreg P0()
 {
     outstr(stackregstr);
 }
 
-PUBLIC void public(name)
-char *name;
+PUBLIC void public_ P1(_CONST char *, name)
 {
     outexport();
     outnccname(name);
@@ -1201,8 +1154,7 @@ char *name;
 
 /* print cc name as a private label */
 
-PUBLIC void private(name)
-char *name;
+PUBLIC void private_ P1(_CONST char *, name)
 {
 #ifdef LABELENDCHAR
     outccname(name);
@@ -1214,9 +1166,7 @@ char *name;
 
 /* exchange registers */
 
-PUBLIC void regexchange(sourcereg, targreg)
-store_pt sourcereg;
-store_pt targreg;
+PUBLIC void regexchange P2(store_pt, sourcereg, store_pt, targreg)
 {
     outexchange();
     outregname(sourcereg);
@@ -1227,9 +1177,7 @@ store_pt targreg;
 
 /* transfer a register */
 
-PUBLIC void regtransfer(sourcereg, targreg)
-store_pt sourcereg;
-store_pt targreg;
+PUBLIC void regtransfer P2(store_pt, sourcereg, store_pt, targreg)
 {
     outtransfer();
 #ifdef TARGET_FIRST
@@ -1243,7 +1191,7 @@ store_pt targreg;
 
 /* subtract carry resulting from char addition */
 
-PUBLIC void sbc0()
+PUBLIC void sbc0 P0()
 {
     if (i386_32)
     {
@@ -1262,9 +1210,7 @@ PUBLIC void sbc0()
 
 /* set a name to a value */
 
-PUBLIC void set(name, value)
-char *name;
-offset_t value;
+PUBLIC void set P2(_CONST char *, name, offset_t, value)
 {
     outccname(funcname);
     outbyte(LOCALSTARTCHAR);
@@ -1276,8 +1222,7 @@ offset_t value;
 
 /* shift left register by 1 */
 
-PUBLIC void sl1(reg)
-store_pt reg;
+PUBLIC void sl1 P1(store_pt, reg)
 {
     outsl();
     outregname(reg);
@@ -1286,9 +1231,7 @@ store_pt reg;
 
 /* shift left register by a constant (negative = infinity) */
 
-PUBLIC void slconst(shift, reg)
-value_t shift;
-store_pt reg;
+PUBLIC void slconst P2(value_t, shift, store_pt, reg)
 {
     if (i386_32)
     {
@@ -1333,9 +1276,7 @@ store_pt reg;
 
 /* shift right D register by a constant (negative = infinity) */
 
-PUBLIC void srconst(shift, uflag)
-value_t shift;
-bool_pt uflag;
+PUBLIC void srconst P2(value_t, shift, bool_pt, uflag)
 {
     if (i386_32)
     {
@@ -1399,8 +1340,7 @@ bool_pt uflag;
 
 /* extend an unsigned in DREG to a long */
 
-PUBLIC void uitol(reg)
-store_pt reg;
+PUBLIC void uitol P1(store_pt, reg)
 {
     if (lowregisDreg())
 	clr(reg);
@@ -1418,7 +1358,7 @@ PRIVATE char opregstr[] = "_opreg";
 	outputs address of variable opreg where OPREG is saved
 -----------------------------------------------------------------------------*/
 
-PRIVATE void opregadr()
+PRIVATE void opregadr P0()
 {
     outindleft();
     outccname(opregstr);
@@ -1433,7 +1373,7 @@ PRIVATE void opregadr()
 	restores register OPREG from static location >opreg if it is was use
 -----------------------------------------------------------------------------*/
 
-PUBLIC void restoreopreg()
+PUBLIC void restoreopreg P0()
 {
     if (reguse & OPREG)
     {
@@ -1452,7 +1392,7 @@ PUBLIC void restoreopreg()
 	push it because the flop routines leave results on the stack
 -----------------------------------------------------------------------------*/
 
-PUBLIC void saveopreg()
+PUBLIC void saveopreg P0()
 {
     if (reguse & OPREG)
     {

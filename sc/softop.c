@@ -20,10 +20,7 @@
 	considerable effort goes into avoiding unnecessary pushes
 -----------------------------------------------------------------------------*/
 
-PUBLIC void softop(op, source, target)
-op_pt op;
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void softop P3(op_pt, op, struct symstruct *, source, struct symstruct *, target)
 {
     store_t regpushed;
     store_t regmark;

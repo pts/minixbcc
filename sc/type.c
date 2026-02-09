@@ -29,8 +29,7 @@ PUBLIC uoffset_t stypesize = 2;
 PRIVATE char skey0;
 PRIVATE char skey1;
 
-PUBLIC struct typestruct *addstruct(structname)
-char *structname;
+PUBLIC struct typestruct *addstruct P1(_CONST char *, structname)
 {
     unsigned namelength;
     struct symstruct *symptr;
@@ -62,8 +61,7 @@ ts_s_structname += namelength + 1;
     return structype;
 }
 
-PUBLIC struct typestruct *iscalartotype(scalar)
-scalar_pt scalar;
+PUBLIC struct typestruct *iscalartotype P1(scalar_pt, scalar)
 {
     if (scalar & LONG)
     {
@@ -76,9 +74,9 @@ scalar_pt scalar;
     return itype;
 }
 
-PUBLIC struct typestruct *newtype()
+PUBLIC struct typestruct *newtype P0()
 {
-    register struct typestruct *type;
+    REGISTER struct typestruct *type;
 
     type = (struct typestruct *) qmalloc(sizeof *type);
 #ifdef TS
@@ -97,24 +95,19 @@ ts_s_type += sizeof *type;
     return type;
 }
 
-PUBLIC void outntypechar(type)
-struct typestruct *type;
+PUBLIC void outntypechar P1(struct typestruct *, type)
 {
     outnbyte(*type->tname);
 }
 
-PUBLIC struct typestruct *pointype(type)
-struct typestruct *type;
+PUBLIC struct typestruct *pointype P1(struct typestruct *, type)
 {
     return prefix(POINTER, ptypesize, type);
 }
 
-PUBLIC struct typestruct *prefix(constructor, size, type)
-constr_pt constructor;
-uoffset_t size;
-struct typestruct *type;
+PUBLIC struct typestruct *prefix P3(constr_pt, constructor, uoffset_t, size, struct typestruct *, type)
 {
-    register struct typestruct *searchtype;
+    REGISTER struct typestruct *searchtype;
 
     for (searchtype = type->prevtype; searchtype != (struct typestruct*) 0;
 	 searchtype = searchtype->sidetype)
@@ -143,8 +136,7 @@ struct typestruct *type;
     return type->prevtype = searchtype;
 }
 
-PUBLIC struct typestruct *promote(type)
-struct typestruct *type;
+PUBLIC struct typestruct *promote P1(struct typestruct *, type)
 {
     scalar_t scalar;
 
@@ -163,8 +155,7 @@ struct typestruct *type;
     return type;
 }
 
-PUBLIC struct typestruct *tounsigned(type)
-struct typestruct *type;
+PUBLIC struct typestruct *tounsigned P1(struct typestruct *, type)
 {
     switch (type->scalar & ~(UNSIGNED | DLONG))
     {
@@ -182,7 +173,7 @@ struct typestruct *type;
     }
 }
 
-PUBLIC void typeinit()
+PUBLIC void typeinit P0()
 {
     if (i386_32)
     {

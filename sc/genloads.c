@@ -20,8 +20,7 @@ FORWARD void outnamoffset P((struct symstruct *adr));
 FORWARD void outnnadr P((struct symstruct *adr));
 FORWARD fastin_pt pushpull P((store_pt reglist, bool_pt pushflag));
 
-PUBLIC void addoffset(source)
-struct symstruct *source;
+PUBLIC void addoffset P1(struct symstruct *, source)
 {
     if (source->level == OFFKLUDGELEVEL)
     {
@@ -44,8 +43,7 @@ struct symstruct *source;
     }
 }
 
-PUBLIC void address(source)
-struct symstruct *source;
+PUBLIC void address P1(struct symstruct *, source)
 {
     if (source->indcount == 0)
 	bugerror("taking address of non-lvalue");
@@ -60,13 +58,12 @@ struct symstruct *source;
     }
 }
 
-PRIVATE void badaddress()
+PRIVATE void badaddress P0()
 {
     bugerror("bad address");
 }
 
-PRIVATE void blockpush(source)
-struct symstruct *source;
+PRIVATE void blockpush P1(struct symstruct *, source)
 {
     struct symstruct *length;
     offset_t spmark;
@@ -91,9 +88,7 @@ struct symstruct *source;
     indirec(source);
 }
 
-PUBLIC void exchange(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void exchange P2(struct symstruct *, source, struct symstruct *, target)
 {
     store_t tempreg;
 
@@ -108,7 +103,7 @@ struct symstruct *target;
 	returns the "best" available index register
 -----------------------------------------------------------------------------*/
 
-PUBLIC store_pt getindexreg()
+PUBLIC store_pt getindexreg P0()
 {
     if (!(reguse & INDREG0))
 	return INDREG0;
@@ -142,9 +137,7 @@ PUBLIC store_pt getindexreg()
 	(except for PC register direct, since there is no LEAX D,PC)
 -----------------------------------------------------------------------------*/
 
-PUBLIC void indexadr(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void indexadr P2(struct symstruct *, source, struct symstruct *, target)
 {
     uoffset_t size;
     store_pt sourcereg;
@@ -227,8 +220,7 @@ struct symstruct *target;
     target->storage = targreg;
 }
 
-PUBLIC void indirec(source)
-struct symstruct *source;
+PUBLIC void indirec P1(struct symstruct *, source)
 {
     if (!(source->type->constructor & (ARRAY | POINTER)))
 	bugerror("illegal indirection");
@@ -253,9 +245,7 @@ struct symstruct *source;
 	the result has no offset
 -----------------------------------------------------------------------------*/
 
-PUBLIC void load(source, targreg)
-struct symstruct *source;
-store_pt targreg;
+PUBLIC void load P2(struct symstruct *, source, store_pt, targreg)
 {
     if (source->type->scalar & DLONG)
     {
@@ -321,9 +311,7 @@ store_pt targreg;
 	bugerror("attempting to load non-scalar non-pointer");
 }
 
-PRIVATE void loadadr(source, targreg)
-struct symstruct *source;
-store_pt targreg;
+PRIVATE void loadadr P2(struct symstruct *, source, store_pt, targreg)
 {
     if ((store_t) targreg & ALLDATREGS)
     {
@@ -355,8 +343,7 @@ store_pt targreg;
 	loadreg(source, targreg);
 }
 
-PUBLIC void loadany(source)
-struct symstruct *source;
+PUBLIC void loadany P1(struct symstruct *, source)
 {
     if (source->indcount != 0 || source->offset.offi != 0 || /* kludge u cmp */
 	source->level == OFFKLUDGELEVEL || !(source->storage & allregs))
@@ -378,9 +365,7 @@ struct symstruct *source;
     }
 }
 
-PRIVATE void loadlongindirect(source, targreg)
-struct symstruct *source;
-store_pt targreg;
+PRIVATE void loadlongindirect P2(struct symstruct *, source, store_pt, targreg)
 {
     sc_t flags;
     offset_t offset;
@@ -403,9 +388,7 @@ store_pt targreg;
     source->type = type;
 }
 
-PUBLIC void loadreg(source, targreg)
-struct symstruct *source;
-store_pt targreg;
+PUBLIC void loadreg P2(struct symstruct *, source, store_pt, targreg)
 {
     offset_t longhigh;
     offset_t longlow;
@@ -454,8 +437,7 @@ store_pt targreg;
     }
 }
 
-PUBLIC void makelessindirect(source)
-struct symstruct *source;
+PUBLIC void makelessindirect P1(struct symstruct *, source)
 {
     store_pt lreg;
 
@@ -475,9 +457,7 @@ struct symstruct *source;
 #endif
 }
 
-PUBLIC void movereg(source, targreg)
-struct symstruct *source;
-store_pt targreg;
+PUBLIC void movereg P2(struct symstruct *, source, store_pt, targreg)
 {
     if ((store_t) targreg & ALLDATREGS && source->type->scalar & CHAR)
 	targreg = BREG;
@@ -500,8 +480,7 @@ store_pt targreg;
     source->offset.offi = 0;	/* indcount was adjusted by outadr */
 }
 
-PUBLIC void onstack(target)
-register struct symstruct *target;
+PUBLIC void onstack P1(REGISTER struct symstruct *, target)
 {
     target->storage = LOCAL;
     target->flags = TEMP;
@@ -511,22 +490,19 @@ register struct symstruct *target;
     target->offset.offi = sp;
 }
 
-PUBLIC void outadr(adr)
-struct symstruct *adr;
+PUBLIC void outadr P1(struct symstruct *, adr)
 {
     outnnadr(adr);
     outnl();
 }
 
-PUBLIC void outcregname(reg)
-store_pt reg;
+PUBLIC void outcregname P1(store_pt, reg)
 {
     outcomma();
     outregname(reg);
 }
 
-PRIVATE void outnamoffset(adr)
-struct symstruct *adr;
+PRIVATE void outnamoffset P1(struct symstruct *, adr)
 {
     outimmed();
     if (adr->flags & LABELLED)
@@ -546,15 +522,13 @@ struct symstruct *adr;
 
 /* print comma, then register name, then newline */
 
-PUBLIC void outncregname(reg)
-store_pt reg;
+PUBLIC void outncregname P1(store_pt, reg)
 {
     outcomma();
     outnregname(reg);
 }
 
-PRIVATE void outnnadr(adr)
-struct symstruct *adr;
+PRIVATE void outnnadr P1(struct symstruct *, adr)
 {
     bool_t indflag;
 
@@ -666,8 +640,7 @@ struct symstruct *adr;
 
 /* print register name, then newline */
 
-PUBLIC void outnregname(reg)
-store_pt reg;
+PUBLIC void outnregname P1(store_pt, reg)
 {
     outregname(reg);
     outnl();
@@ -675,8 +648,7 @@ store_pt reg;
 
 /* print register name */
 
-PUBLIC void outregname(reg)
-store_pt reg;
+PUBLIC void outregname P1(store_pt, reg)
 {
     switch ((store_t) reg)
     {
@@ -726,8 +698,7 @@ store_pt reg;
 
 /* print register name for short type */
 
-PUBLIC void outshortregname(reg)
-store_pt reg;
+PUBLIC void outshortregname P1(store_pt, reg)
 {
     switch ((store_t) reg)
     {
@@ -761,8 +732,7 @@ store_pt reg;
 	target must be singly indirect or float or double
 -----------------------------------------------------------------------------*/
 
-PUBLIC void pointat(target)
-struct symstruct *target;
+PUBLIC void pointat P1(struct symstruct *, target)
 {
     if (target->type->scalar & RSCALAR)
     {
@@ -777,15 +747,13 @@ struct symstruct *target;
     target->type = target->type->nexttype;
 }
 
-PUBLIC void poplist(reglist)
-store_pt reglist;
+PUBLIC void poplist P1(store_pt, reglist)
 {
     if (reglist)
 	sp += pushpull(reglist, FALSE);
 }
 
-PUBLIC void push(source)
-struct symstruct *source;
+PUBLIC void push P1(struct symstruct *, source)
 {
     store_t reg;
     uoffset_t size;
@@ -864,20 +832,17 @@ struct symstruct *source;
     onstack(source);
 }
 
-PUBLIC void pushlist(reglist)
-store_pt reglist;
+PUBLIC void pushlist P1(store_pt, reglist)
 {
     if ((store_t) reglist)
 	sp -= pushpull(reglist, TRUE);
 }
 
-PRIVATE fastin_pt pushpull(reglist, pushflag)
-store_pt reglist;
-bool_pt pushflag;
+PRIVATE fastin_pt pushpull P2(store_pt, reglist, bool_pt, pushflag)
 {
     store_pt lastregbit;
     void (*ppfunc) P((void));
-    char *regptr;
+    _CONST char *regptr;
     fastin_t bytespushed;
     store_pt regbit;
 
@@ -921,8 +886,7 @@ bool_pt pushflag;
     return bytespushed;
 }
 
-PUBLIC void pushreg(reg)
-store_pt reg;
+PUBLIC void pushreg P1(store_pt, reg)
 {
     outpshs();
     outtab();
@@ -930,9 +894,7 @@ store_pt reg;
     sp -= pshregsize;
 }
 
-PUBLIC void storereg(sourcereg, target)
-store_pt sourcereg;
-struct symstruct *target;
+PUBLIC void storereg P2(store_pt, sourcereg, struct symstruct *, target)
 {
     store_pt targreg;
 
@@ -971,9 +933,7 @@ struct symstruct *target;
 		structure.element
 -----------------------------------------------------------------------------*/
 
-PUBLIC void struc(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void struc P2(struct symstruct *, source, struct symstruct *, target)
 {
     address(target);
     if (source->offset.offi != 0 || source->level == OFFKLUDGELEVEL)
@@ -991,9 +951,7 @@ struct symstruct *target;
     }
 }
 
-PUBLIC void transfer(source, targreg)
-struct symstruct *source;
-store_pt targreg;
+PUBLIC void transfer P2(struct symstruct *, source, store_pt, targreg)
 {
     regtransfer(source->storage, targreg);
     source->storage = targreg;

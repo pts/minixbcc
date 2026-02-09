@@ -13,7 +13,7 @@
 #include "scan.h"
 #include "type.h"
 
-PRIVATE char *opname[LASTOP - FIRSTOP + 1] =	/* operator names */
+PRIVATE _CONST char * _CONST opname[LASTOP - FIRSTOP + 1] =  /* operator names */
 {				/* order must agree with op.h */
     "cond?",
     "or",
@@ -46,8 +46,7 @@ PRIVATE char *opname[LASTOP - FIRSTOP + 1] =	/* operator names */
 
 FORWARD void outindchars P((int byte, indn_pt count));
 
-PUBLIC void dbitem(item)
-struct symstruct *item;
+PUBLIC void dbitem P1(struct symstruct *, item)
 {
     dbtype(item->type);
     if (item->storage == NOSTORAGE)
@@ -128,8 +127,7 @@ struct symstruct *item;
     outindchars(']', item->indcount);
 }
 
-PUBLIC void dbtype(type)
-struct typestruct *type;
+PUBLIC void dbtype P1(struct typestruct *, type)
 {
     for ( ; type != (struct typestruct *) 0; type = type->nexttype)
     {
@@ -158,8 +156,7 @@ struct typestruct *type;
     }
 }
 
-PUBLIC void debug(exp)		/* sub-nodes must be leaves */
-struct nodestruct *exp;
+PUBLIC void debug P1(struct nodestruct *, exp)  /* sub-nodes must be leaves */
 {
     if (!debugon)
 	return;
@@ -185,15 +182,13 @@ struct nodestruct *exp;
     outnstr(")");
 }
 
-PUBLIC void debugswap()
+PUBLIC void debugswap P0()
 {
     if (debugon)
 	outnstr("* swapping");
 }
 
-PRIVATE void outindchars(byte, count)
-int byte;
-indn_pt count;
+PRIVATE void outindchars P2(int, byte, indn_pt, count)
 {
     while (count--)
 	outbyte(byte);

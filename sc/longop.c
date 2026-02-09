@@ -18,10 +18,7 @@
 	or singly indirect (local, global, or from an index reg)
 -----------------------------------------------------------------------------*/
 
-PUBLIC void longop(op, source, target)
-op_pt op;
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void longop P3(op_pt, op, struct symstruct *, source, struct symstruct *, target)
 {
     store_pt reglist;
     store_t regmark;
@@ -125,9 +122,7 @@ shiftdone:
 	or singly indirect (local, global, or from an index reg)
 -----------------------------------------------------------------------------*/
 
-PUBLIC void long1op(op, target)
-op_pt op;
-struct symstruct *target;
+PUBLIC void long1op P2(op_pt, op, struct symstruct *, target)
 {
     pushlist(reguse & OPREG);
     load(target, OPREG);
@@ -146,7 +141,7 @@ struct symstruct *target;
     }
 }
 
-PUBLIC void outlongendian()  /* !! inline */
+PUBLIC void outlongendian P0()  /* !! inline */
 {
 	outnbyte('l');
 }

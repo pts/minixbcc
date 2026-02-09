@@ -47,7 +47,7 @@
 
 struct keywordstruct
 {
-    char *kwname;
+    _CONST char *kwname;
     sym_t kwcode;
 };
 
@@ -63,7 +63,7 @@ struct string
 
 struct typedatastruct
 {
-    char *tdname;
+    _CONST char *tdname;
     bool_t tdkeyscalar;
     scalar_t tdscalar;
     smalin_t tdsize;
@@ -153,16 +153,14 @@ PRIVATE struct typedatastruct scaltypes[NSCALTYPES] =
     { "double", TRUE, DOUBLE, 8, &dtype, },
 };
 
-FORWARD struct symstruct *addkeyword P((char *name, sym_pt code));
+FORWARD struct symstruct *addkeyword P((_CONST char *name, sym_pt code));
 FORWARD void heapcorrupterror P((void));
 
-PUBLIC struct symstruct *addglb(name, type)
-char *name;
-struct typestruct *type;
+PUBLIC struct symstruct *addglb P2(_CONST char *, name, struct typestruct *, type)
 {
     struct symstruct **hashptr;
     struct symstruct *oldsymptr;
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
 
     hashptr = gethashptr(name);
     symptr = *hashptr;
@@ -193,9 +191,7 @@ ts_size_global += sizeof (struct symstruct) + strlen(name);
     return symptr;
 }
 
-PRIVATE struct symstruct *addkeyword(name, code)
-char *name;
-sym_pt code;
+PRIVATE struct symstruct *addkeyword P2(_CONST char *, name, sym_pt, code)
 {
     struct symstruct *symptr;
 
@@ -204,12 +200,10 @@ sym_pt code;
     return symptr;
 }
 
-PUBLIC struct symstruct *addloc(name, type)
-char *name;
-struct typestruct *type;
+PUBLIC struct symstruct *addloc P2(_CONST char *, name, struct typestruct *, type)
 {
     struct symstruct **hashptr;
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
 
     hashptr = gethashptr(name);
     symptr = *hashptr;
@@ -235,19 +229,14 @@ struct typestruct *type;
     return symptr;
 }
 
-PUBLIC struct symstruct *addlorg(name, type)
-char *name;
-struct typestruct *type;
+PUBLIC struct symstruct *addlorg P2(_CONST char *, name, struct typestruct *, type)
 {
     if (level != GLBLEVEL)
 	return addloc(name, type);
     return addglb(name, type);
 }
 
-PUBLIC void addsym(name, type, symptr)
-char *name;
-struct typestruct *type;
-register struct symstruct *symptr;
+PUBLIC void addsym P3(_CONST char *, name, struct typestruct *, type, REGISTER struct symstruct *, symptr)
 {
     if (type->constructor & (ARRAY | FUNCTION))
 	symptr->indcount = 0;
@@ -260,18 +249,16 @@ register struct symstruct *symptr;
     strcpy(symptr->name.namea, name);
 }
 
-PUBLIC struct symstruct *constsym(longconst)
-value_t longconst;
+PUBLIC struct symstruct *constsym P1(value_t, longconst)
 {
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
 
     symptr = exprsym(&constemplate);
     symptr->offset.offv = longconst;
     return symptr;
 }
 
-PUBLIC void delsym(symptr)
-register struct symstruct *symptr;
+PUBLIC void delsym P1(REGISTER struct symstruct *, symptr)
 {
     if ((*(symptr->prev) = symptr->next) != (struct symstruct*) 0)
 	symptr->next->prev = symptr->prev;
@@ -279,11 +266,11 @@ register struct symstruct *symptr;
 
 /* dumpglbs() - define locations of globals and reserve space for them */
 
-PUBLIC void dumpglbs()
+PUBLIC void dumpglbs P0()
 {
     int i;
-    register struct symstruct *symptr;
-    register struct typestruct *type;
+    REGISTER struct symstruct *symptr;
+    REGISTER struct typestruct *type;
 
 #ifdef TS
 extern char *brksize;
@@ -400,9 +387,9 @@ outnl();
 
 /* dumplocs() - define offsets of current locals */
 
-PUBLIC void dumplocs()
+PUBLIC void dumplocs P0()
 {
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
     int i;
 
     for (i = 0; i < HASHTABSIZE; ++i)
@@ -415,7 +402,7 @@ PUBLIC void dumplocs()
 
 /* dumpstrings() - dump held-up strings */
 
-PUBLIC void dumpstrings()
+PUBLIC void dumpstrings P0()
 {
     struct string *stringp;
 
@@ -430,10 +417,9 @@ PUBLIC void dumpstrings()
 
 #endif
 
-PUBLIC struct symstruct *exprsym(symptr)
-struct symstruct *symptr;
+PUBLIC struct symstruct *exprsym P1(struct symstruct *, symptr)
 {
-    register struct symstruct *newsymptr;
+    REGISTER struct symstruct *newsymptr;
 
     newsymptr = exprptr++;
     if (exprptr >= &expr2syms[MAXEXPR])
@@ -450,8 +436,7 @@ struct symstruct *symptr;
     return newsymptr;
 }
 
-PUBLIC struct symstruct *findlorg(name)
-char *name;
+PUBLIC struct symstruct *findlorg P1(_CONST char *, name)
 {
     struct symstruct *symptr;
 
@@ -462,8 +447,7 @@ char *name;
     return symptr;
 }
 
-PUBLIC struct symstruct *findstruct(name)
-char *name;
+PUBLIC struct symstruct *findstruct P1(_CONST char *, name)
 {
     struct symstruct *symptr;
 
@@ -476,11 +460,10 @@ char *name;
 
 /* convert name to a hash table ptr */
 
-PUBLIC struct symstruct **gethashptr(sname)
-char *sname;
+PUBLIC struct symstruct **gethashptr P1(_CONST char *, sname)
 {
-    register unsigned hashval;
-    register char *rsname;
+    REGISTER unsigned hashval;
+    REGISTER _CONST char *rsname;
 
     hashval = 0;
     rsname = sname;
@@ -497,7 +480,7 @@ char *sname;
     return hashtab + ((hashval * GOLDEN) & (HASHTABSIZE - 1));
 }
 
-PRIVATE void heapcorrupterror()
+PRIVATE void heapcorrupterror P0()
 {
     outofmemoryerror(" (heap corrupt - stack overflow?)");
 }
@@ -506,11 +489,9 @@ PRIVATE void heapcorrupterror()
 
 /* hold string for dumping at end, to avoid mixing it with other data */
 
-PUBLIC label_t holdstr(sptr, stop)
-char *sptr;
-char *stop;
+PUBLIC label_t holdstr P2(char *, sptr, char *, stop)
 {
-    register struct string *stringp;
+    REGISTER struct string *stringp;
 
     stringp = (struct string*) qmalloc(sizeof *stringp);
 #ifdef TS
@@ -526,7 +507,7 @@ ts_size_holdstr += sizeof *stringp;
 
 #endif /* HOLDSTRINGS */
 
-PUBLIC void newlevel()
+PUBLIC void newlevel P0()
 {
     if (*(unsigned *) chartop != MARKER)
 	heapcorrupterror();
@@ -536,9 +517,9 @@ PUBLIC void newlevel()
 	++level;
 }
 
-PUBLIC void oldlevel()
+PUBLIC void oldlevel P0()
 {
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
 
     if (*(unsigned *) chartop != MARKER)
 	heapcorrupterror();
@@ -553,14 +534,12 @@ PUBLIC void oldlevel()
 	    delsym(symptr);
 }
 
-PUBLIC void ourfree(ptr)
-void *ptr;
+PUBLIC void ourfree P1(void *, ptr)
 {
     free(ptr);
 }
 
-PUBLIC void *ourmalloc(nbytes)
-unsigned nbytes;
+PUBLIC void *ourmalloc P1(unsigned, nbytes)
 {
     void *ptr;
 
@@ -572,8 +551,7 @@ unsigned nbytes;
     return ptr;
 }
 
-PUBLIC void outofmemoryerror(message)
-char *message;
+PUBLIC void outofmemoryerror P1(_CONST char *, message)
 {
     error2error("compiler out of memory", message);
 
@@ -597,9 +575,7 @@ char *message;
     finishup();
 }
 
-PUBLIC void *growobject(object, extra)
-void *object;
-unsigned extra;
+PUBLIC void *growobject P2(void *, object, unsigned, extra)
 {
     /* size_t */ unsigned oblength;
 
@@ -630,10 +606,9 @@ ts_size_growobj_wasted += chartop - (char *) object;
 #  define ALLOC_OVERHEAD (SC_ALIGNMENT - 1 + sizeof (unsigned))
 #endif
 
-PUBLIC void growheap(size)
-unsigned size;
+PUBLIC void growheap P1(unsigned, size)
 {
-    register char *newptr;
+    REGISTER char *newptr;
 
     if ((newptr = (char*) malloc(size += ALLOC_UNIT + ALLOC_OVERHEAD)) == (char*) 0
 	&& (newptr = (char*) malloc(size -= ALLOC_UNIT)) == (char*) 0)
@@ -653,10 +628,9 @@ ts_s_growheap += size;
     *(unsigned *) newptr = MARKER;
 }
 
-PUBLIC void *qmalloc(size)
-unsigned size;
+PUBLIC void *qmalloc P1(unsigned, size)
 {
-    register void *ptr;
+    REGISTER void *ptr;
 
     if ((charptr = (char *) align(charptr)) + size > chartop)
 	growheap(size);
@@ -665,9 +639,7 @@ unsigned size;
     return ptr;
 }
 
-PUBLIC void swapsym(sym1, sym2)
-struct symstruct *sym1;
-struct symstruct *sym2;
+PUBLIC void swapsym P2(struct symstruct *, sym1, struct symstruct *, sym2)
 {
     struct symstruct swaptemp;
 
@@ -676,7 +648,7 @@ struct symstruct *sym2;
     *sym2 = swaptemp;
 }
 
-PUBLIC void syminit()
+PUBLIC void syminit P0()
 {
     struct keywordstruct *kwptr;
     struct typedatastruct *tdptr;

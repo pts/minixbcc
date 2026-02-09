@@ -33,7 +33,7 @@ FORWARD struct nodestruct *postfix_exp P((bool_pt seenlp));
 FORWARD struct nodestruct *primary_exp P((void));
 FORWARD struct nodestruct *unary_exp P((void));
 
-PRIVATE struct nodestruct *cast_exp()
+PRIVATE struct nodestruct *cast_exp P0()
 {
     struct nodestruct *nodeptr;
     scalar_t scalar;
@@ -42,7 +42,7 @@ PRIVATE struct nodestruct *cast_exp()
     if (sym != LPAREN)
 	return unary_exp();
     nextsym();
-    if ((vartype = typename()) == (struct typestruct*) 0)
+    if ((vartype = typename_()) == (struct typestruct*) 0)
 	return postfix_exp(TRUE);
     rparen();
     scalar = (nodeptr = cast_exp())->nodetype->scalar;
@@ -55,7 +55,7 @@ PRIVATE struct nodestruct *cast_exp()
     return castnode(vartype, nodeptr);
 }
 
-PUBLIC struct nodestruct *assignment_exp()
+PUBLIC struct nodestruct *assignment_exp P0()
 {
     struct nodestruct *lhs;
     op_pt op;
@@ -70,7 +70,7 @@ PUBLIC struct nodestruct *assignment_exp()
     return lhs;
 }
 
-PUBLIC struct nodestruct *expression()
+PUBLIC struct nodestruct *expression P0()
 {
     struct nodestruct *lhs;
 
@@ -83,7 +83,7 @@ PUBLIC struct nodestruct *expression()
     return lhs;
 }
 
-PRIVATE struct nodestruct *bccexp2()
+PRIVATE struct nodestruct *bccexp2 P0()
 {
     struct nodestruct *lhs;
     struct nodestruct *rhs;
@@ -99,8 +99,7 @@ PRIVATE struct nodestruct *bccexp2()
     return lhs;
 }
 
-PRIVATE struct nodestruct *exp3to12(lprecedence)
-fastin_pt lprecedence;
+PRIVATE struct nodestruct *exp3to12 P1(fastin_pt, lprecedence)
 {
     struct nodestruct *lhs;
     op_pt op;
@@ -185,7 +184,7 @@ fastin_pt lprecedence;
     return lhs;
 }
 
-PRIVATE struct nodestruct *listargs()
+PRIVATE struct nodestruct *listargs P0()
 {
     struct nodestruct *parent;
     struct nodestruct *nextright;
@@ -207,8 +206,7 @@ PRIVATE struct nodestruct *listargs()
     return parent;
 }
 
-PRIVATE struct nodestruct *postfix_exp(seenlp)
-bool_pt seenlp;
+PRIVATE struct nodestruct *postfix_exp P1(bool_pt, seenlp)
 {
     struct nodestruct *nodeptr;
     struct symstruct *symptr;
@@ -243,7 +241,7 @@ bool_pt seenlp;
 	    nodeptr = node(FUNCOP, nodeptr, listargs());
 #ifndef NOFP
 	    {
-		register struct nodestruct *np;
+		REGISTER struct nodestruct *np;
 
 		for (np = nodeptr->right; np != (struct nodeptr*) 0; np = np->right)
 		{
@@ -255,7 +253,7 @@ bool_pt seenlp;
 			else
 			{
 			    unsigned len;
-			    register char *name;
+			    REGISTER char *name;
 
 			    name = np->left.symptr->name.namep;
 			    if ((len = strlen(name)) >= 6
@@ -276,7 +274,7 @@ bool_pt seenlp;
 			else
 			{
 			    unsigned len;
-			    register char *name;
+			    REGISTER char *name;
 
 			    name = np->left.symptr->name.namep;
 			    if ((len = strlen(name)) >= 5
@@ -311,7 +309,7 @@ bool_pt seenlp;
     }
 }
 
-PRIVATE struct nodestruct *primary_exp()
+PRIVATE struct nodestruct *primary_exp P0()
 {
     bool_t isdefined;
     struct nodestruct *nodeptr;
@@ -426,7 +424,7 @@ cpp_ident:
     }
 }
 
-PRIVATE struct nodestruct *unary_exp()
+PRIVATE struct nodestruct *unary_exp P0()
 {
     value_t size;
     struct typestruct *vartype;
@@ -462,7 +460,7 @@ PRIVATE struct nodestruct *unary_exp()
 	else
 	{
 	    nextsym();
-	    if ((vartype = typename()) != (struct typestruct*) 0)
+	    if ((vartype = typename_()) != (struct typestruct*) 0)
 	    {
 		rparen();
 		size = vartype->typesize;
