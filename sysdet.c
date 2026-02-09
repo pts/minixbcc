@@ -10,11 +10,21 @@
 #include <unistd.h>
 
 #if __STDC__
-#  define CONST const
+#  define _CONST const
 #  define P(x) x
+#  define P0() (void)
+#  define P1(t1, n1) (t1 n1)
+#  define P2(t1, n1, t2, n2) (t1 n1, t2 n2)
+#  define P3(t1, n1, t2, n2, t3, n3) (t1 n1, t2 n2, t3 n3)
+#  define P4(t1, n1, t2, n2, t3, n3, t4, n4) (t1 n1, t2 n2, t3 n3, t4 n4)
 #else
-#  define CONST
+#  define _CONST
 #  define P(x) ()
+#  define P0() ()
+#  define P1(t1, n1) (n1) t1 n1;
+#  define P2(t1, n1, t2, n2) (n1, n2) t1 n1; t2 n2;
+#  define P3(t1, n1, t2, n2, t3, n3) (n1, n2, n3) t1 n1; t2 n2; t3 n3;
+#  define P4(t1, n1, t2, n2, t3, n3, t4, n4) (n1, n2, n3, n4) t1 n1; t2 n2; t3 n3; t4 n4;
 #endif
 
 #ifndef O_RDONLY
@@ -28,18 +38,14 @@
 #  define STDERR_FILENO 2
 #endif
 
-static void write_str P((int fd, CONST char *msg));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-static void write_str(fd, msg)
-int fd;
-CONST char *msg;
+static void write_str P((int fd, _CONST char *msg));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static void write_str P2(int, fd, _CONST char *, msg)
 {
   if (*msg != '\0') (void)!write(fd, msg, strlen(msg));
 }
 
-static void fatal2 P((CONST char *msg1, CONST char *msg2));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-static void fatal2(msg1, msg2)
-CONST char *msg1;
-CONST char *msg2;
+static void fatal2 P((_CONST char *msg1, _CONST char *msg2));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
+static void fatal2 P2(_CONST char *, msg1, _CONST char *, msg2)
 {
   write_str(STDERR_FILENO, "fatal: ");
   write_str(STDERR_FILENO, msg1);
@@ -73,10 +79,8 @@ static char osid[] = "-DOSID=? ";  /* '?', '0' for Minix i86, '3' for Minix i386
  * medium memory models, false for the large, compact and huge memory
  * models.
  */
-int alignptrcheck P((char *cp, int argc));
-int alignptrcheck(cp, argc)
-char *cp;
-int argc;
+static int alignptrcheck P((char *cp, int argc));
+static int alignptrcheck P2(char *, cp, int, argc)
 {
 #ifdef ALIGNPTRCHECK
   (void)cp; (void)argc; return ALIGNPTRCHECK;
@@ -113,18 +117,18 @@ int argc;
 #endif
 }
 
-int myidiv P((int a, int b));
-int myidiv(a, b) int a; int b; { return a / b; }
+static int myidiv P((int a, int b));
+static int myidiv P2(int, a, int, b) {
+  return a / b;
+}
 
 int main P((int argc, char **argv));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-int main(argc, argv)
-int argc;
-char **argv;
+int main P2(int, argc, char **, argv)
 {
   int fd;
   register int got;
   char *p;
-  CONST char *filename;
+  _CONST char *filename;
   unsigned u;
 
   (void)argc;
@@ -174,7 +178,7 @@ char **argv;
   write_str(STDOUT_FILENO, (-1 / 2 == 0 && -2 / 3 == 0 && myidiv(-(argc < 0), 2) == 0 && myidiv(-(argc < 0), 3) == 0) ? "-DIDIVTOZ " : "-DNOIDIVTOZ ");
 
   if (argv[0] && (filename = argv[1])) {
-    if (argv[2]) fatal2("too many command-line arguments", (CONST char*)0);
+    if (argv[2]) fatal2("too many command-line arguments", (_CONST char*)0);
     if ((fd = open(filename, O_RDONLY)) < 0) fatal2("error opening executable file", filename);
     for (p = header; p < header + sizeof(header); ) {
       if ((got = read(fd, p, header + sizeof(header) - p)) < 0) fatal2("error reading header", filename);
