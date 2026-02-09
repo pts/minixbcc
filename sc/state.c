@@ -38,19 +38,20 @@ struct loopstruct
     offset_t spmark;		/* stack value for continue and break */
 };
 
+struct casestruct
+{
+    value_t casevalue;		/* value giving this case */
+    label_t caselabel;		/* corresponding label */
+};
+
 struct switchstruct
 {
     struct casestruct *caseptr;	/* current spot in caselist */
     struct casestruct *casetop;	/* last in caselist + 1 */
     bool_t charselector;	/* tells if case selector is char */
     label_t dfaultlab;		/* destination for default case (0 if none) */
-    struct switchstruct *prevswitch;	/* previous active switch */
-    struct casestruct
-    {
-	value_t casevalue;	/* value giving this case */
-	label_t caselabel;	/* corresponding label */
-    }
-     caselist[INITIALCASES];	/* perhaps larger */
+    struct switchstruct *prevswitch;  /* previous active switch */
+    struct casestruct caselist[INITIALCASES];  /* perhaps larger */
 };
 
 PRIVATE struct loopstruct *loopnow;	/* currently active for/switch/while */
@@ -82,8 +83,7 @@ FORWARD void statement P((void));
 
 /* --- utility routines --- */
 
-PRIVATE void addloop(newloop)
-struct loopstruct *newloop;
+PRIVATE void addloop P1(struct loopstruct *, newloop)
 {
     newloop->breaklab = getlabel();
     newloop->contlab = getlabel();
@@ -95,12 +95,12 @@ struct loopstruct *newloop;
     loopnow = newloop;
 }
 
-PRIVATE void badloop()
+PRIVATE void badloop P0()
 {
     error(" no active fors, switches or whiles");
 }
 
-PRIVATE void deleteloop()
+PRIVATE void deleteloop P0()
 {
     etptr = loopnow->etmark;
     exprptr = loopnow->exprmark;
@@ -108,8 +108,7 @@ PRIVATE void deleteloop()
     loopnow = loopnow->prevloop;
 }
 
-PRIVATE void evalexpression(exp)
-struct nodestruct *exp;
+PRIVATE void evalexpression P1(struct nodestruct *, exp)
 {
     offset_t spmark;
 
@@ -118,7 +117,7 @@ struct nodestruct *exp;
     modstk(spmark);
 }
 
-PRIVATE void exprstatement()
+PRIVATE void exprstatement P0()
 {
     struct nodestruct *etmark;
     struct symstruct *exprmark;
@@ -130,8 +129,7 @@ PRIVATE void exprstatement()
     exprptr = exprmark;
 }
 
-PRIVATE bool_pt isforever(exp)
-register struct nodestruct *exp;
+PRIVATE bool_pt isforever P1(REGISTER struct nodestruct *, exp)
 {
     return exp == (struct nodestruct*) 0 ||
 	(exp->tag == LEAF && exp->left.symptr->storage == CONSTANT &&
@@ -139,12 +137,10 @@ register struct nodestruct *exp;
 }
 
 /* !! Add a faster sort algorithm. */
-PRIVATE void sort(caselist, count)	/* shell sort */
-struct casestruct *caselist;
-int count;
+PRIVATE void sort P2(struct casestruct *, caselist, int, count)	/* shell sort */
 {
-    register int gap;
-    register int i;
+    REGISTER int gap;
+    REGISTER int i;
     int j;
     struct casestruct swaptemp;
 
@@ -174,7 +170,7 @@ int count;
 		"{" <declaration-list> <statement-list> "}"
 ---------------------------------------------------------------------------- */
 
-PUBLIC void compound()		/* have just seen "{" */
+PUBLIC void compound P0()	/* have just seen "{" */
 {
     struct symstruct *locmark;
     store_t regmark;
@@ -238,7 +234,7 @@ PUBLIC void compound()		/* have just seen "{" */
     rbrace();
 }
 
-PRIVATE void dobreak()
+PRIVATE void dobreak P0()
 {
     offset_t spmark;
 
@@ -256,7 +252,7 @@ PRIVATE void dobreak()
     }
 }
 
-PRIVATE void docase()
+PRIVATE void docase P0()
 {
     value_t caseval;
 
@@ -301,7 +297,7 @@ ts_s_case_tot += GROWCASES * sizeof (struct casestruct);
     }
 }
 
-PRIVATE void docont()
+PRIVATE void docont P0()
 {
     struct loopstruct *contloop;
     offset_t spmark;
@@ -337,7 +333,7 @@ PRIVATE void docont()
     jump(contloop->contlab);
 }
 
-PRIVATE void dodefault()
+PRIVATE void dodefault P0()
 {
     colon();
     if (switchnow == (struct switchstruct*) 0)
@@ -348,7 +344,7 @@ PRIVATE void dodefault()
 	deflabel(switchnow->dfaultlab = getlabel());
 }
 
-PRIVATE void dodowhile()
+PRIVATE void dodowhile P0()
 {
     struct loopstruct dwhileloop;
     label_t dolab;
@@ -369,7 +365,7 @@ PRIVATE void dodowhile()
     deleteloop();
 }
 
-PRIVATE void dofor()
+PRIVATE void dofor P0()
 {
     struct loopstruct forloop;
     label_t forstatlab;
@@ -412,7 +408,7 @@ PRIVATE void dofor()
     deleteloop();
 }
 
-PRIVATE void dogoto()
+PRIVATE void dogoto P0()
 {
     struct symstruct *symptr;
 
@@ -432,7 +428,7 @@ PRIVATE void dogoto()
 	error("need identifier");
 }
 
-PRIVATE void doif()
+PRIVATE void doif P0()
 {
     struct nodestruct *etmark;
     label_t elselab;
@@ -460,7 +456,7 @@ PRIVATE void doif()
 	deflabel(elselab);
 }
 
-PRIVATE void doreturn()
+PRIVATE void doreturn P0()
 {
     offset_t spmark;
 
@@ -471,7 +467,7 @@ PRIVATE void doreturn()
     sp = spmark;		/* restore stack for rest of function */
 }
 
-PRIVATE void doswitch()
+PRIVATE void doswitch P0()
 {
     struct switchstruct *sw;
     struct loopstruct switchloop;
@@ -519,7 +515,7 @@ ts_s_case_tot -= (char *) sw->casetop - (char *) sw;
     ourfree(sw);
 }
 
-PRIVATE void dowhile()
+PRIVATE void dowhile P0()
 {
     struct loopstruct whileloop;
     struct nodestruct *testexp;
@@ -539,7 +535,7 @@ PRIVATE void dowhile()
     deleteloop();
 }
 
-PRIVATE void jumptocases()
+PRIVATE void jumptocases P0()
 {
     value_t basevalue;
     struct casestruct *case1ptr;
@@ -629,8 +625,7 @@ PRIVATE void jumptocases()
 	jump(dfaultlab);
 }
 
-PUBLIC void outswoffset (offset)
-offset_t offset;
+PUBLIC void outswoffset P1(offset_t, offset)
 {
 #ifdef FRAMEPOINTER
     outoffset(offset - softsp - framep);
@@ -644,7 +639,7 @@ offset_t offset;
 	bumplc2();
 }
 
-PUBLIC void outswstacklab()
+PUBLIC void outswstacklab P0()
 {
     outbyte(LOCALSTARTCHAR);
     outlabel(swstacklab);
@@ -669,7 +664,7 @@ PUBLIC void outswstacklab()
 		<expression> ;
 ---------------------------------------------------------------------------- */
 
-PRIVATE void statement()
+PRIVATE void statement P0()
 {
 #if 1
     struct symstruct *symptr;

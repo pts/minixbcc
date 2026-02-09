@@ -37,13 +37,12 @@ PRIVATE fastin_t outstage;	/* depends on zero init */
 FORWARD void errorsummary P((void));
 FORWARD void errsum1 P((void));
 
-PUBLIC void bugerror(message)
-char *message;
+PUBLIC void bugerror P1(_CONST char *, message)
 {
     error2error("compiler bug - ", message);
 }
 
-PUBLIC void closeout()
+PUBLIC void closeout P0()
 {
     char *saveoutptr;
 
@@ -60,19 +59,16 @@ PUBLIC void closeout()
 
 /* error handler */
 
-PUBLIC void error(message)
-char *message;
+PUBLIC void error P1(_CONST char *, message)
 {
     error2error(message, "");
 }
 
 /* error handler - concatenate 2 messages */
 
-PUBLIC void error2error(message1, message2)
-char *message1;
-char *message2;
+PUBLIC void error2error P2(_CONST char *, message1, _CONST char *, message2)
 {
-    char *warning;
+    _CONST char *warning;
 
     if (message1[0] == '%' && message1[1] == 'w')
     {
@@ -126,7 +122,7 @@ char *message2;
 
 /* summarise errors */
 
-PRIVATE void errorsummary()
+PRIVATE void errorsummary P0()
 {
     if (errcount != 0)
     {
@@ -138,7 +134,7 @@ PRIVATE void errorsummary()
     errsum1();
 }
 
-PRIVATE void errsum1()
+PRIVATE void errsum1 P0()
 {
     outudec(errcount);
     outnstr(" errors detected");
@@ -146,8 +142,7 @@ PRIVATE void errsum1()
 
 /* fatal error, exit early */
 
-PUBLIC void fatalerror(message)
-char *message;
+PUBLIC void fatalerror P1(_CONST char *, message)
 {
     error(message);
     finishup();
@@ -155,7 +150,7 @@ char *message;
 
 /* finish up compile */
 
-PUBLIC void finishup()
+PUBLIC void finishup P0()
 {
     if (!cppmode)
     {
@@ -181,7 +176,7 @@ PUBLIC void finishup()
 
 /* flush output file */
 
-PUBLIC void flushout()
+PUBLIC void flushout P0()
 {
     unsigned nbytes;
 
@@ -220,7 +215,7 @@ PUBLIC void flushout()
     }
 }
 
-PUBLIC void initout()
+PUBLIC void initout P0()
 {
     static char smallbuf[1];
 
@@ -228,15 +223,13 @@ PUBLIC void initout()
     output = 1;			/* standard output */
 }
 
-PUBLIC void limiterror(message)
-char *message;
+PUBLIC void limiterror P1(_CONST char *, message)
 {
     error2error("compiler limit exceeded - ", message);
     finishup();
 }
 
-PUBLIC void openout(oname)
-char *oname;
+PUBLIC void openout P1(_CONST char *, oname)
 {
     if (output != 1)
 	fatalerror("more than one output file");
@@ -249,11 +242,10 @@ char *oname;
 
 /* print character */
 
-PUBLIC void outbyte(c)
-int c;
+PUBLIC void outbyte P1(int, c)
 {
 #if C_CODE || __AS386_16__ + __AS386_32__ != 1
-    register char *outp;
+    REGISTER char *outp;
 
     outp = outbufptr;
     *outp++ = c;
@@ -267,17 +259,14 @@ int c;
 
 /* print comma */
 
-PUBLIC void outcomma()
+PUBLIC void outcomma P0()
 {
     outbyte(',');
 }
 
 /* print line number in format ("# %u \"%s\"%s", nr, fname, str) */
 
-PUBLIC void outcpplinenumber(nr, fname, str)
-unsigned nr;
-char *fname;
-char *str;
+PUBLIC void outcpplinenumber P3(unsigned, nr, _CONST char *, fname, _CONST char *, str)
 {
     outstr("# ");
     outudec(nr);
@@ -289,8 +278,7 @@ char *str;
 
 /* print unsigned offset, hex format */
 
-PUBLIC void outhex(num)
-uoffset_t num;
+PUBLIC void outhex P1(uoffset_t, num)
 {
 #ifdef HEXSTARTCHAR
     if (num >= 10)
@@ -305,8 +293,7 @@ uoffset_t num;
 
 /* print unsigned offset, hex format with digits only (no hex designator) */
 
-PUBLIC void outhexdigs(num)
-register uoffset_t num;
+PUBLIC void outhexdigs P1(REGISTER uoffset_t, num)
 {
     /* !! Optimize this for size, non-recursive. */
     if (num >= 0x10)
@@ -319,11 +306,10 @@ register uoffset_t num;
 
 /* print string terminated by EOL */
 
-PUBLIC void outline(s)
-char *s;
+PUBLIC void outline P1(_CONST char *, s)
 {
-    register char *outp;
-    register char *rs;
+    REGISTER char *outp;
+    REGISTER _CONST char *rs;
 
     outp = outbufptr;
     rs = s;
@@ -351,15 +337,14 @@ char *s;
 
 /* print minus sign */
 
-PUBLIC void outminus()
+PUBLIC void outminus P0()
 {
     outbyte('-');
 }
 
 /* print character, then newline */
 
-PUBLIC void outnbyte(byte)
-int byte;
+PUBLIC void outnbyte P1(int, byte)
 {
     outbyte(byte);
     outnl();
@@ -367,8 +352,7 @@ int byte;
 
 /* print unsigned offset, hex format, then newline */
 
-PUBLIC void outnhex(num)
-uoffset_t num;
+PUBLIC void outnhex P1(uoffset_t, num)
 {
     outhex(num);
     outnl();
@@ -376,7 +360,7 @@ uoffset_t num;
 
 /* print newline */
 
-PUBLIC void outnl()
+PUBLIC void outnl P0()
 {
     if (watchlc)
     {
@@ -389,8 +373,7 @@ PUBLIC void outnl()
 
 /* print opcode and newline, bump lc by 1 */
 
-PUBLIC void outnop1str(s)
-char *s;
+PUBLIC void outnop1str P1(_CONST char *, s)
 {
     opcodeleadin();
     outstr(s);
@@ -400,8 +383,7 @@ char *s;
 
 /* print opcode and newline, bump lc by 2 */
 
-PUBLIC void outnop2str(s)
-char *s;
+PUBLIC void outnop2str P1(_CONST char *, s)
 {
     opcodeleadin();
     outstr(s);
@@ -411,8 +393,7 @@ char *s;
 
 /* print string, then newline */
 
-PUBLIC void outnstr(s)
-char *s;
+PUBLIC void outnstr P1(_CONST char *, s)
 {
     outstr(s);
     outnl();
@@ -420,8 +401,7 @@ char *s;
 
 /* print opcode */
 
-PUBLIC void outop0str(s)
-char *s;
+PUBLIC void outop0str P1(_CONST char *, s)
 {
     opcodeleadin();
     outstr(s);
@@ -429,8 +409,7 @@ char *s;
 
 /* print opcode, bump lc by 1 */
 
-PUBLIC void outop1str(s)
-char *s;
+PUBLIC void outop1str P1(_CONST char *, s)
 {
     opcodeleadin();
     outstr(s);
@@ -439,8 +418,7 @@ char *s;
 
 /* print opcode, bump lc by 2 */
 
-PUBLIC void outop2str(s)
-char *s;
+PUBLIC void outop2str P1(_CONST char *, s)
 {
     opcodeleadin();
     outstr(s);
@@ -449,8 +427,7 @@ char *s;
 
 /* print opcode, bump lc by 3 */
 
-PUBLIC void outop3str(s)
-char *s;
+PUBLIC void outop3str P1(_CONST char *, s)
 {
     opcodeleadin();
     outstr(s);
@@ -459,15 +436,14 @@ char *s;
 
 /* print plus sign */
 
-PUBLIC void outplus()
+PUBLIC void outplus P0()
 {
     outbyte('+');
 }
 
 /* print signed offset, hex format */
 
-PUBLIC void outshex(num)
-offset_t num;
+PUBLIC void outshex P1(offset_t, num)
 {
     if ((uvalue_t) num >= -(maxoffsetto + 1))
     {
@@ -483,12 +459,11 @@ offset_t num;
 
 /* print string  */
 
-PUBLIC void outstr(s)
-char *s;
+PUBLIC void outstr P1(_CONST char *, s)
 {
 #if C_CODE || __AS386_16__ + __AS386_32__ != 1
-    register char *outp;
-    register char *rs;
+    REGISTER char *outp;
+    REGISTER _CONST char *rs;
 
     outp = outbufptr;
     rs = s;
@@ -510,15 +485,14 @@ char *s;
 
 /* print tab */
 
-PUBLIC void outtab()
+PUBLIC void outtab P0()
 {
     outbyte('\t');
 }
 
 /* print unsigned, decimal format */
 
-PUBLIC void outudec(num)
-unsigned num;
+PUBLIC void outudec P1(unsigned, num)
 {
     char str[10 + 1];
 
@@ -528,11 +502,9 @@ unsigned num;
 
 /* push decimal digits of an unsigned onto a stack of chars */
 
-PUBLIC char *pushudec(s, num)
-register char *s;
-register unsigned num;
+PUBLIC char *pushudec P2(REGISTER char *, s, REGISTER unsigned, num)
 {
-    register unsigned reduction;
+    REGISTER unsigned reduction;
 
     while (num >= 10)
     {
@@ -544,7 +516,7 @@ register unsigned num;
     return s;
 }
 
-PUBLIC void setoutbufs()
+PUBLIC void setoutbufs P0()
 {
     if (!isatty(output))  /* The return of isatty(...) here affects the jump instruction sizes generated by deflabel(...). For isatty(output) == 1, none of the jumps are short (with a 1-byte delta).  */
     {

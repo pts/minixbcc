@@ -5,9 +5,7 @@
 #include "const.h"
 #include "types.h"
 
-PUBLIC int main(argc, argv)
-int argc;
-char **argv;
+PUBLIC int main P2(int, argc, char **, argv)
 {
     growheap(0);		/* init order is important */
     syminit();

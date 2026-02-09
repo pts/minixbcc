@@ -43,19 +43,17 @@ FORWARD struct typestruct *nodetype P((struct nodestruct *nodeptr));
 FORWARD int redscalar P((struct nodestruct *nodeptr));
 FORWARD struct nodestruct *unconvert P((struct nodestruct *nodeptr));
 
-PRIVATE void badlvalue(nodeptr)
-struct nodestruct *nodeptr;
+PRIVATE void badlvalue P1(struct nodestruct *, nodeptr)
 {
     error("invalid lvalue");
     fixnode(nodeptr);
 }
 
-PRIVATE void binconvert(nodeptr)
-register struct nodestruct *nodeptr;
+PRIVATE void binconvert P1(REGISTER struct nodestruct *, nodeptr)
 {
     bool_t bothscalar;
     scalar_t lscalar;
-    register struct nodestruct *right;
+    REGISTER struct nodestruct *right;
     scalar_t rscalar;
 
     rscalar = (right = nodeptr->right)->nodetype->scalar;
@@ -119,15 +117,12 @@ register struct nodestruct *nodeptr;
 	nodeptr->nodetype = itype;
 }
 
-PRIVATE void castiright(nodeptr)
-struct nodestruct *nodeptr;
+PRIVATE void castiright P1(struct nodestruct *, nodeptr)
 {
     nodeptr->right = castnode(itype, nodeptr->right);
 }
 
-PUBLIC struct nodestruct *castnode(type, nodeptr)
-struct typestruct *type;
-struct nodestruct *nodeptr;
+PUBLIC struct nodestruct *castnode P2(struct typestruct *, type, struct nodestruct *, nodeptr)
 {
     struct symstruct *symptr;
 
@@ -135,7 +130,7 @@ struct nodestruct *nodeptr;
     return node(CASTOP, nodeptr, leafnode(symptr));
 }
 
-PRIVATE void etreefull()
+PRIVATE void etreefull P0()
 {
 #if ETREESIZE == 300
     limiterror("expression too complex (301 nodes)");  /* !! Generate the string dynamically. */
@@ -144,13 +139,12 @@ PRIVATE void etreefull()
 #endif
 }
 
-PUBLIC void etreeinit()
+PUBLIC void etreeinit P0()
 {
     ettop = (etptr = etree) + ETREESIZE;
 }
 
-PRIVATE void fixnode(nodeptr)
-register struct nodestruct *nodeptr;
+PRIVATE void fixnode P1(REGISTER struct nodestruct *, nodeptr)
 {
     nodeptr->tag = LEAF;
     nodeptr->flags = nodeptr->weight = 0;
@@ -158,10 +152,9 @@ register struct nodestruct *nodeptr;
     nodeptr->nodetype = errtype;
 }
 
-PRIVATE bool_pt isconst0(nodeptr)
-register struct nodestruct *nodeptr;
+PRIVATE bool_pt isconst0 P1(REGISTER struct nodestruct *, nodeptr)
 {
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
 
     return nodeptr->tag == LEAF &&
 	   (symptr = nodeptr->left.symptr)->storage == CONSTANT &&
@@ -169,10 +162,9 @@ register struct nodestruct *nodeptr;
 	   symptr->type->scalar & ISCALAR;
 }
 
-PRIVATE bool_pt isnodecharconst(nodeptr)
-register struct nodestruct *nodeptr;
+PRIVATE bool_pt isnodecharconst P1(REGISTER struct nodestruct *, nodeptr)
 {
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
 
     if (nodeptr->tag == LEAF &&
 	(symptr = nodeptr->left.symptr)->storage == CONSTANT &&
@@ -182,10 +174,9 @@ register struct nodestruct *nodeptr;
     return FALSE;
 }
 
-PUBLIC struct nodestruct *leafnode(source)
-struct symstruct *source;
+PUBLIC struct nodestruct *leafnode P1(struct symstruct *, source)
 {
-    register struct nodestruct *leafptr;
+    REGISTER struct nodestruct *leafptr;
 
     if ((leafptr = etptr++) >= ettop)
 	etreefull();
@@ -197,8 +188,7 @@ struct symstruct *source;
     return leafptr;
 }
 
-PRIVATE void needint(nodeptr)
-struct nodestruct *nodeptr;
+PRIVATE void needint P1(struct nodestruct *, nodeptr)
 {
     if (!(nodeptr->nodetype->scalar & ISCALAR))
     {
@@ -207,8 +197,7 @@ struct nodestruct *nodeptr;
     }
 }
 
-PRIVATE void neednonstruct(nodeptr)
-struct nodestruct *nodeptr;
+PRIVATE void neednonstruct P1(struct nodestruct *, nodeptr)
 {
     if (nodeptr->nodetype->constructor & STRUCTU)
     {
@@ -217,8 +206,7 @@ struct nodestruct *nodeptr;
     }
 }
 
-PRIVATE void needscalar(nodeptr)
-struct nodestruct *nodeptr;
+PRIVATE void needscalar P1(struct nodestruct *, nodeptr)
 {
     if (!nodeptr->nodetype->scalar)
     {
@@ -227,8 +215,7 @@ struct nodestruct *nodeptr;
     }
 }
 
-PRIVATE void needspv(nodeptr)
-struct nodestruct *nodeptr;
+PRIVATE void needspv P1(struct nodestruct *, nodeptr)
 {
     if (nodeptr->nodetype->constructor & (ARRAY | FUNCTION | STRUCTU))
     {
@@ -325,10 +312,7 @@ PRIVATE value_t value_mod(a, b) value_t a; value_t b; {
 }
 #endif
 
-PUBLIC struct nodestruct *node(t, p1, p2)
-op_pt t;
-struct nodestruct *p1;
-struct nodestruct *p2;
+PUBLIC struct nodestruct *node P3(op_pt, t, struct nodestruct *, p1, struct nodestruct *, p2)
 {
 #if MAXREGS != 1
     weight_t rightweight;
@@ -853,8 +837,8 @@ intconst:
 
 node1:
     {
-	register struct nodestruct *nodeptr;
-	register struct nodestruct *regp2;
+	REGISTER struct nodestruct *nodeptr;
+	REGISTER struct nodestruct *regp2;
 
 	if ((nodeptr = etptr++) >= ettop)
 	    etreefull();
@@ -889,8 +873,7 @@ node1:
     }
 }
 
-PRIVATE struct typestruct *nodetype(nodeptr)
-struct nodestruct *nodeptr;
+PRIVATE struct typestruct *nodetype P1(struct nodestruct *, nodeptr)
 {
     scalar_t bothscalar;
     scalar_t lscalar;
@@ -1173,16 +1156,14 @@ struct nodestruct *nodeptr;
     return left->nodetype;
 }
 
-PRIVATE int redscalar(nodeptr)
-register struct nodestruct *nodeptr;
+PRIVATE int redscalar P1(REGISTER struct nodestruct *, nodeptr)
 {
     if (isnodecharconst(nodeptr))
 	return CHAR;
     return nodeptr->nodetype->scalar;
 }
 
-PRIVATE struct nodestruct *unconvert(nodeptr)
-struct nodestruct *nodeptr;
+PRIVATE struct nodestruct *unconvert P1(struct nodestruct *, nodeptr)
 {
     if (nodeptr->nodetype->constructor & (ARRAY | FUNCTION))
 	return castnode(pointype(nodeptr->nodetype->constructor & ARRAY ?

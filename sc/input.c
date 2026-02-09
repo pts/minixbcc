@@ -35,7 +35,7 @@
 #endif
 
 #ifdef OPEN00
-  extern int open00 P((const char *pathname));  /* flags and mode are both 0. */
+  extern int open00 P((_CONST char *pathname));  /* flags and mode are both 0. */
 #else
 #  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
 #endif
@@ -44,7 +44,7 @@
 struct fbufstruct		/* file buffer structure */
 {
     struct fcbstruct fcb;	/* status after opening an include sub-file */
-    char *fname;		/* file name */
+    _CONST char *fname;		/* file name */
     bool_t fname_malloced;	/* nonzero if fname was malloced */
     /*char pushback[3];*/	/* allows pushback to 2 before start of fbuf; now integrated to fbuf */
 				/* XXX 3 chars before? */
@@ -76,13 +76,13 @@ PRIVATE bool_t suppress_line_numbers;
 #ifdef ARBITRARY_BACKSLASH_NEWLINES
 FORWARD void backslash P((void));
 #endif
-FORWARD void definefile P((char *fname));
-FORWARD void inputinit P((char *fname, fd_t fd));
+FORWARD void definefile P((_CONST char *fname));
+FORWARD void inputinit P((_CONST char *fname, fd_t fd));
 FORWARD void leaveinclude P((void));
 FORWARD void usage P((void));
 
 #ifdef ARBITRARY_BACKSLASH_NEWLINES
-PRIVATE void backslash()
+PRIVATE void backslash P0()
 {
     static unsigned nbackslash;
 
@@ -146,7 +146,7 @@ more1:
 }
 #endif
 
-PUBLIC void closein()
+PUBLIC void closein P0()
 {
 #ifdef FAKE_INBUFSIZE_1
     fclose(input.fp);
@@ -157,8 +157,7 @@ PUBLIC void closein()
 	leaveinclude();
 }
 
-PRIVATE void definefile(fname)
-char *fname;
+PRIVATE void definefile P1(_CONST char *, fname)
 {
     char *def;
 
@@ -171,9 +170,9 @@ char *fname;
     ourfree(def);
 }
 
-PUBLIC void errorloc()
+PUBLIC void errorloc P0()
 {
-    register struct fbufstruct *infbuf;
+    REGISTER struct fbufstruct *infbuf;
 
     if ((infbuf = inputbuf) == (struct fbufstruct*) 0)
 	return;
@@ -210,7 +209,7 @@ PUBLIC void errorloc()
 
 /* gch1() - get next char, advance ptr (only works on current line) */
 
-PUBLIC void gch1()
+PUBLIC void gch1 P0()
 {
     if (SYMOFCHAR(ch = *++lineptr) != SPECIALCHAR)
 	return;
@@ -219,7 +218,7 @@ PUBLIC void gch1()
 
 /* process #include */
 
-PUBLIC void include()
+PUBLIC void include P0()
 {
     char *dirnameptr;
     char *dirnamend;
@@ -293,7 +292,7 @@ PUBLIC void include()
 		incptr->incdirname = dirnameptr;
 	    }
 #else  /* This implementation doesn't use strrchr(...). */
-	    dirnameptr = inputbuf->fname;
+	    dirnameptr = (char*) inputbuf->fname;  /* This is usually a malloced buffer (so we can cast and modify it), except when it comes from the default fname "stdin" or an argv[...] string from inputinit(...) called from openio(...). */
 	    dirnamend = dirnameptr + strlen(dirnameptr);
 	    for (;;) {
 		if (dirnamend == dirnameptr) {
@@ -371,11 +370,9 @@ ts_s_filename_tot -= charptr - fnameptr;
 
 /* initialise current input file */
 
-PRIVATE void inputinit(fname, fd)
-char *fname;
-fd_t fd;
+PRIVATE void inputinit P2(_CONST char *, fname, fd_t, fd)
 {
-    register struct fbufstruct *newinputbuf;
+    REGISTER struct fbufstruct *newinputbuf;
 
     /* don't allocate after saying input.includer = inputbuf (to save a reg)
      * or an error in the alloc would cycle trying to print the include list
@@ -408,7 +405,7 @@ ts_s_inputbuf_tot += sizeof *inputbuf;
 
 /* switch from include file to file which included it */
 
-PRIVATE void leaveinclude()
+PRIVATE void leaveinclude P0()
 {
     --inclevel;
     if (inputbuf->fname_malloced)
@@ -416,7 +413,7 @@ PRIVATE void leaveinclude()
 #ifdef TS
 ts_s_pathname_tot -= strlen(inputbuf->fname) + 1;
 #endif
-	ourfree(inputbuf->fname);
+	ourfree((void*) inputbuf->fname);
 }
 #ifdef TS
 ts_s_inputbuf_tot -= sizeof *inputbuf;
@@ -438,25 +435,23 @@ ts_s_inputbuf_tot -= sizeof *inputbuf;
 
 /* open input and output files and get options */
 
-PUBLIC void openio(argc, argv)
-int argc;
-char *argv[];
+PUBLIC void openio P2(int, argc, char **, argv)
 {
-    register char *arg;
+    REGISTER char *arg;
     int argn;
     fd_t fd;
-    char *fname;
+    _CONST char *fname;
     struct inclist *incnew;
     struct inclist *incptr;
     bool_t flag[128];  /* !! Make this smaller. It's only used for a few flags. */
-    void (*argfunc) P((char *arg_));
+    void (*argfunc) P((_CONST char *arg_));
 
 #if 0
     lineptr = "\n";		/* empty line in case error message */
 #endif
     fd = 0;			/* standard input */
     memset(flag, 0, sizeof flag);
-    flag['3'] = sizeof (int) >= 4;
+    flag[(unsigned char) '3'] = sizeof (int) >= 4;
     fname = "stdin";
     incptr = &incfirst;  /* (incptr = &incfirst)->incnext = (struct inclist*) 0; */  /* incfirst->incnext is already (struct inclist*) 0, because of zero-initialization */
     initout();
@@ -492,7 +487,7 @@ char *argv[];
 		else
 		    usage();
 		if (arg[1] == '0')	/* flag 0 is negative logic flag 3 */
-		    flag['3'] = TRUE + FALSE - flag['0'];
+		    flag[(unsigned char) '3'] = TRUE + FALSE - flag[(unsigned char) '0'];
 		break;
 	    case 'D':
 		argfunc = definestring;
@@ -522,38 +517,38 @@ ts_s_includelist += sizeof *incnew;
 		break;
 	    }
     }
-    if (flag['3'])
+    if (flag[(unsigned char) '3'])
     {
 	i386_32 = TRUE;
 	definestring("__AS386_32__");
     }
     else
 	definestring("__AS386_16__");
-    if (flag['c'])
+    if (flag[(unsigned char) 'c'])
     {
 	callersaves = TRUE;
 	definestring("__CALLER_SAVES__");
     }
 #ifdef DEBUG
-    debugon = flag['d'];
+    debugon = flag[(unsigned char) 'd'];
 #endif
-    orig_cppmode = cppmode = flag['E'];
-    if (flag['f'])
+    orig_cppmode = cppmode = flag[(unsigned char) 'E'];
+    if (flag[(unsigned char) 'f'])
     {
 	arg1inreg = TRUE;
 	definestring("__FIRST_ARG_IN_AX__");
     }
     arg1op = arg1inreg ? ROOTLISTOP : LISTOP;
-    suppress_line_numbers = flag['P'];
-    ctext = flag['t'];
-    watchlc = flag['w'];
+    suppress_line_numbers = flag[(unsigned char) 'P'];
+    ctext = flag[(unsigned char) 't'];
+    watchlc = flag[(unsigned char) 'w'];
     setoutbufs();
     inputinit(fname, fd);
 }
 
 /* advance over EOL sentinel to new line */
 
-PUBLIC void skipeol()
+PUBLIC void skipeol P0()
 {
 #ifdef FAKE_INBUFSIZE_1
     static int ich;
@@ -651,7 +646,7 @@ case0:
     }
 }
 
-PUBLIC void specialchar()
+PUBLIC void specialchar P0()
 {
     if (maclevel != 0)
     {
@@ -720,7 +715,7 @@ more:
 #endif
 }
 
-PRIVATE void usage()
+PRIVATE void usage P0()
 {
     fatalerror("usage: cc1 [-03cdfltw[-]] [-Ddefine] [-Iincdir] [-Uundef] [-o outfile] [infile]");
 }

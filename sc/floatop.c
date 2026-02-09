@@ -9,12 +9,12 @@
 
 #ifdef NOFP  /* The error messages below indicate lack of floating point support in the C compiler. */
 
-void no_atof()                { fatalerror("no floating-point (literal)"); }
-void no_1double_to_float()    { fatalerror("no floating-point (double-to-float)"); }
-void no_3double_op()          { fatalerror("no floating-point (constant-folding)"); }
-void no_fp_cast()             { fatalerror("no floating-point (cast)"); }
-void no_fp_move()             { fatalerror("no floating-point (move)"); }
-void no_fp_op()               { fatalerror("no floating-point (operation)"); }
+void no_atof P0()             { fatalerror("no floating-point (literal)"); }
+void no_1double_to_float P0() { fatalerror("no floating-point (double-to-float)"); }
+void no_3double_op P0()       { fatalerror("no floating-point (constant-folding)"); }
+void no_fp_cast P0()          { fatalerror("no floating-point (cast)"); }
+void no_fp_move P0()          { fatalerror("no floating-point (move)"); }
+void no_fp_op P0()            { fatalerror("no floating-point (operation)"); }
 
 #else  /* NOFP */
 
@@ -30,8 +30,7 @@ void no_fp_op()               { fatalerror("no floating-point (operation)"); }
 	return nonzero iff the result is a temp double on the base of the stack
 -----------------------------------------------------------------------------*/
 
-PUBLIC bool_pt f_indirect(target)
-struct symstruct *target;
+PUBLIC bool_pt f_indirect P1(struct symstruct *, target)
 {
     if (target->indcount == 0)
     {
@@ -71,9 +70,7 @@ struct symstruct *target;
 	result is double on stack (or in condition codes for EQOP)
 -----------------------------------------------------------------------------*/
 
-PUBLIC void float1op(op, source)
-op_pt op;
-struct symstruct *source;
+PUBLIC void float1op P2(op_pt, op, struct symstruct *, source)
 {
     saveopreg();
     pointat(source);
@@ -93,10 +90,7 @@ struct symstruct *source;
 	result is double on stack (or in condition codes for EQOP)
 ----------------------------------------------------------------------------*/
 
-PUBLIC void floatop(op, source, target)
-op_pt op;
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void floatop P3(op_pt, op, struct symstruct *, source, struct symstruct *, target)
 {
     store_t regmark;
     bool_t sflag;
@@ -155,8 +149,7 @@ struct symstruct *target;
 	OPREG must be free
 -----------------------------------------------------------------------------*/
 
-PUBLIC void fpush(source)
-struct symstruct *source;
+PUBLIC void fpush P1(struct symstruct *, source)
 {
     scalar_t scalar;
 
@@ -182,8 +175,7 @@ struct symstruct *source;
 	records that target has just been pushed to a double on the stack
 -----------------------------------------------------------------------------*/
 
-PUBLIC void justpushed(target)
-struct symstruct *target;
+PUBLIC void justpushed P1(struct symstruct *, target)
 {
     sp -= dtypesize;
     onstack(target);

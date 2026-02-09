@@ -26,15 +26,13 @@ FORWARD void out_callstring P((void));
 
 /* call a named (assembly interface) procedure, don't print newline after */
 
-PUBLIC void call(name)
-char *name;
+PUBLIC void call P1(_CONST char *, name)
 {
     out_callstring();
     outstr(name);
 }
 
-PUBLIC void function(source)
-struct symstruct *source;
+PUBLIC void function P1(struct symstruct *, source)
 {
     if (source->indcount == 0 && source->storage == GLOBAL &&
 	!(source->flags & LABELLED) && *source->name.namep != 0)
@@ -85,9 +83,9 @@ struct symstruct *source;
     }
 }
 
-PUBLIC void ldregargs()
+PUBLIC void ldregargs P0()
 {
-    register struct symstruct *symptr;
+    REGISTER struct symstruct *symptr;
     store_pt targreg;
     struct symstruct temptarg;
 
@@ -119,7 +117,7 @@ PUBLIC void ldregargs()
     regarg = FALSE;
 }
 
-PUBLIC void loadretexpression()
+PUBLIC void loadretexpression P0()
 {
     if (returntype->constructor & STRUCTU)
     {
@@ -162,9 +160,7 @@ PUBLIC void loadretexpression()
 	loadexpression(RETURNREG, returntype);
 }
 
-PUBLIC void listo(target, lastargsp)
-struct symstruct *target;
-offset_t lastargsp;
+PUBLIC void listo P2(struct symstruct *, target, offset_t, lastargsp)
 {
     extend(target);
     push(target);
@@ -185,8 +181,7 @@ offset_t lastargsp;
     }
 }
 
-PUBLIC void listroot(target)
-struct symstruct *target;
+PUBLIC void listroot P1(struct symstruct *, target)
 {
     extend(target);
     /* necessary regs are free since they were saved for function */
@@ -196,7 +191,7 @@ struct symstruct *target;
 	load(target, ARGREG);
 }
 
-PRIVATE void out_callstring()
+PRIVATE void out_callstring P0()
 {
     outop3str(callstring);
     if (i386_32)
@@ -205,7 +200,7 @@ PRIVATE void out_callstring()
 
 #ifdef FRAMEPOINTER
 
-PUBLIC void popframe()
+PUBLIC void popframe P0()
 {
     poplist(frame1list);
 }
@@ -215,7 +210,7 @@ PUBLIC void popframe()
 /* reserve storage for locals if necessary */
 /* also push 1st function arg and load register args if necessary */
 
-PUBLIC void reslocals()
+PUBLIC void reslocals P0()
 {
 #ifdef FRAMEPOINTER
 # ifndef STUPIDFRAME
@@ -302,7 +297,7 @@ PUBLIC void reslocals()
 
 /* clean up stack and return from a function */
 
-PUBLIC void ret()
+PUBLIC void ret P0()
 {
 #ifdef FRAMEPOINTER
     offset_t newsp;

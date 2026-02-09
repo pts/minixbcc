@@ -10,9 +10,7 @@
 
 /* change stack ptr without changing condition codes */
 
-PUBLIC void changesp(newsp, absflag)
-offset_t newsp;
-bool_pt absflag;
+PUBLIC void changesp P2(offset_t, newsp, bool_pt, absflag)
 {
     if (newsp != sp || ((bool_t) absflag && switchnow != (struct switchstruct*) 0))
     {
@@ -43,9 +41,7 @@ bool_pt absflag;
 
 /* load source to any while preserving target */
 
-PUBLIC void loadpres(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void loadpres P2(struct symstruct *, source, struct symstruct *, target)
 {
     store_t regmark;
 
@@ -70,8 +66,7 @@ struct symstruct *target;
 
 /* change stack ptr */
 
-PUBLIC void modstk(newsp)
-offset_t newsp;
+PUBLIC void modstk P1(offset_t, newsp)
 {
     if (newsp != sp)
     {
@@ -89,9 +84,7 @@ offset_t newsp;
 
 /* preserve target without changing source */
 
-PUBLIC void pres2(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC void pres2 P2(struct symstruct *, source, struct symstruct *, target)
 {
     if (target->storage & allregs)
     {
@@ -110,8 +103,7 @@ struct symstruct *target;
 
 /* preserve source */
 
-PUBLIC void preserve(source)
-struct symstruct *source;
+PUBLIC void preserve P1(struct symstruct *, source)
 {
     if (source->storage & allregs)
     {
@@ -125,9 +117,7 @@ struct symstruct *source;
 
 /* preserve lvalue target without changing source or target */
 
-PUBLIC store_pt preslval(source, target)
-struct symstruct *source;
-struct symstruct *target;
+PUBLIC store_pt preslval P2(struct symstruct *, source, struct symstruct *, target)
 {
     store_pt regpushed;
 
@@ -144,8 +134,7 @@ struct symstruct *target;
     return regpushed;
 }
 
-PUBLIC void recovlist(reglist)
-store_pt reglist;
+PUBLIC void recovlist P1(store_pt, reglist)
 {
     poplist(reglist);
     reguse |= (store_t) reglist;
@@ -155,9 +144,7 @@ PRIVATE smalin_t regoffset[] = {0, 0, 0, 1, 2, 3, 0, 0, 0, 4, 5};
  /* CONSTANT, BREG, ax = DREG, bx = INDREG0, si = INDREG1, di = INDREG2 */
  /* LOCAL, GLOBAL, STACKREG, cx = DATREG1, dx = DATREG2 */
 
-PUBLIC void savereturn(savelist, saveoffset)
-store_pt savelist;
-offset_t saveoffset;
+PUBLIC void savereturn P2(store_pt, savelist, offset_t, saveoffset)
 {
     store_t reg;
     smalin_t *regoffptr;

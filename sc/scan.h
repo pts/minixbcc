@@ -179,25 +179,11 @@ enum
 };
 
 EXTERN op_pt arg1op;		/* LISTOP, or ROOTLISTOP if arg1inreg */
-EXTERN struct
-{
-    union
-    {
-	char *s;
-	value_t v;
-#ifndef NOFP
-	double d;
-#endif
-    }
-      value;
-    struct typestruct *type;
-}
- constant;			/* value of last constant scanned */
-				/* sym tells type */
+EXTERN struct constant_s constant;  /* value of last constant scanned; sym tells type */
 EXTERN char funcname[NAMESIZE];	/* name of current function for unique labels */
 EXTERN char gs2name[2 + NAMESIZE];	/* 2 reserved for namespace keys */
 #define gsname (gs2name + 2)	/* before last identifier */
 EXTERN struct symstruct *gsymptr;	/* symbol ptr for last identifier */
 EXTERN bool_t incppexpr;	/* nonzero while scanning cpp expression */
 EXTERN sym_t sym;		/* current symbol */
-extern sym_t symofchar[];	/* table to convert chars to their symbols */
+extern sym_t symofchar[];  /* table to convert chars to their symbols */
