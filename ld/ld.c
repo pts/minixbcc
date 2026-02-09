@@ -9,9 +9,21 @@
 #include "type.h"
 #include "globvar.h"
 
-#if 'z' - 'a' != 26 - 1
-#  error ASCII system expected for flag_ary.
+#ifndef BADSIGNED  /* BADSIGNED is set by sysdet.c. */
+#  if ~0 != -1 || (-1 & 3) != 3
+#    define BADSIGNED 1
+#  endif
 #endif
+#ifdef BADSIGNED
+#  error Two's' complement system required.  /* By many components of minixbcc. */
+#endif
+#if 'z' - 'a' != 26 - 1 || 'Z' - 'A' != 26 - 1 || '9' - '0' != 9
+#  error ASCII-ish system required.  /* For flag_ary etc. */
+#endif
+#if ' ' != 32 || '!' != 33 || '0' != 48 || 'A' != 65 || 'a' != 97 || '~' != 126
+#  error ASCII system required.  /* For some parts of minixbcc. */
+#endif
+
 PRIVATE bool_t flag_ary[26];  /* Zero-initialized. */
 #define FLAG(c) (flag_ary[(c) - 'a'])
 
