@@ -110,7 +110,7 @@ if test "$1" = gcc || test "$1" = g++ || test "$1" = clang || test "$1" = clang+
     sysdet="`./sysdet ./sysdet`"  # Typically: sysdet="-DINT32T=int -DINTPTRT=int -DALIGNBYTES=4 -DNOPORTALIGN=0"  # !! Add -DMINALIGNBYTES=1
     test "$?" = 0 || exit 2
     rm -f sysdet
-    case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac
+    case "$sysdet" in *-DBAD* | "") exit 3 ;; *-DINTPTRT=*) ;; *) exit 4 ;; esac  # This fails with exit 3 for -DBADSIGNED, -DBADSHORT, -DBADLONG etc.
     case "$sysdet" in
      *-DOSID=3*) h=3 ;;
      *-DOSID=0*) h=0 ;;
