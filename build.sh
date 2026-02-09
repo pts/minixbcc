@@ -97,8 +97,8 @@ if test "$1" = gcc || test "$1" = clang || test "$1" = owcc || test "$1" = minic
   ( rm -f sysdet
     cc2=
     # -fno-lto is needed by `zig cc -target powerpc64-linux-musl -s -O2 -W -Wall -Werror -Wno-strict-prototypes -Wno-unused-command-line-argument -fno-lto -ansi -pedantic', which would crash in a trap instruction before main() without -fno-lto.
-    if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-unused-command-line-argument -Wno-strict-prototypes -fno-lto"  # Example: ./build.sh zig cc
-    elif test "$1" = clang; then cc="$1"; shift; cflags="-O -Wno-unknown-warning-option -Wno-deprecated-non-prototype -Wno-strict-prototypes"  # Example: ./build.sh clang
+    # Even -Wno-unused-command-line-argument wouldn't silence this warning when `zig cc -target powerpc64-linux-musl -s -O2 -W -Wall ...' is compiling the libc:  zig: warning: argument unused during compilation: '-mred-zone' [-Wunused-command-line-argument]
+    if test "$1" = zig && test "$2" = cc; then cc="$1"; shift; cc2="$1"; shift; cflags="-O -fno-lto"  # Example: ./build.sh zig cc
     elif test "$1" = minicc; then cc="$1"; shift; cflags=  # It optimizes for size better by default than with -O.
     elif test "$1" = cross; then cc=cc; shift; cflags=-O  # A generic Unix C compiler named `cc'.
     else cc="$1"; shift; cflags=-O
