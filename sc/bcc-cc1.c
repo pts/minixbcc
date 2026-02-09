@@ -23,3 +23,7 @@ char **argv;
     /* NOTREACHED */
     return 0;
 }
+
+#ifdef MXMALLOC
+#  include "mxmalloc.h"  /* Implementation. */
+#endif

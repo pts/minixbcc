@@ -8,6 +8,9 @@
 #  include <unistd.h>
 #  include <string.h>
 #endif
+#ifndef _AUTOC_H
+#  include "autoc.h"  /* For INTPTRT. */
+#endif
 #include "const.h"
 #include "align.h"
 #include "type.h"

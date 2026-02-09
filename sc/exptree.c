@@ -2,6 +2,9 @@
 
 /* Copyright (C) 1992 Bruce Evans */
 
+#ifndef _AUTOC_H
+#  include "autoc.h"  /* For INT32T. */
+#endif
 #include "const.h"
 #include "types.h"
 #include "gencode.h"
@@ -747,7 +750,7 @@ struct nodestruct *p2;
 	uflag = FALSE;
 	break;
     case SLOP:
-	targval <<= sourceval;	/* assume shiftcount treated as unsigned */
+	targval = (uvalue_t) targval << sourceval;  /* assume shiftcount treated as unsigned */  /* Adding (uvalue_t) casts so that the `<<' can overflow, without undefined behavior. */
 	lflag = lscalar & LONG;
 	uflag = lscalar & UNSIGNED;
 	break;

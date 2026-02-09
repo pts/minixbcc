@@ -13,6 +13,26 @@
  * If this is not the case, you will have to do some editing here and there.
  */
 
+/* Default configuration for minixbcc. */
+#ifndef   OLD_PREPROCESSOR
+#  define OLD_PREPROCESSOR 1
+#endif
+#ifndef   HOST
+#  define HOST 1  /* SYS_UNIX. */
+#endif
+#ifndef   TARGET
+#  define TARGET 0  /* SYS_UNKNOWN. */
+#endif
+#ifndef   MACHINE
+#  define MACHINE "i8088"
+#endif
+#ifndef   SYSTEM
+#  define SYSTEM "minix"
+#endif
+#ifndef   COMPILER
+#  define COMPILER "__STD_CC__"  /* !! Does this make sense? */
+#endif
+
 /*
  * This redundant definition of TRUE and FALSE works around
  * a limitation of Decus C.
