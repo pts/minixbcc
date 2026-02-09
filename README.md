@@ -39,29 +39,6 @@ By being fully open source we mean the combination of the following:
   (such as config, system config or system header files), and there is no
   need to specify any settings (because the defaults are good enough)
 
-The most important differences from original BCC and Dev86 BCC:
-
-* In minixbcc, signed integer division consistently rounds towards 0. This
-  is consistent with C99 and the x86 idiv instruction. C89 allows either
-  rounding down or rounding towards 0. BCC and Dev86 BCC behave
-  inconsistently, depending on the target (i86 and i386), the type (int or
-  long), the divisor (whether it's a power of 2), and the libc with which the
-  compiler was compiled.
-* The latest Dev86 BCC has an optimizer, which makes the assembly output of
-  the C compiler frontend--backend shorter and faster. The output of the
-  optimizer is still assembly, and it is fed to the assembler. minixbcc
-  doesn't have an optimizer.
-* Lots of bugs have been fixed in (and features have also been added to)
-  Dev86 BCC between original BCC, Dev86 0.0.5 (1996-03-24) and Dev86
-  0.16.21f (2015-03-08). Most of these didn't make it to minixbcc.
-* The latest Dev86 BCC targets ELKS (i86), DOS (i86) and Linux (i386).
-  minixbcc targets Minix i86 and Minix i386. The original BCC targets
-  i86, i386 and MC6809.
-* minixbcc doesn't support any operations on floating-point types (float and
-  double). This is to make its code fit to 64 KiB even if compiled with
-  itself, a non-optimizing compiler. Original BCC and Dev86 BCC do support
-  floats.
-
 ## How to try it
 
 If you have a decent, modern Unix-like system (such as Linux, FreeBSD,
@@ -127,6 +104,107 @@ executable is for the *3* target. The minixbcc tools can target any of the
 respectively), no matter whether they are compiled as a cross-compiler, a
 native compiler running on a *0* host, or a native compiler running on a *3*
 host.
+
+## More info about minixbcc
+
+The most important differences from original BCC and Dev86 BCC:
+
+* In minixbcc, signed integer division consistently rounds towards 0. This
+  is consistent with C99 and the x86 idiv instruction. C89 allows either
+  rounding down or rounding towards 0. BCC and Dev86 BCC behave
+  inconsistently, depending on the target (i86 and i386), the type (int or
+  long), the divisor (whether it's a power of 2), and the libc with which the
+  compiler was compiled.
+* The latest Dev86 BCC has an optimizer, which makes the assembly output of
+  the C compiler frontend--backend shorter and faster. The output of the
+  optimizer is still assembly, and it is fed to the assembler. minixbcc
+  doesn't have an optimizer.
+* Lots of bugs have been fixed in (and features have also been added to)
+  Dev86 BCC between original BCC, Dev86 0.0.5 (1996-03-24) and Dev86
+  0.16.21f (2015-03-08). Most of these didn't make it to minixbcc.
+* The latest Dev86 BCC targets ELKS (i86), DOS (i86) and Linux (i386).
+  minixbcc targets Minix i86 and Minix i386. The original BCC targets
+  i86, i386 and MC6809.
+* minixbcc doesn't support any operations on floating-point types (float and
+  double). This is to make its code fit to 64 KiB even if compiled with
+  itself, a non-optimizing compiler. Original BCC and Dev86 BCC do support
+  floats.
+* The C source code of minixbcc is much more portable, it can be compiled on
+  most modern C or C++ compilers. Dev86 BCC can also be compiled for a DOS
+  host, minixbcc can't (because the C compiler driver (cc) calls fork(3) and
+  execv(3)).
+
+Minimum system requirements for building minixbcc as a cross-compiler:
+
+* TL;DR It will build on a modern Unix-like system with a C compiler, even
+  64-bit systems.
+* A C compiler (any of: traditional K&R, ANSI C (C89), C99 or newer) or
+  a C++ compiler (any of: older than C++98, C++98, C++11 or newer, even
+  C++23).
+* Some POSIX functions in the libc. The C compiler driver (cc) needs fork(3)
+  and execv(3), so it will need a Unix-like system to build and run. Windows
+  users can use WSL (Windows Subsystem for Linux) or Docker.
+* An ASCII-based system. (Most modern systems in 2026 are.) This is checked
+  at compile time (e.g. near the beginning of [ld/ld.c](ld/ld.c)) and at
+  *build.sh* build time (in [sysdet.c](sysdet.c)).
+* Two's complement signed integer representation. (Most modern systems in
+  2026 have it, C++20 and C23 requires it.) This is checked at compile time
+  (e.g. near the beginning of [ld/ld.c](ld/ld.c)) and at
+  *build.sh* build time (in [sysdet.c](sysdet.c)).
+* 8-bit C char, 16-bit C short and a 32-bit C int or C long. Most modern C
+  compilers in 2026 have it. This is checked at *build.sh* build time (in
+  [sysdet.c](sysdet.c)).
+* The size of the C pointer can be arbitrary: minixbcc
+  compiles on systems with pointer size of 16-bit, 32-bit, 64-bit etc.
+  Please note that if the pointer size is 16-bit, this typically means that
+  memory (code, code or the total) is limited to 64 KiB. Such systems
+  typically need extra porting work, because of the extremely limited
+  memory. minixbcc has been ported to Minix i86 and ELKS.
+  [build.sh](build.sh) autodetects a Minix 1.5.10--2.0.4 i86 host, and
+  applies the version-specific workarounds needed. See the section below on
+  building the cross-compiler for an ELKS host (cross-compiling it on
+  Linux).
+
+minixbcc tools and libc are written in multiple dialects of multiple
+programming languages (C, C++ and x86 assembly). The tools are written in
+very portable C (with a decent amount of `#ifdef`s), so they can be built
+using either a traditional K&R or an ANSI C (C89), or a C99 or a newer C
+compiler, or even a C++ compiler. There is no C++ code in minixbcc, just the
+C source code is written in a careful way so that it also works as C++
+source code. (Most of this has been achieved just by using ANSI C function
+prototypes and argument type specification in function defininitons (when a
+C++ compiler is detected), and using the *const* in *const char\**
+consistently, as needed by C++.) Undefined behavior is avoided whenever
+possible. (Most of this is done by doing unsigned integer arithmetic, which
+has proper wrap-around. Also pointer arithmetic is done only on valid array
+ranges.)
+
+The minixbcc libc is written partly in x86 assembly in the minixbcc
+assembler (as) syntax, and mostly in the C dialect understood by the
+minixbcc C compiler (which is traditional K&R, no ANSI C; there is no
+support for floating-point operations). There are no plans to port the libc
+to other C compilers or to architectures other than i86 or i386.
+Historically the libc was written for the ACK 3.1 C compiler running on
+Minix 1.5.10 i86, but it is no longer checked whether that still works.
+
+There is an alternative, smaller libc included, implemented in x86 assembly
+in BCC (1990-06-15) assembler (as) and minixbcc assembler (as) syntax (in
+files [libt0.si](libt0.si) and [libt3.si](libt3.si)) and Minix 1.5.10 ACK
+3.1 assembler--linker (asld) syntax (in file [sc/lsca.s](sc/lsca.s)). This
+smaller libc is used for building the tools on Minix i86 and i386. For Minix
+i86, this is necessary, because some of the executable program files would
+be too large (especially the code size of the C compiler frontend-backend
+tool (sc)) if linked against the normal libc, or the C compiler or the
+linker would run out of memory compiling the tools. There is another benefit
+of this smaller libc: the tools can be built on Minix i86 and i386 without
+relying on the system libc or the system C header files. This no-reliance
+improves reproducibility and portability. At the most extreme, the `sh
+build.sh bccbin` can build minixbcc with only 3 executable programs (sc, as
+and ld) available from
+[bccbin16.tar.Z](https://github.com/pts/pts-minix-1.5.10-hdd-image/releases/download/minix-1.5.10-i386-patches/bccbin16.tar.Z)
+or
+[bccbin32.tar.Z](https://github.com/pts/pts-minix-1.5.10-hdd-image/releases/download/minix-1.5.10-i386-patches/bccbin32.tar.Z)
+(BCC, 1990-06-15).
 
 ## How to install it on Minix
 
