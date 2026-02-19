@@ -70,6 +70,12 @@ struct symstruct		/* symbol table entry format */
 
 /* prototypes */
 
+#if __STDC__
+#define P(x) x
+#else
+#define P(x) ()
+#endif
+
 /* dump.c */
 void dumpmods P((void));
 void dumpsyms P((void));
