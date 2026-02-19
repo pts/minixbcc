@@ -34,15 +34,27 @@
   extern pid_t fork(void);
 #endif
 
-#ifdef NOCROSS
-#  define CROSS 0
+#ifdef NOCROSS  /* Configurable from the command line. For the non-cross-compiler only. */
+#  define CROSS 0  /* This is the non-cross-compiler. */
+#  ifndef USRDIR  /* Configurable from the command line: -DINCLUDEUPDIR=USRDIR. Just a helper value. */
+#    define USRDIR "/usr"
+#  endif
+#  ifndef LIBDIR  /* Configurable from the command line. For the non-cross-compiler only. */
+#    define LIBDIR "/usr/minixbcc"
+#  endif
+#  ifndef INCLUDEUPDIR  /* Configurable from the command line. For the non-cross-compiler only. */
+#    define INCLUDEUPDIR LIBDIR
+#  endif
+#  ifndef INCLUDESUBDIR  /* Configurable from the command line. For the non-cross-compiler only. */
+#    define INCLUDESUBDIR "include"
+#  endif
 #  define GET_PATH_TOOL(tool_name) (strcpy(path_tool.tool, tool_name), path_tool.libdir)
 #  define GET_PATH_INCLUDE() flag_include.flag
 #  define GET_PATH_TARGET_CRTSO() path_crtso.libdir
 #  define GET_PATH_TARGET_LIBCA() path_libca.libdir
 #  define IS_HOST_BITS32 (sizeof(char *) >= 4)
 #else
-#  define CROSS 1
+#  define CROSS 1  /* This is the cross-compiler. */
 #  define GET_PATH_TOOL(tool_name) get_cross_path_tool((tool_name))
 #  define GET_PATH_INCLUDE() get_cross_flag_include()
 #  define GET_PATH_TARGET_CRTSO() get_cross_path_target(CRTSO, &target_CRTSO)
@@ -85,9 +97,6 @@
 #endif
 
 typedef unsigned char bool_t;	/* boolean: TRUE if nonzero */
-
-#define LIBDIR "/usr/minixbcc"
-#define INCLUDE "include"
 
 #define SC	"sc"
 #define AS	"as"
@@ -158,14 +167,14 @@ FORWARD char *get_cross_flag_include P((void));
 FORWARD char *get_cross_path_target P((_CONST char *file_name, char **file_cache));
 #else
 /* We need this workaround since many old C compilers, including BCC con't support string literal concatenation in:
- * char flag_include[] = "-I" LIBDIR INCLUDE;
+ * char flag_include[] = "-I" INCLUDEUPDIR INCLUDESUBDIR;
  */
 PRIVATE struct
 {
     char flag[2];
-    char libdir[sizeof(LIBDIR)];  /* The trailing '\0' will be replaced with '/'. */
-    char include[sizeof(INCLUDE)];
-} flag_include = { {'-', 'I'}, LIBDIR, INCLUDE };
+    char libdir[sizeof(INCLUDEUPDIR)];  /* The trailing '\0' will be replaced with '/'. */
+    char include[sizeof(INCLUDESUBDIR)];
+} flag_include = { {'-', 'I'}, INCLUDEUPDIR, INCLUDESUBDIR };
 
 PRIVATE struct
 {
