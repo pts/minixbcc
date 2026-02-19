@@ -3,9 +3,9 @@
 /* Copyright (C) 1992 Bruce Evans */
 
 #if __STDC__
-#define P(x)	x
+#define P(x) x
 #else
-#define P(x)	()
+#define P(x) ()
 #endif
 
 #ifdef NOFP
