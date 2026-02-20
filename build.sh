@@ -22,6 +22,7 @@
 #    #else
 #    #  define UCHARCAST(c) ((unsigned char) (c))
 #    #endif
+# !! backport assembler and linker improvements from as86.tar.Z
 #
 
 test "$ZSH_VERSION" && set -y 2>/dev/null  # SH_WORD_SPLIT for zsh(1). It's an i nvalid option in bash(1), and it's harmful (prevents echo) in ash(1).

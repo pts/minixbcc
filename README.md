@@ -303,3 +303,138 @@ libexec/sc libexec/as libexec/cr true` on ELKS, instead of the *cross.sh*
 command above (run on Linix). However, the ELKS 0.8.1 /bin/sh isn't able to
 run the *cross.sh* script correctly, so this will not work until the shell
 is fixed.
+
+## History and authors of minixbcc
+
+The minixbcc C compiler fronend--backend is based on C source written by Bruce Evans, released on 1993-07-10 (v3).
+The minixbcc assembler is based on C source written by Bruce Evans, released on 1991-11-29 (v1).
+The minixbcc linker is based on C source written by Bruce Evans, released on 1991-12-05 (v1).
+
+Please note that Bruce Evans released a C compiler, assembler and linker
+targeting Minix 1.5.10 i86 and i386 earlier, on 1990-06-10 (v0), running on
+Minix i86 host
+([bccbin16.tar.Z](https://github.com/pts/pts-minix-1.5.10-hdd-image/releases/download/minix-1.5.10-i386-patches/bccbin16.tar.Z))
+and on Minix i386 host
+([bccbin32.tar.Z](https://github.com/pts/pts-minix-1.5.10-hdd-image/releases/download/minix-1.5.10-i386-patches/bccbin32.tar.Z)).
+However, this is a binary-only release, its C source has never
+been released (at least not before 2026).
+
+History and authors of various parts of minixbcc:
+
+* The C compiler driver (*cc/*, *bbcc*) was written by Bruce Evans, source
+  released on 1990-06-03. pts added cross-compiler support starting on
+  2026-01-08.
+* The C compiler frontend--backend (*sc*) was written by Bruce Evans, source
+  released on 1993-07-10, part of
+  [bcc.tar.gz](https://web.archive.org/web/20260110201428id/https://ftp.gwdg.de/pub/linux/misc//linux.org.uk/people/linux/8086/Compilers/bcc.tar.gz).
+  (This is referenced as v3 in the minixbcc source.)
+  pts removed most of floating-point support (to make the code size of the
+  *sc* executable program less than 64 KiB when compiled with itself) starting
+  on 2026-01-08. This is the last known release of BCC by Bruce Evans.
+* The assembler (*as*) was written by Bruce Evans, source released on
+  1991-11-29, part of
+  [as86.tar.Z](https://web.archive.org/web/20260128142941id/https://mirror.math.princeton.edu/pub/oldlinux/Linux.old/bin/as86.tar.Z)
+  (see also alternative
+  [as86.tar.Z](https://web.archive.org/web/20260220145307id/https://www.nic.funet.fi/pub/files/index/Linux/bin/as86.src.tar.Z)).
+  (This is referenced as v1 in the minixbcc source.) pts
+  added (fixed) the *INCLUDE* (*GET*) pseudo-op starting on 2026-01-08.
+  This is the release used by early versions of the Linux kernel (such as
+  1.0.5 and earlier).
+  The syntax of *as* has lots of additions by Bruce Evans, and it is based
+  on the assembly language syntax of Minix 1.5.10 *asld*, and the assembly
+  syntax of that is based on the assembler syntax
+  of PC/IX. Andrew Stuart Tanenbaum developed the MINIX system on a PC/IX
+  system.
+* The linker (*ld*) was written by Bruce Evans, source released on
+  1991-12-05, part of
+  [as86.tar.Z](https://web.archive.org/web/20260128142941id/https://mirror.math.princeton.edu/pub/oldlinux/Linux.old/bin/as86.tar.Z)
+  (see also alternative
+  [as86.tar.Z](https://web.archive.org/web/20260220145307id/https://www.nic.funet.fi/pub/files/index/Linux/bin/as86.src.tar.Z)).
+  (This is referenced as v1 in the minixbcc source.) pts added
+  Minix library (.a) reading and data size setting (equivalent to the Minix
+  *chmem* tool) starting on 2026-01-08.
+  This is the release used by early versions of the Linux kernel (such as
+  1.0.5 and earlier).
+* The C preprocessor tool (*cpp*) is based on Decus CPP (last change in this
+  version on 1985-01-07) within
+  [X11R5](https://www.x.org/archive/X11R5/contrib-1.tar.Z)
+  (*contrib/util/cpp*). This is not the latest Decus CPP (see [this
+  question](https://retrocomputing.stackexchange.com/q/32485)). pts
+  backported the *-T* flag (trigraphs), the *-P* flag (no `#line` output),
+  `#error` support and hiding the unterminated string error from the version
+  used by Bruce Evans, starting on 2026-01-08.
+* The startup object file (*crtso.o*) was written by Bruce Evans on
+  1990-05-16, distributed as part of
+  [bcclib.tar.Z](https://github.com/pts/pts-minix-1.5.10-hdd-image/releases/download/minix-1.5.10-i386-patches/bcclib.tar.Z).
+* The C library (*libc/*, *libc.a*) is based on the [Minix 1.5.10
+  i86](http://download.minix3.org/previous-versions/Intel-1.5/pc/) libc
+  (released on 1990-06-01), with the patches by Bruce Evans on 1990-06-10
+  applied, and the signed 32-bit integer division function replaced with an
+  implementation which is rounding towards 0 (consistently with other
+  division functions, as required by C99, but not C89 (ANSI C)), from
+  OpenWatcom v2 (ported pts on 2026-02-08). The patches by Bruce Evans were
+  distributed as part of
+  [bcclib.tar.Z](https://github.com/pts/pts-minix-1.5.10-hdd-image/releases/download/minix-1.5.10-i386-patches/bcclib.tar.Z),
+* The C include (header) files (*include/\*.h*, *include/\*/*.h*) are based
+  on the [Minix 1.5.10
+  i86](http://download.minix3.org/previous-versions/Intel-1.5/pc/) libc
+  (released on 1990-06-01), with the patches by Bruce Evans on 1990-05-20
+  applied. The patches by Bruce Evans were distributed as part of
+  [bcclib.tar.Z](https://github.com/pts/pts-minix-1.5.10-hdd-image/releases/download/minix-1.5.10-i386-patches/bcclib.tar.Z).
+* Everything above contains bugfixes, tiny feature additions, C and C++
+  language portability improvements, architecture and system portability
+  improvements, size optimizations and speed optimizations by pts starting
+  on 2006-01-08.
+* COPYING.txt is a verbatim copy of the [GPL v2](https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt) (1991-06) license.
+* The archiver tool *cr* is written by pts starting on 2026-01-08.
+* Everything else is written by pts starting on 2026-01-08.
+
+Please note that minixbcc doesn't contain the newest version of the BCC C
+compiler frontend--backend, assembler or linker. Here is how development of
+BCC continued since the source imported to minixbcc has been released:
+
+* minixbcc is based on the latest version of the BCC C compiler
+  frontend--backend, written by Bruce Evans, released on 1993-07-10
+  ([bcc.tar.gz](https://web.archive.org/web/20260110201428id/https://ftp.gwdg.de/pub/linux/misc//linux.org.uk/people/linux/8086/Compilers/bcc.tar.gz)).
+* minixbcc is based on and early versions of the Linux kernel use an earlier
+  version of the assembler and the linker, written by Bruce Evans, released
+  on 1991-11-29
+  ([as86.tar.Z](https://web.archive.org/web/20260128142941id/https://mirror.math.princeton.edu/pub/oldlinux/Linux.old/bin/as86.tar.Z)).
+  This still targeted Minix i86 and Minix i386, but it didn't use the Minix
+  archive (.a) file format.
+* The BCC version released on 1993-07-10 by Bruce Evans
+  ([bcc.tar.gz](https://web.archive.org/web/20260110201428id/https://ftp.gwdg.de/pub/linux/misc//linux.org.uk/people/linux/8086/Compilers/bcc.tar.gz))
+  also contains the assembler (with latest source file modification on
+  1993-07-11) and the linker (with latest source file modification on
+  1994-04-17). This is the latest release by Bruce Evans.
+  This still targeted Minix i86 and Minix i386, but it didn't use the Minix
+  archive (.a) file format.
+  minixbcc and early
+  versions of the Linux kernel use an earlier version of the assembler and
+  the linker.
+* Robert de Bath created Dev86, the development environment for
+  [ELKS](https://en.wikipedia.org/wiki/Embeddable_Linux_Kernel_Subset) (a
+  small Linux-like operating system targeting i86 (16-bit x86), and reused
+  some components (C compiler frontend--backend, assembler and linker) of
+  BCC. Dev86 targeted ELKS (i86) and DOS (i86), not Minix i86 or Minix i386.
+  Over the years (1996--2014), Robert de Bath and the other Dev86
+  developers made many fixes and improvements to BCC. Dev86 version 0.0.5
+  was released on 1996-03-24. Version 0.16.21 (released on 2014-03-14) is
+  the last version maintained by Robert de Bath. It contains bugfixes and
+  tons of new features since 0.0.5, including an optimizer (copt) for the
+  i86 target, supporting targets Linux i386 a.out OMAGIC and QMAGIC (but not
+  ELF-32) with libc; new tools objdump86, nm86 and size86tools. The last
+  commit in the Dev86 Git repository
+  [lkundrak/dev86](https://github.com/lkundrak/dev86/) on 2015-03-08 is by
+  Jody Bruchon. ELKS 0.3.0 (released on 2019-03-4) was migrated from Dev86
+  BCC to the gcc-ia16 C compiler. ELKS 0.8.0 (released on 2024-09-24) was
+  migrated to the OpenWatcom v2 C compiler (and its assembler).
+* BCC was ported to FreeDOS (i86) (both as a host and as a target), the port
+  first released on 1996-04-26
+  ([bcc.zip](https://web.archive.org/web/20260220152432id/http://ftp.lyx.org/pub/freedos/files/devel/c/bcc/old/oldold/bcc.zip),
+  see also alternative
+  [bcc.zip](https://www.ibiblio.org/pub/micro/pc-stuff/freedos/files/devel/c/bcc/old/oldold/bcc.zip)),
+  author unspecified. This port contains the C source of the C compiler
+  driver and the C compiler frontend--backend only (no assembler, no
+  linker), and it is designed to be used with Borland's TASM assembler and
+  TLINK linker.
