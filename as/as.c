@@ -25,6 +25,7 @@
 #include "flag.h"
 #include "globvar.h"
 
+/*PUBLIC fd_t lstfil = -1;*/  /* Initial value doesn't matter, because list.global and maclist.global guards it. */
 PUBLIC fd_t symfil = -1;
 
 PRIVATE struct block_s hid_blockstak[MAXBLOCK];	/* block stack */
