@@ -1,6 +1,6 @@
 /* file.h - global variables involving files for assembler */
 
-EXTERN fd_t binfil;		/* binary output file */
+extern fd_t binfil;		/* binary output file */
 EXTERN fd_t lstfil;		/* list output file (0 = standard) */
 EXTERN fd_t objfil;		/* object output file */
 extern fd_t symfil;		/* symbol table output file */

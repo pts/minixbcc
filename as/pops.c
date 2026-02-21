@@ -10,6 +10,7 @@
 #include "globvar.h"
 #include "opcode.h"
 #include "scan.h"
+#include "file.h"
 
 PRIVATE bool_t elseflag;	/* set if ELSE/ELSEIF are enabled */
 				/* depends on zero = FALSE init */
@@ -94,6 +95,7 @@ PUBLIC void checkdatabounds P0()
 PRIVATE void constdata P1(unsigned, size)
 {
     offset_t remaining;
+    opcode_pt fill_byte;
 
     absexpres();
     if (!((lcdata |= lastexp.data) & UNDBIT))
@@ -105,10 +107,11 @@ PRIVATE void constdata P1(unsigned, size)
 	{
 	    symabsexpres();
 	    checkdatabounds();
+	    fill_byte = (opcode_pt) lastexp.offset;
 	    for (; remaining != 0; --remaining)
 	    {
-		putbin((opcode_pt) lastexp.offset);	/* fill byte */
-		putabs((opcode_pt) lastexp.offset);
+		putbin(fill_byte);
+		putabs(fill_byte);
 	    }
 	    lastexp.offset = lcjump;
 	}
@@ -688,8 +691,6 @@ PUBLIC void pfqb P0()
 
 PUBLIC void pglobl P0()
 {
-    if (binaryg)
-	error(NOIMPORT);
     doentexp(0, IMPBIT);
 }
 
@@ -723,7 +724,7 @@ PUBLIC void pimport P0()
 {
     struct sym_s *symptr;
 
-    if (binaryg)
+    if (binfil != -1)
 	error(NOIMPORT);
     while (TRUE)
     {

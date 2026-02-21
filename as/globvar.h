@@ -3,7 +3,6 @@
 /* global control and bookkeeping */
 
 EXTERN bool_t binaryc;		/* current binary code flag */
-EXTERN bool_t binaryg;		/* global binary code flag */
 EXTERN offset_t binmbuf;	/* offset in binary code buffer for memory */
 
 EXTERN unsigned char dirpag;	/* direct page */

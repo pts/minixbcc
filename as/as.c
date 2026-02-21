@@ -25,6 +25,7 @@
 #include "flag.h"
 #include "globvar.h"
 
+PUBLIC fd_t binfil = -1;
 /*PUBLIC fd_t lstfil = -1;*/  /* Initial value doesn't matter, because list.global and maclist.global guards it. */
 PUBLIC fd_t symfil = -1;
 
@@ -150,7 +151,6 @@ PRIVATE void initp1 P0()
     lstfil = STDOUT;
     mapnum = 15;		/* default map number for symbol table */
     spt_top = (spt = hid_spt) + SPTSIZ;
-    binfil = -1;
 }
 
 /* initialise nonzero values which start same each pass */
@@ -238,7 +238,6 @@ PRIVATE void process_args P2(int, argc, char **, argv)
 		if (!isnextarg || binfil != -1)
 		    usage();
 		binfil = my_creat(nextarg, "error creating binary file");
-		binaryg = TRUE;
 		--argc;
 		++argv;
 		break;
@@ -311,8 +310,12 @@ PRIVATE void process_args P2(int, argc, char **, argv)
     }
     while (--argc != 1);
     D4("P99\n")
-    inidata = (~binaryg & inidata) | (RELBIT | UNDBIT);
-}				/* IMPBIT from inidata unless binaryg */
+    if (binfil != -1) {
+	if (objfil != 0) usage();  /* There is no good value for inidata below, so just abort early. */  /* !! Maybe 0 is a good value of both binfil and objfil are being written. */
+	inidata &= ~1;  /* ENTBIT == 1, a sub-bit of SEGM == 0xf. */  /* !! This is legacy behavior of as v1, as v3 and as in dev86-0.16.21f. Does it make any sense? As a bugfix, shouldn't we clear IMPBIT or `IMPBIT | SEGM' instead? */
+    }
+    inidata |= RELBIT | UNDBIT;
+}
 
 PRIVATE void summary P1(int, fd)
 {

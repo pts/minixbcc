@@ -208,12 +208,13 @@ PUBLIC void pproceof P0()
     else if (!pass)
     {
 	pass = TRUE;
+	objectc = objectg;  /* Already used by objheader() below. */
+	binaryc = (binfil != -1);
 	objheader();		/* while pass 1 data all valid */
 	binmbuf = 0;		/* reset zero variables */
 	maclevel = iflevel = blocklevel =
 	    totwarn = toterr = linum = macnum = 0;
 	initp1p2();		/* reset other varaiables */
-	binaryc = binaryg;
 	defsize = idefsize;
 	list.current = list.global;
 	maclist.current = maclist.global;

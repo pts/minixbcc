@@ -10,14 +10,16 @@ PRIVATE offset_t binfbuf;	/* binary code buffer for file (counter) */
 PRIVATE offset_t binmax;	/* maximum value of binmbuf for pass 1 */
 PRIVATE offset_t binmin;	/* minimum value of binmbuf for pass 1 */
 
+FORWARD void putbin1 P((opcode_pt c));
 FORWARD void putbinoffset P((offset_t offset, count_t size));
 
 /* write header to binary file */
 
 PUBLIC void binheader P0()
 {
-    if ((outfd = binfil) != 0x0)
+    if (binaryc)
     {
+	outfd = binfil;
 	writec(0x0);		/* binary header byte */
 #ifdef LONG_BINHEADER
 	writeoff(binmax - binmin);	/* program length */
@@ -33,8 +35,9 @@ PUBLIC void binheader P0()
 
 PUBLIC void bintrailer P0()
 {
-    if ((outfd = binfil) != 0x0)
+    if (binaryc)
     {
+	outfd = binfil;
 	writec(0xFF);		/* binary trailer byte */
 	writew(0x0);		/* further trailer bytes */
 #ifdef LONG_BINHEADER
@@ -53,7 +56,7 @@ PUBLIC void genbin P0()
     char *bufptr;
     unsigned char remaining;
 
-    if (binaryg && mcount != 0x0)
+    if (binfil != -1 && mcount != 0x0)
     {
 	if (popflags)
 	{
@@ -62,7 +65,7 @@ PUBLIC void genbin P0()
 		bufptr = databuf.fcbuf;
 		remaining = mcount;
 		do
-		    putbin(*bufptr++);
+		    putbin1(*bufptr++);
 		while (--remaining != 0x0);
 	    }
 	    if (fdflag)
@@ -93,35 +96,35 @@ PUBLIC void genbin P0()
 	    remaining = mcount - 0x1;	/* count opcode immediately */
 	    if (aprefix != 0x0)
 	    {
-		putbin(aprefix);
+		putbin1(aprefix);
 		--remaining;
 	    }
 	    if (oprefix != 0x0)
 	    {
-		putbin(oprefix);
+		putbin1(oprefix);
 		--remaining;
 	    }
 	    if (sprefix != 0x0)
 	    {
-		putbin(sprefix);
+		putbin1(sprefix);
 		--remaining;
 	    }
 	    if (page != 0x0)
 	    {
-		putbin(page);
+		putbin1(page);
 		--remaining;
 	    }
-	    putbin(opcode);
+	    putbin1(opcode);
 	    if (remaining != 0x0)
 	    {
 		if (postb != 0x0)
 		{
-		    putbin(postb);
+		    putbin1(postb);
 		    --remaining;
 		}
 		if (sib != NO_SIB)
 		{
-		    putbin(sib);
+		    putbin1(sib);
 		    --remaining;
 		}
 		if (remaining != 0x0)
@@ -141,9 +144,7 @@ PUBLIC void initbin P0()
     binmin = -1;		/* greater than anything */
 }
 
-/* write char to binary file or directly to memory */
-
-PUBLIC void putbin P1(opcode_pt, c)
+PRIVATE void putbin1 P1(opcode_pt, c)
 {
 	if (!binaryc)		/* pass 1, just record limits */
 	{
@@ -170,6 +171,13 @@ PUBLIC void putbin P1(opcode_pt, c)
 	}
 }
 
+/* write char to binary file */
+
+PUBLIC void putbin P1(opcode_pt, c)
+{
+	if (binfil != -1) putbin1(c);
+}
+
 /* write sized offset to binary file or directly to memory */
 
 PRIVATE void putbinoffset P2(offset_t, offset, count_t, size)
@@ -177,12 +185,12 @@ PRIVATE void putbinoffset P2(offset_t, offset, count_t, size)
     char buf[sizeof offset];
 
     u4cn(buf, offset, size);
-    putbin(buf[0]);
+    putbin1(buf[0]);
     if (size > 0x1)
-	putbin(buf[1]);
+	putbin1(buf[1]);
     if (size > 0x2)
     {
-	putbin(buf[2]);
-	putbin(buf[3]);
+	putbin1(buf[2]);
+	putbin1(buf[3]);
     }
 }

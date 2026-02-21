@@ -327,8 +327,8 @@ PUBLIC void objheader P0()
     REGISTER struct sym_s *symptr;
     offset_t textlength;
 
-    if ((objectc = objectg) == 0)
-	return;
+    if (!objectc) return;
+    /* No need to set outfd here, because genobj.c doesn't use outfd, writec(...) etc. */
     writeobj(module_header, sizeof module_header);
 
     /* calculate number of imported/exported symbols */
