@@ -21,8 +21,6 @@ EXTERN bool_t pass;		/* pass, FALSE means 0, TRUE means 1 */
 
 EXTERN offset_t progent;	/* program entry point */
 
-EXTERN bool_t symgen;		/* generate symbol table flag */
-
 EXTERN unsigned toterr;		/* total errors */
 EXTERN unsigned totwarn;	/* total warnings */
 

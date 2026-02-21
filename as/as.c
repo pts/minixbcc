@@ -18,11 +18,14 @@
 #include "type.h"
 #include "macro.h"
 #include "scan.h"
+#include "file.h"
 #undef EXTERN
 #define EXTERN
 #include "file.h"
 #include "flag.h"
 #include "globvar.h"
+
+PUBLIC fd_t symfil = -1;
 
 PRIVATE struct block_s hid_blockstak[MAXBLOCK];	/* block stack */
 PRIVATE struct lc_s hid_lctab[NLOC];	/* location counter table */
@@ -96,7 +99,7 @@ PUBLIC void finishup P0()
 {
     bintrailer();
     objtrailer();
-    if (list.global ||symgen)
+    if (list.global || symfil != -1)
 	gensym();		/* output to lstfil and/or symfil */
     if (list.global ||toterr != 0 || totwarn != 0)
 	summary(lstfil);
@@ -275,9 +278,8 @@ PRIVATE void process_args P2(int, argc, char **, argv)
 		++argv;
 		break;
 	    case 's':
-		if (!isnextarg || symfil != 0)
+		if (!isnextarg || symfil != -1)
 		    usage();
-		symgen = TRUE;
 		symfil = my_creat(nextarg, "error creating symbol file");
 		--argc;
 		++argv;

@@ -77,7 +77,7 @@ sort_symbols:
 	if (column != 0)
 	    writenl();
     }
-    if ((outfd = symfil) != 0)
+    if ((outfd = symfil) != -1)
     {
 	writew(mapnum);
 	label_count *= 2;	/* now length of ptr table (2 bytes per ptr) */
