@@ -380,7 +380,7 @@ PUBLIC void writec P1(int, c)
 
 PUBLIC void writenl P0()
 {
-    writes("\n");  /* writec('\n'); */
+    writec('\n');
 }
 
 /* write 1 offset_t, order to suit target */
