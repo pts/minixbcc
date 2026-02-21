@@ -174,7 +174,7 @@ PRIVATE int my_creat P2(_CONST char *, name, _CONST char *, message)
 {
     int fd;
 
-    if ((fd = creat(name, CREAT_PERMS)) < 0 || fd > 255)  /* !! Why can't it be larger than 255? Is it saved somewhere? */
+    if ((fd = creat(name, CREAT_PERMS)) <= 0)  /* !! Also allow 0 here, it's a valid but unusual (stdin) output fd. */
 	as_abort(message);
     return fd;
 }
