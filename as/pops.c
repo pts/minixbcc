@@ -724,7 +724,7 @@ PUBLIC void pimport P0()
 {
     struct sym_s *symptr;
 
-    if (binfil != -1)
+    if (binfil >= 0)
 	error(NOIMPORT);
     while (TRUE)
     {

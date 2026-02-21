@@ -56,7 +56,7 @@ PUBLIC void genbin P0()
     char *bufptr;
     unsigned char remaining;
 
-    if (binfil != -1 && mcount != 0x0)
+    if (binfil >= 0 && mcount != 0x0)
     {
 	if (popflags)
 	{
@@ -175,7 +175,7 @@ PRIVATE void putbin1 P1(opcode_pt, c)
 
 PUBLIC void putbin P1(opcode_pt, c)
 {
-	if (binfil != -1) putbin1(c);
+	if (binfil >= 0) putbin1(c);
 }
 
 /* write sized offset to binary file or directly to memory */

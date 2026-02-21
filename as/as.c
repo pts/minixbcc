@@ -102,7 +102,7 @@ PUBLIC void finishup P0()
 {
     bintrailer();
     objtrailer();
-    if (list.global || symfil != -1)
+    if (list.global || symfil >= 0)
 	gensym();		/* output to lstfil and/or symfil */
     if (list.global ||toterr != 0 || totwarn != 0)
 	summary(lstfil);
@@ -236,7 +236,7 @@ PRIVATE void process_args P2(int, argc, char **, argv)
 		break;
 	    case 'b':
 		D4("P07\n")
-		if (!isnextarg || binfil != -1)
+		if (!isnextarg || binfil >= 0)
 		    usage();
 		binfil = my_creat(nextarg, "error creating binary file");
 		--argc;
@@ -271,14 +271,14 @@ PRIVATE void process_args P2(int, argc, char **, argv)
 		++argv;
 		break;
 	    case 'o':
-		if (!isnextarg || objfil != -1)
+		if (!isnextarg || objfil >= 0)
 		    usage();
 		objfil = my_creat(nextarg, "error creating object file");
 		--argc;
 		++argv;
 		break;
 	    case 's':
-		if (!isnextarg || symfil != -1)
+		if (!isnextarg || symfil >= 0)
 		    usage();
 		symfil = my_creat(nextarg, "error creating symbol file");
 		--argc;
@@ -310,8 +310,8 @@ PRIVATE void process_args P2(int, argc, char **, argv)
     }
     while (--argc != 1);
     D4("P99\n")
-    if (binfil != -1) {
-	if (objfil != -1) usage();  /* There is no good value for inidata below, so just abort early. */  /* !! Maybe 0 is a good value of both binfil and objfil are being written. */
+    if (binfil >= 0) {
+	if (objfil >= 0) usage();  /* There is no good value for inidata below, so just abort early. */  /* !! Maybe 0 is a good value of both binfil and objfil are being written. */
 	inidata &= ~1;  /* ENTBIT == 1, a sub-bit of SEGM == 0xf. */  /* !! This is legacy behavior of as v1, as v3 and as in dev86-0.16.21f. Does it make any sense? As a bugfix, shouldn't we clear IMPBIT or `IMPBIT | SEGM' instead? */
     }
     inidata |= RELBIT | UNDBIT;
