@@ -2,7 +2,7 @@
 
 extern fd_t binfil;		/* binary output file */
 EXTERN fd_t lstfil;		/* list output file (0 = standard) */
-EXTERN fd_t objfil;		/* object output file */
+extern fd_t objfil;		/* object output file */
 extern fd_t symfil;		/* symbol table output file */
 EXTERN char *filnamptr;		/* file name pointer */
 EXTERN fd_t infil0;		/* initial input file */

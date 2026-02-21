@@ -14,7 +14,6 @@ EXTERN bool_t jumps_long;	/* make all jumps long */
 EXTERN unsigned char mapnum;	/* global map number */
 
 EXTERN bool_t objectc;		/* current object code flag */
-EXTERN bool_t objectg;		/* global object code flag */
 
 EXTERN bool_t pass;		/* pass, FALSE means 0, TRUE means 1 */
 

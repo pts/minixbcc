@@ -208,7 +208,7 @@ PUBLIC void pproceof P0()
     else if (!pass)
     {
 	pass = TRUE;
-	objectc = objectg;  /* Already used by objheader() below. */
+	objectc = (objfil != -1);  /* Already used by objheader() below. */
 	binaryc = (binfil != -1);
 	objheader();		/* while pass 1 data all valid */
 	binmbuf = 0;		/* reset zero variables */

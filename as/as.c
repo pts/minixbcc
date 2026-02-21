@@ -27,6 +27,7 @@
 
 PUBLIC fd_t binfil = -1;
 /*PUBLIC fd_t lstfil = -1;*/  /* Initial value doesn't matter, because list.global and maclist.global guards it. */
+PUBLIC fd_t objfil = -1;
 PUBLIC fd_t symfil = -1;
 
 PRIVATE struct block_s hid_blockstak[MAXBLOCK];	/* block stack */
@@ -178,7 +179,7 @@ PRIVATE int my_creat P2(_CONST char *, name, _CONST char *, message)
 {
     int fd;
 
-    if ((fd = creat(name, CREAT_PERMS)) <= 0)  /* !! Also allow 0 here, it's a valid but unusual (stdin) output fd. */
+    if ((fd = creat(name, CREAT_PERMS)) < 0)
 	as_abort(message);
     return fd;
 }
@@ -270,9 +271,8 @@ PRIVATE void process_args P2(int, argc, char **, argv)
 		++argv;
 		break;
 	    case 'o':
-		if (!isnextarg || objfil != 0)
+		if (!isnextarg || objfil != -1)
 		    usage();
-		objectg = TRUE;
 		objfil = my_creat(nextarg, "error creating object file");
 		--argc;
 		++argv;
@@ -311,7 +311,7 @@ PRIVATE void process_args P2(int, argc, char **, argv)
     while (--argc != 1);
     D4("P99\n")
     if (binfil != -1) {
-	if (objfil != 0) usage();  /* There is no good value for inidata below, so just abort early. */  /* !! Maybe 0 is a good value of both binfil and objfil are being written. */
+	if (objfil != -1) usage();  /* There is no good value for inidata below, so just abort early. */  /* !! Maybe 0 is a good value of both binfil and objfil are being written. */
 	inidata &= ~1;  /* ENTBIT == 1, a sub-bit of SEGM == 0xf. */  /* !! This is legacy behavior of as v1, as v3 and as in dev86-0.16.21f. Does it make any sense? As a bugfix, shouldn't we clear IMPBIT or `IMPBIT | SEGM' instead? */
     }
     inidata |= RELBIT | UNDBIT;
