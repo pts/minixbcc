@@ -69,7 +69,7 @@ sort_symbols:
     heapptr = (char *) (copytop = copyptr);
     if (list.global)
     {
-	innum = lstfil;
+	outfd = lstfil;
 	writenl();
 	writesn("Symbols:");
 	for (copyptr = symlptr, column = 0; copyptr < copytop;)
@@ -77,7 +77,7 @@ sort_symbols:
 	if (column != 0)
 	    writenl();
     }
-    if ((innum = symfil) != 0)
+    if ((outfd = symfil) != 0)
     {
 	writew(mapnum);
 	label_count *= 2;	/* now length of ptr table (2 bytes per ptr) */
@@ -101,7 +101,7 @@ sort_symbols:
 	    symptr = *copyptr++;
 	    writew((unsigned) symptr->value_reg_or_op.value);
 	    writec(symptr->type);
-	    (void)!write(innum, symptr->name, symptr->length - 1);
+	    (void)!write(outfd, symptr->name, symptr->length - 1);
 	    writec(symptr->name[symptr->length - 1] | 0x80);
 	}
 	sort(symlptr, copyptr, FALSE);

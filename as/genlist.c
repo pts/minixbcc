@@ -179,9 +179,9 @@ PUBLIC void listline P0()
 
 PRIVATE void list1 P1(fd_t, fd)
 {
-    innum = fd;
+    outfd = fd;
     listcode();
-    (void)!write(innum, linebuf, lineptr - linebuf);
+    (void)!write(outfd, linebuf, lineptr - linebuf);
     writenl();
     if (errcount != 0)
 	listerrors();
@@ -369,11 +369,11 @@ PRIVATE void paderrorline P1(unsigned, nspaces)
 
 PUBLIC void writec P1(int, c)
 {
-    /* !! On a little-endian system, just do: (void)!write(innum, (char*) &c, 1); */
+    /* !! On a little-endian system, just do: (void)!write(outfd, (char*) &c, 1); */
     char buf[1];
 
     buf[0] = c;
-    (void)!write(innum, buf, 1);
+    (void)!write(outfd, buf, 1);
 }
 
 /* write newline */
@@ -390,14 +390,14 @@ PUBLIC void writeoff P1(offset_t, offset)
     char buf[4];
 
     u4c4(buf, (u4_pt) offset);
-    (void)!write(innum, buf, 4);
+    (void)!write(outfd, buf, 4);
 }
 
 /* write string */
 
 PUBLIC void writes P1(_CONST char *, s)
 {
-    (void)!write(innum, s, strlen(s));
+    (void)!write(outfd, s, strlen(s));
 }
 
 /* write string followed by newline */
@@ -415,5 +415,5 @@ PUBLIC void writew P1(unsigned, word)
     char buf[2];
 
     u2c2(buf, (u2_pt) word);
-    (void)!write(innum, buf, 2);
+    (void)!write(outfd, buf, 2);
 }

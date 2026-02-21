@@ -313,7 +313,7 @@ PRIVATE void process_args P2(int, argc, char **, argv)
 
 PRIVATE void summary P1(int, fd)
 {
-    innum = fd;
+    outfd = fd;
     writenl();
     summ_number(toterr);
     writesn(" errors");

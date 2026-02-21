@@ -16,7 +16,7 @@ FORWARD void putbinoffset P((offset_t offset, count_t size));
 
 PUBLIC void binheader P0()
 {
-    if ((innum = binfil) != 0x0)
+    if ((outfd = binfil) != 0x0)
     {
 	writec(0x0);		/* binary header byte */
 #ifdef LONG_BINHEADER
@@ -33,7 +33,7 @@ PUBLIC void binheader P0()
 
 PUBLIC void bintrailer P0()
 {
-    if ((innum = binfil) != 0x0)
+    if ((outfd = binfil) != 0x0)
     {
 	writec(0xFF);		/* binary trailer byte */
 	writew(0x0);		/* further trailer bytes */
@@ -158,7 +158,7 @@ PUBLIC void putbin P1(opcode_pt, c)
 		error(BWRAP);	/* file buffer ahead of memory buffer */
 	    else
 	    {
-		innum = binfil;
+		outfd = binfil;
 		while (binfbuf < binmbuf)
 		{
 		    writec(0x0);/* pad with nulls if file buffer behind */
