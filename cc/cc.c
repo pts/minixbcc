@@ -782,11 +782,11 @@ PRIVATE int execute P1(_CONST char **, argv)
 	fatal();
 	/* Fallthrough. */  /* Not reached. */
     case 0:  /* Child. */
-#ifdef __MINILIBC686__  /* For old minilibc686. The new one has execv(...) */
-	execve(argv[0], argv, environ);
-#else
-#  ifdef __cplusplus
+#ifdef __cplusplus
 	execv(argv[0], (char * _CONST *) argv);
+#else
+#ifdef __MINILIBC686__  /* For old minilibc686. The new one has execv(...) */
+	execve((void *) argv[0], (void *) argv, environ);
 #  else
 	execv((void *) argv[0], (void *) argv);  /* (void *) to cast away constness. C++ is picky, we can't do it there. */
 #  endif
