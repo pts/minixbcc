@@ -545,7 +545,6 @@ PRIVATE void jumptocases P0()
     bool_t charselector;
     bool_t dfaultflag;
     label_t dfaultlab;
-    label_t jtablelab;
     ccode_t lowcondition;
     store_pt targreg;
     label_t zjtablelab;
@@ -597,7 +596,7 @@ PRIVATE void jumptocases P0()
 		ctoi();
 	    slconst((value_t) (ptypesize / 2), DREG);
 					/* really log ptypesize */
-	    deflabel(jtablelab = casejump());
+	    deflabel(casejump());
 	    for (caseval = caseptr->casevalue; caseval <= case1ptr->casevalue;
 		 ++caseval)
 	    {
