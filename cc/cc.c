@@ -1,10 +1,10 @@
 /* cc.c - driver for minixbcc (v3) BCC (Bruce's C compiler) */
 
+
 #define _POSIX_SOURCE  /* For the Minix libc. */
 #define _BSD_SOURCE  /* For glibc <=2.19 and minilibc686 reliable signal(...). */
 #define _DEFAULT_SOURCE  /* For glibc >=2.19 and minilibc686 reliable signal(...). */
 #define CONFIG_SIGNAL_BSD  /* For olde minilibc686 reliable signal(...) (bsd_signal(...)). */
-
 
 #include <sys/types.h>
 #include <sys/stat.h>
