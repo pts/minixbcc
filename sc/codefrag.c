@@ -442,7 +442,7 @@ PUBLIC void andconst P1(offset_t, offset)
 	return;
 #endif
     }
-    if ((botbits = (char_t) offset & CHMASKTO) == 0)
+    if ((botbits = UCHARCAST(offset) & CHMASKTO) == 0)
 	clrBreg();
     else if (botbits != CHMASKTO)
     {
@@ -554,22 +554,26 @@ PUBLIC label_t defstr P3(char *, sptr, char *, stop, bool_pt, dataflag)
     oldsegment = segment;
     dseg();
     outnlabel(strlab = getlabel());
-    byte = (unsigned char) *sptr++;
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler. */
+    byte = ((unsigned char *) sptr)[0];  ++sptr;  /* It works with any C compiler. */
+#else
+    byte = (unsigned char) *sptr++;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it ignores the `(unsigned char)' cast here. */
+#endif
     while (sptr <= stop)
     {
-	if ((unsigned char) byte >= MINPRINTCHAR
-	    && (unsigned char) byte <= MAXPRINTCHAR)
+	if (UCHARCAST(byte) >= MINPRINTCHAR
+	    && UCHARCAST(byte) <= MAXPRINTCHAR)
 	{
 	    outdefstr();
 	    count = DEFSTR_STRINGMAX;
-	    while (count-- > 0 && (unsigned char) byte >= MINPRINTCHAR
-		   && (unsigned char) byte <= MAXPRINTCHAR && sptr <= stop)
+	    while (count-- > 0 && UCHARCAST(byte) >= MINPRINTCHAR
+		   && UCHARCAST(byte) <= MAXPRINTCHAR && sptr <= stop)
 	    {
 #if DEFSTR_DELIMITER - DEFSTR_QUOTER
-		if ((unsigned char) byte == DEFSTR_DELIMITER
-		    || (unsigned char) byte == DEFSTR_QUOTER)
+		if (byte == (int) DEFSTR_DELIMITER
+		    || byte == (int) DEFSTR_QUOTER)
 #else
-		if ((unsigned char) byte == DEFSTR_DELIMITER)
+		if (byte == (int) DEFSTR_DELIMITER)
 #endif
 		    outbyte(DEFSTR_QUOTER);
 		outbyte(byte);
@@ -587,7 +591,11 @@ PUBLIC label_t defstr P3(char *, sptr, char *, stop, bool_pt, dataflag)
 		if (count < DEFSTR_BYTEMAX - 1)
 		    outcomma();	/* byte separator */
 		outhex((uoffset_t) byte);
-		byte = (unsigned char) *sptr++;
+#ifdef ACKFIX  /* For Minix 1.5.10 i86 ACK 3.1 C compiler. */
+		byte = ((unsigned char *) sptr)[0];  ++sptr;  /* It works with any C compiler. */
+#else
+		byte = (unsigned char) *sptr++;  /* The Minix 1.5.10 i86 ACK 3.1 C compiler is buggy: it ignores the `(unsigned char)' cast here. */
+#endif
 	    }
 	    outnl();
 	}

@@ -11,7 +11,7 @@
 #include "globvar.h"
 #include "scan.h"
 
-#define hconv(ch) ((unsigned) (unsigned char) (ch) - 0x41)  /* better form for hashing */
+#define hconv(ch) ((unsigned) UCHARCAST(ch) - 0x41)  /* better form for hashing */
 
 #ifdef MNSIZE
 EXTERN _CONST char bytesizeops[];
@@ -142,7 +142,7 @@ PUBLIC struct sym_s *lookup P0()
 	    if (tries >= 5)
 		printchain(hashptr - spt)
 #endif
-	    if ((unsigned char) length != symptr->length)
+	    if (UCHARCAST(length) != symptr->length)
 		continue;
 	    if (memcmp(symptr->name, nameptr, length) == 0)
 		return symptr;

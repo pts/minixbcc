@@ -956,8 +956,8 @@ PRIVATE void setloc P1(unsigned, seg)
 	lcp = lcptr;
 	lcp->data = lcdata;
 	lcp->lc = lc;
-	lcptr = lcp = lctab + (unsigned char) seg;
-	lcdata = (lcp->data & ~SEGM) | (unsigned char) seg;
+	lcptr = lcp = lctab + UCHARCAST(seg);
+	lcdata = (lcp->data & ~SEGM) | UCHARCAST(seg);
 	binmbuf = lc = lcp->lc;
 	popflags = POPLC;
     }

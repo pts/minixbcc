@@ -1848,7 +1848,7 @@ PUBLIC void mint P0()
     ++mcount;
     getimmed(&target, 0x1);
     if (!(immadr.data & (FORBIT | RELBIT | UNDBIT)) &&
-	(opcode_t) immadr.offset == 0x3)
+	UCHARCAST(immadr.offset) == 0x3)
     {
 	immcount = 0x0;
 	opcode = 0xCC;

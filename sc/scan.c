@@ -257,7 +257,7 @@ more:
     do
     {
 	*idptr++ = c;
-	c = (unsigned char) *++reglineptr;
+	c = *(unsigned char *) ++reglineptr;
     }
     while (symofchar[c] <= MAXIDSYM && --length != 0);
     ch = c;

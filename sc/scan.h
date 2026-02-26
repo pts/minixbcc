@@ -3,7 +3,7 @@
 /* Copyright (C) 1992 Bruce Evans */
 
 #define NAMESIZE	64	/* limit on identifier lengths */
-#define SYMOFCHAR(ch)	(symofchar[(unsigned char) (ch)])
+#define SYMOFCHAR(ch)	(symofchar[UCHARCAST(ch)])
 
 /* scanner codes */
 

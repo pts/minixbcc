@@ -451,7 +451,7 @@ PUBLIC void openio P2(int, argc, char **, argv)
 #endif
     fd = 0;			/* standard input */
     memset(flag, 0, sizeof flag);
-    flag[(unsigned char) '3'] = sizeof (int) >= 4;
+    flag[(int) '3'] = sizeof (int) >= 4;
     fname = "stdin";
     incptr = &incfirst;  /* (incptr = &incfirst)->incnext = (struct inclist*) 0; */  /* incfirst->incnext is already (struct inclist*) 0, because of zero-initialization */
     initout();
@@ -481,13 +481,13 @@ PUBLIC void openio P2(int, argc, char **, argv)
 	    case 't':		/* print source code in asm output */
 	    case 'w':		/* watch location counter */
 		if (arg[2] == 0)
-		    flag[(unsigned char) arg[1]] = TRUE;
+		    flag[(int) arg[1]] = TRUE;
 		else if (arg[2] == '-' && arg[3] == 0)
-		    flag[(unsigned char) arg[1]] = FALSE;
+		    flag[(int) arg[1]] = FALSE;
 		else
 		    usage();
 		if (arg[1] == '0')	/* flag 0 is negative logic flag 3 */
-		    flag[(unsigned char) '3'] = TRUE + FALSE - flag[(unsigned char) '0'];
+		    flag[(int) '3'] = TRUE + FALSE - flag[(int) '0'];
 		break;
 	    case 'D':
 		argfunc = definestring;
@@ -517,31 +517,31 @@ ts_s_includelist += sizeof *incnew;
 		break;
 	    }
     }
-    if (flag[(unsigned char) '3'])
+    if (flag[(int) '3'])
     {
 	i386_32 = TRUE;
 	definestring("__AS386_32__");
     }
     else
 	definestring("__AS386_16__");
-    if (flag[(unsigned char) 'c'])
+    if (flag[(int) 'c'])
     {
 	callersaves = TRUE;
 	definestring("__CALLER_SAVES__");
     }
 #ifdef DEBUG
-    debugon = flag[(unsigned char) 'd'];
+    debugon = flag[(int) 'd'];
 #endif
-    orig_cppmode = cppmode = flag[(unsigned char) 'E'];
-    if (flag[(unsigned char) 'f'])
+    orig_cppmode = cppmode = flag[(int) 'E'];
+    if (flag[(int) 'f'])
     {
 	arg1inreg = TRUE;
 	definestring("__FIRST_ARG_IN_AX__");
     }
     arg1op = arg1inreg ? ROOTLISTOP : LISTOP;
-    suppress_line_numbers = flag[(unsigned char) 'P'];
-    ctext = flag[(unsigned char) 't'];
-    watchlc = flag[(unsigned char) 'w'];
+    suppress_line_numbers = flag[(int) 'P'];
+    ctext = flag[(int) 't'];
+    watchlc = flag[(int) 'w'];
     setoutbufs();
     inputinit(fname, fd);
 }

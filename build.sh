@@ -15,11 +15,6 @@
 # !! Add support for -nostdlib in the bbcc driver.
 # !! Move all libc variables from .data to .bss (with .comm).
 # !! everywhere (sc, as, ld, cpp), there are about 26 instances remaining: grep '[(] *unsigned *char *[)]' {??,cpp}/*.[ch]
-#    #ifdef ACKFIX  /* Workaround for the bug in Minix 1.5.10 i86 ACK 3.1 C compiler, which completely ignores the (unsigned char) cast (but it respects the (unsigned char*) cast). */
-#    #  define UCHARCAST(c) ((unsigned) (c) & 0xff)
-#    #else
-#    #  define UCHARCAST(c) ((unsigned char) (c))
-#    #endif
 # !! backport assembler and linker improvements from as86.tar.Z
 #
 

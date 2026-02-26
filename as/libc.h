@@ -1,4 +1,4 @@
-/* This is a short header file containing all libc functionality used by sc.
+/* This is a short header file containing all libc functionality used by as.
  * 
  * The Minix 1.5.10 i86 ACK 3.1 C compiler fails with ``fatal error -- out
  * of memory'' for some files (input.c, state.c and table.c) if there are

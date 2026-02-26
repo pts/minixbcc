@@ -880,10 +880,10 @@ PUBLIC void skipcomment P0()
 		REGISTER char *reglineptr;
 
 		reglineptr = lineptr;
-		symofchar[(unsigned char) '*'] = SPECIALCHAR;
+		symofchar[(int) '*'] = SPECIALCHAR;
 		while (SYMOFCHAR(*reglineptr) != SPECIALCHAR)
 		    ++reglineptr;
-		symofchar[(unsigned char) '*'] = STAR;
+		symofchar[(int) '*'] = STAR;
 		lineptr = reglineptr;
 		if (*reglineptr == '*')
 		    break;

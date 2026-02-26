@@ -150,6 +150,12 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 #  define NOPORTALIGN 0  /* Play it safe. It's needed by the large, compact and huge memory models on DOS. */
 #endif
 
+#ifdef ACKFIX  /* Workaround for the bug in Minix 1.5.10 i86 ACK 3.1 C compiler, which completely ignores the (unsigned char) cast (but it respects the (unsigned char*) cast). */
+#  define UCHARCAST(c) ((unsigned) (c) & 0xff)
+#else
+#  define UCHARCAST(c) ((unsigned char) (c))
+#endif
+
 #if __STDC__
 #  define _CONST const
 #  define P(x) x

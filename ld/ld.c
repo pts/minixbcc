@@ -65,9 +65,9 @@ PUBLIC int main P2(int, argc, char **, argv)
 	    case 's':		/* strip symbols */
 	    case 'z':		/* unmapped zero page */
 		if (arg[2] == 0)
-		    FLAG((unsigned char)c) = TRUE;
+		    FLAG((int) c) = TRUE;
 		else if (arg[2] == '-' && arg[3] == 0)
-		    FLAG((unsigned char)c) = FALSE;
+		    FLAG((int) c) = FALSE;
 		else
 		    usage();
 		break;

@@ -134,6 +134,14 @@ PUBLIC void readsyms P1(_CONST char *, filename)
     closein();
 }
 
+#ifdef ACKFIX  /* Without this ACK 3.1 fails with: Bombed out of codegen. */
+FORWARD void adduc P((int i, offset_t *op));
+PRIVATE void adduc P2(int, i, offset_t *, op)
+{
+    *op += UCHARCAST(i);
+}
+#endif
+
 /* read archive header and return length */
 
 /* Parses an unsigned decimal, hexadecimal or octal number. It doesn't check
@@ -189,10 +197,14 @@ bool_pt parse_nonneg_lenient P3(_CONST char *, s, unsigned, base, offset_t *, ou
 #  ifdef __AS386_32__
 	v += (unsigned long) (unsigned char) c;  /* Cast to (unsigned long) Works around suboptimal code generation in BCC sc v3. */
 #  else
-	v += (unsigned char) c;
+	v += UCHARCAST(c);
 #  endif
 #else
-	v += (unsigned char) c;
+#  ifdef ACKFIX
+        adduc(c, &v);
+#  else
+	v += UCHARCAST(c);
+#  endif
 #endif
     } while ((c = *s++) != '\0' && c != ' ' && c != '\t');
     for (; c == ' ' || c == '\t'; c = *s++) {}
