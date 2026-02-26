@@ -215,4 +215,3 @@ void statistics P((void));
 void u2c2 P((char *buf, u2_pt offset));
 void u4c4 P((char *buf, u4_pt offset));
 void u4cn P((char *buf, u4_pt offset, unsigned count));
-bool_pt typeconv_init P((void));

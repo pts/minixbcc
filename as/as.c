@@ -72,7 +72,6 @@ PUBLIC int main P2(int, argc, char **, argv)
     D4("M08\n")
     initblabels();  /* Must be called before process_args() to create symbols. -- why?. */
     D4("M09\n")
-    typeconv_init();
     D4("M10\n")
     warn.global = TRUE;		/* constant */
     D4("M11\n")

@@ -38,7 +38,6 @@ PUBLIC int main P2(int, argc, char **, argv)
     ioinit(argv[0]);
     objinit();
     syminit();
-    typeconv_init();  /* !! Simplify this, for example u2c2(...) isn't used in ld. */
     bits32 = sizeof(char *) >= 4;
     outfilename = (char*) 0;
     for (argn = 1; argn < argc; ++argn)

@@ -147,7 +147,7 @@ char *readstring P((void));
 void release P((char *cptr));
 char *stralloc P((_CONST char *s));
 
-/* typeconvert.c */
+/* typeconvt.c */
 u2_pt c2u2 P((_CONST char *buf));
 u4_pt c4u4 P((_CONST char *buf));
 u2_pt cnu2 P((_CONST char *buf, unsigned count));
@@ -156,7 +156,6 @@ void u2c2 P((char *buf, u2_pt offset));
 void u4c4 P((char *buf, u4_pt offset));
 void u2cn P((char *buf, u2_pt offset, unsigned count));
 void u4cn P((char *buf, u4_pt offset, unsigned count));
-bool_pt typeconv_init P((void));
 
 /* writebin.c */
 void writebin P((_CONST char *outfilename, bool_pt argsepid, bool_pt argbits32,
