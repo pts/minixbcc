@@ -231,8 +231,8 @@ PRIVATE void needspv P1(struct nodestruct *, nodeptr)
 #        define IDIVTOZ 1  /* Code (Minix a.out a_text) would be too larg for __AS386_16__ without the IDIVTOZ optimization. */
 #      endif
 #    else
-#      ifdef __ACK__
-#        if defined(__i86) || defined(__i386)  /* Minix >=1.7.0 i86 or i386 ACK ANSI C compiler (1.202 on Minix 2.0.4). */
+#      ifdef __ACK__  /* Not defined in ACK 3.1 on Minix 1.5.10. __ACK__ defined in ACK ANSI C compiler 1.202 on Minix >=1.7.0, __i86 defined on Minix 2.0.4 (but not on Minix 1.7.0). */
+#        if defined(__i86) || defined(__i386)
 #          define IDIVTOZ 1
 #        endif
 #      else
