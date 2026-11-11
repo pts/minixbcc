@@ -105,17 +105,21 @@ test "$1" = --libc && exit
 # --- Do some tests.
 
 # Quick test 1.
-echo '#include <stdio.h>' >h.c || exit "$?"
-echo 'int main() { PRINT_F("Hello, World!%c", 10); return 0; }' >>h.c || exit "$?"
-rm -f h
-bin/bbcc -v -O -UBLAH -D PRINT_F=printf -h9999 -h 8888 -o h h.c || exit "$?"
-: ./h || exit "$?"  # We can't run Minix programs.
+if test "$cc"; then
+  echo '#include <stdio.h>' >h.c || exit "$?"
+  echo 'int main() { PRINT_F("Hello, World!%c", 10); return 0; }' >>h.c || exit "$?"
+  rm -f h
+  bin/bbcc -v -O -UBLAH -D PRINT_F=printf -h9999 -h 8888 -o h h.c || exit "$?"
+  : ./h || exit "$?"  # We can't run Minix programs.
+fi
 
 # Quick test 2.
-bin/bbcc as -0 -a -w -o 0/lscs.o sc/lscs0.s || exit "$?"
-cmp 0g/lscs.n 0/lscs.o || exit "$?"
-rm -f 0/lscs.o
-bin/bbcc -v as -0 -a -w -o 0/lscs.o sc/lscs0.s || exit "$?"
-cmp 0g/lscs.n 0/lscs.o || exit "$?"
+if test "$cc"; then
+  bin/bbcc as -0 -a -w -o 0/lscs.o sc/lscs0.s || exit "$?"
+  cmp 0g/lscs.n 0/lscs.o || exit "$?"
+  rm -f 0/lscs.o
+  bin/bbcc -v as -0 -a -w -o 0/lscs.o sc/lscs0.s || exit "$?"
+  cmp 0g/lscs.n 0/lscs.o || exit "$?"
+fi
 
 : "$0" OK.
