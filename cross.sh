@@ -1,6 +1,7 @@
 #!/bin/sh
 # by pts@fazekas.hu at Sun Jan 25 00:58:47 CET 2026
 test "$ZSH_VERSION" && set -y 2>/dev/null  # SH_WORD_SPLIT for zsh(1). It's an i nvalid option in bash(1), and it's harmful (prevents echo) in ash(1).
+test "$0" = "${0%/*}" || cd "${0%/*}"
 
 # --- Build the cross-compiler tools.
 
@@ -22,6 +23,7 @@ while test $# != 0; do
 done
 set -x  # Print all commands run.
 
+test -f sc/libc.h || exit "$?"
 if test "$libc"; then  # Called by build.sh to build the libc.
   sc="$2"; as="$3"; cr="$4"; cmp="$5"
   test -f "$cr" || exit "$?"
