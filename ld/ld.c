@@ -27,7 +27,7 @@
 PRIVATE bool_t flag_ary[26];  /* Zero-initialized. */
 #define FLAG(c) (flag_ary[(c) - 'a'])
 
-PUBLIC int main P2(int, argc, char **, argv)
+PUBLIC int main_P2(int, argc, char **, argv)
 {
     REGISTER char *arg;
     int argn;

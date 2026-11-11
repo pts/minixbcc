@@ -16,25 +16,6 @@
 #  include "autoc.h"  /* For INT32T. */
 #endif
 
-#if __STDC__
-#  define _CONST const
-#  define P(x) x
-#  define P0() (void)
-#  define P1(t1, n1) (t1 n1)
-#  define P2(t1, n1, t2, n2) (t1 n1, t2 n2)
-#else
-#  define _CONST
-#  define P(x) ()
-#  define P0() ()
-#  define P1(t1, n1) (n1) t1 n1;
-#  define P2(t1, n1, t2, n2) (n1, n2) t1 n1; t2 n2;
-#endif
-#if __cplusplus >= 201703L
-#  define REGISTER   /* register removed in C++17. */
-#else
-#  define REGISTER register
-#endif
-
 #ifdef OPEN00
   extern int open00 P((const char *pathname));  /* flags and mode are both 0. */
 #else
@@ -132,7 +113,7 @@ static char *dump32pdp11 P2(unsigned INT32T, v, char *, p) {  /* Appends 16 bits
 static char iobuf[8192];
 
 int main P((int argc, char **argv));  /* Declare to pacify the ACK ANSI C compiler 1.202 warning: old-fashioned function declaration. */
-int main P2(int, argc, char **, argv) {
+int main_P2(int, argc, char **, argv) {
   _CONST char *arg;
   _CONST char *p;
   char c;

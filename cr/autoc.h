@@ -150,4 +150,25 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 #  define NOPORTALIGN 0  /* Play it safe. It's needed by the large, compact and huge memory models on DOS. */
 #endif
 
+#if __STDC__
+#  define _CONST const
+#  define P(x) x
+#  define P0() (void)
+#  define P1(t1, n1) (t1 n1)
+#  define P2(t1, n1, t2, n2) (t1 n1, t2 n2)
+#  define main_P2(t1, n1, t2, n2) main(t1 n1, t2 n2)  /* In case main(...) is a macro. */
+#else
+#  define _CONST
+#  define P(x) ()
+#  define P0() ()
+#  define P1(t1, n1) (n1) t1 n1;
+#  define P2(t1, n1, t2, n2) (n1, n2) t1 n1; t2 n2;
+#  define main_P2(t1, n1, t2, n2) main(n1, n2) t1 n1; t2 n2;  /* In case main(...) is a macro. */
+#endif
+#if __cplusplus >= 201703L
+#  define REGISTER   /* register removed in C++17. */
+#else
+#  define REGISTER register
+#endif
+
 #endif  /* ifndef _AUTOC_H */

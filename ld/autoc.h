@@ -165,6 +165,7 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 #  define P3(t1, n1, t2, n2, t3, n3) (t1 n1, t2 n2, t3 n3)
 #  define P4(t1, n1, t2, n2, t3, n3, t4, n4) (t1 n1, t2 n2, t3 n3, t4 n4)
 #  define P5(t1, n1, t2, n2, t3, n3, t4, n4, t5, n5) (t1 n1, t2 n2, t3 n3, t4 n4, t5 n5)
+#  define main_P2(t1, n1, t2, n2) main(t1 n1, t2 n2)  /* In case main(...) is a macro. */
 #else
 #  define _CONST
 #  define P(x) ()
@@ -174,6 +175,7 @@ typedef char assert_sizeof_intptrt[sizeof(INTPTRT) == sizeof(char *) ? 1 : -1];
 #  define P3(t1, n1, t2, n2, t3, n3) (n1, n2, n3) t1 n1; t2 n2; t3 n3;
 #  define P4(t1, n1, t2, n2, t3, n3, t4, n4) (n1, n2, n3, n4) t1 n1; t2 n2; t3 n3; t4 n4;
 #  define P5(t1, n1, t2, n2, t3, n3, t4, n4, t5, n5) (n1, n2, n3, n4, n5) t1 n1; t2 n2; t3 n3; t4 n4; t5 n5;
+#  define main_P2(t1, n1, t2, n2) main(n1, n2) t1 n1; t2 n2;  /* In case main(...) is a macro. */
 #endif
 #if __cplusplus >= 201703L
 #  define REGISTER   /* register removed in C++17. */

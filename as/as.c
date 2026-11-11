@@ -53,7 +53,7 @@ FORWARD void initblabels P((void));
 #  define D4(msg)
 #endif
 
-PUBLIC int main P2(int, argc, char **, argv)
+PUBLIC int main_P2(int, argc, char **, argv)
 {
     D4("M01\n")
     initheap();
