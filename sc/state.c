@@ -254,6 +254,9 @@ PRIVATE void dobreak P0()
 
 PRIVATE void docase P0()
 {
+#ifdef _LIBC_NO_REALLOC
+    struct switchstruct *old_switchnow;
+#endif
     value_t caseval;
 
     caseval = constexpression() & intmaskto;	/* FIXME: warn overflow */
@@ -274,8 +277,12 @@ PRIVATE void docase P0()
 
 		ncases = (/* ptrdiff_t */ int)
 			 (switchnow->caseptr - &switchnow->caselist[0]);
-		/* !! limit: rather than realloc, limit this to 256? */
+#ifdef _LIBC_NO_REALLOC
+		old_switchnow = switchnow;
+		switchnow = (struct switchstruct*) malloc(
+#else
 		switchnow = (struct switchstruct*) realloc(switchnow,
+#endif
 				    (/* size_t */ unsigned)
 				    ((char *) switchnow->caseptr
 				    - (char *) switchnow)
@@ -287,6 +294,11 @@ ts_s_case_tot += GROWCASES * sizeof (struct casestruct);
 #endif
 		if (switchnow == (struct switchstruct*) 0)
 		    outofmemoryerror("");
+#ifdef _LIBC_NO_REALLOC
+		memcpy(switchnow, old_switchnow,
+		    (char *) old_switchnow->caseptr - (char *) old_switchnow);
+		free(old_switchnow);
+#endif
 		switchnow->caseptr = &switchnow->caselist[ncases];
 		switchnow->casetop = switchnow->caseptr + GROWCASES;
 	    }
