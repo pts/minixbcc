@@ -1,27 +1,41 @@
 #!/bin/sh
 # by pts@fazekas.hu at Sun Jan 25 00:58:47 CET 2026
 test "$ZSH_VERSION" && set -y 2>/dev/null  # SH_WORD_SPLIT for zsh(1). It's an i nvalid option in bash(1), and it's harmful (prevents echo) in ash(1).
-set -x  # Print all commands run.
 
 # --- Build the cross-compiler tools.
 
-emu=
-test "$1" = --emu && test "$2" && emu="$2" && shift && shift
-if test "$1" = --libc; then  # Called by build.sh to build the libc.
+emuflag=; emu=; libc=; cmp=:; cc=1; cpp=1
+while test $# != 0; do
+  test "$emuflag" && emu="$1" && emuflag= && shift && continue
+  case "$1" in
+   --emu) emuflag="$1" ;;
+   --libc) libc=1 ;;
+   --no-cmp) cmp=: ;;
+   --cmp) cmp=cmp ;;  # Specify --cmp to compare libc files against golden files.
+   --no-cc | --no-bbcc) cc= ;;
+   --cc | --bbcc) cc=1 ;;
+   --no-cpp) cpp= ;;
+   --cpp) cpp=1 ;;
+   *) break ;;
+  esac
+  shift
+done
+set -x  # Print all commands run.
+
+if test "$libc"; then  # Called by build.sh to build the libc.
   sc="$2"; as="$3"; cr="$4"; cmp="$5"
   test -f "$cr" || exit "$?"
   test -x "$cr" || exit "$?"
 else  # Regular (interactive) operation: build the cross-compiler tools.
-  cmp=:; test "$1" = --cmp && cmp=cmp && shift  # Specify --cmp to compare libc files against golden files.
   test $# = 0 && set  gcc -s -O2  # Default GCC command and compiler flags.
   test -d bin || mkdir bin || exit "$?"
   test -d libexec || mkdir libexec || exit "$?"
-  "$@" -o bin/bbcc cc/*.c || exit "$?"
+  if test "$cc"; then "$@" -o bin/bbcc cc/*.c || exit "$?"; fi
   "$@" -o libexec/sc sc/*.c || exit "$?"
   "$@" -o libexec/as as/*.c || exit "$?"
   "$@" -o libexec/ld ld/*.c || exit "$?"
   "$@" -o libexec/cr cr/*.c || exit "$?"
-  "$@" -o libexec/cpp cpp/*.c || exit "$?"
+  if test "$cpp"; then "$@" -o libexec/cpp cpp/*.c || exit "$?"; fi
   sc=libexec/sc; as=libexec/as; cr=libexec/cr  # Tools to run to build the libc below.
   set x cc; shift
 fi
