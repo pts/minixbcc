@@ -4,7 +4,9 @@
 #  include "libc.h"
 #else
 #  include <sys/types.h>
-#  include <sys/stat.h>
+#  ifndef NOEXECUTABLE
+#    include <sys/stat.h>
+#  endif
 #  include <fcntl.h>
 #  include <unistd.h>
 #  include <string.h>
@@ -59,7 +61,9 @@ PRIVATE char outbuf[OUTBUFSIZE];  /* output buffer */
 PRIVATE char *outbufptr;	/* output buffer ptr */
 PRIVATE char *outbuftop;	/* output buffer top */
 PRIVATE int outfd;		/* output file descriptor */
+#ifndef NOEXECUTABLE
 PRIVATE unsigned outputperms;	/* permissions of output file */
+#endif
 PRIVATE _CONST char *outputname;  /* name of output file */
 PRIVATE _CONST char *refname;	/* name of program for error reference */
 PRIVATE unsigned warncount;	/* count of warnings */
@@ -98,6 +102,7 @@ PUBLIC void closeout P0()
 
 PUBLIC void executable P0()
 {
+#ifndef NOEXECUTABLE
     int oldmask;
 
     if (errcount == 0)
@@ -106,6 +111,7 @@ PUBLIC void executable P0()
 	umask(oldmask);
 	chmod(outputname, outputperms | (EXEC_PERMS & ~oldmask));
     }
+#endif
 }
 
 PUBLIC void flusherr P0()
@@ -156,15 +162,19 @@ PUBLIC void openout P1(_CONST char *, filename)
 #ifndef STATBUFCOUNT
 #  define STATBUFCOUNT 1
 #endif
+#ifndef NOEXECUTABLE
     struct stat statbufs[STATBUFCOUNT];
+#endif
 
     outputname = filename;
     if ((outfd = creat(filename, CREAT_PERMS)) == ERR)
 	outputerror("cannot open");
+#ifndef NOEXECUTABLE
     if (fstat(outfd, statbufs) != 0)
 	outputerror("cannot stat");
     outputperms = statbufs[0].st_mode;  /* .st_mode is at the same location within struct_stat in -I"$WATCOM"/h and -I"$WATCOM"/lh */
     chmod(filename, outputperms & ~EXEC_PERMS);
+#endif
     outbufptr = outbuf;
 }
 
