@@ -12,6 +12,9 @@
 #  include <string.h>
 #  include <stdlib.h>
 #endif
+#ifndef _LIBC_HAS_OPEN_FAILED
+#  define _LIBC_HAS_OPEN_FAILED(fdr) ((fdr) < 0)
+#endif
 #ifndef _AUTOC_H
 #  include "autoc.h"  /* For INT32T. */
 #endif
@@ -144,7 +147,7 @@ PUBLIC void openin P1(_CONST char *, filename)
     {
 	closein();
 	inputname = filename;	/* this relies on filename being static */
-	if ((infd = open00(filename)) < 0)
+	if (_LIBC_HAS_OPEN_FAILED(infd = open00(filename)))
 	    inputerror("cannot open");
 	inbufptr = inbufend = inbuf;
     }
@@ -167,7 +170,7 @@ PUBLIC void openout P1(_CONST char *, filename)
 #endif
 
     outputname = filename;
-    if ((outfd = creat(filename, CREAT_PERMS)) == ERR)
+    if (_LIBC_HAS_OPEN_FAILED(outfd = creat(filename, CREAT_PERMS)))
 	outputerror("cannot open");
 #ifndef NOEXECUTABLE
     if (fstat(outfd, statbufs) != 0)

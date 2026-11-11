@@ -14,6 +14,9 @@
 #include <string.h>
 #include <time.h>
 #include <fcntl.h>
+#ifndef _LIBC_HAS_OPEN_FAILED
+#  define _LIBC_HAS_OPEN_FAILED(fdr) ((fdr) < 0)
+#endif
 
 #ifdef __WATCOMC__  /* OpenWatcom v2 or earlier. */
 #  ifdef _WCDATA  /* OpenWatcom v2 libc. */
@@ -720,7 +723,7 @@ PRIVATE char *my_mktemp P0()
     }
     p = tmpfilename;
     /* Like creat(p), but with `| O_EXCL' added for safety, i.e. to avoid the data race with another process. */
-    if ((fd = open(p, O_CREAT | O_WRONLY | O_TRUNC | O_EXCL, 0666)) < 0) {
+    if (_LIBC_HAS_OPEN_FAILED(fd = open(p, O_CREAT | O_WRONLY | O_TRUNC | O_EXCL, 0666))) {
 	if (tries_remaining-- == 0) {
 	    show_who("error creating temporary files, stopped at ");
 	    writesn(p);

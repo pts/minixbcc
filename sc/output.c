@@ -10,6 +10,9 @@
 #  include <stdlib.h>
 #  include <unistd.h>
 #endif
+#ifndef _LIBC_HAS_OPEN_FAILED
+#  define _LIBC_HAS_OPEN_FAILED(fdr) ((fdr) < 0)
+#endif
 #include "const.h"
 #include "types.h"
 #include "input.h"
@@ -233,7 +236,7 @@ PUBLIC void openout P1(_CONST char *, oname)
 {
     if (output != 1)
 	fatalerror("more than one output file");
-    if ((output = creat(oname, CREATPERMS)) < 0)
+    if (_LIBC_HAS_OPEN_FAILED(output = creat(oname, CREATPERMS)))
     {
 	output = 1;
 	fatalerror("cannot open output");

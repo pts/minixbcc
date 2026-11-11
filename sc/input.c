@@ -13,6 +13,9 @@
 #  include <string.h>
 #  include <unistd.h>
 #endif
+#ifndef _LIBC_HAS_OPEN_FAILED
+#  define _LIBC_HAS_OPEN_FAILED(fdr) ((fdr) < 0)
+#endif
 #include "const.h"
 #include "types.h"
 #include "gencode.h"
@@ -345,7 +348,7 @@ ts_s_pathname_tot += dirnamelen + (charptr - fnameptr) + 2;
 	    }
 	}
 	fd = open00(fullnameptr);
-	if (fd >= 0)
+	if (!_LIBC_HAS_OPEN_FAILED(fd))
 	{
 #ifdef TS
 ts_s_filename_tot -= charptr - fnameptr;
@@ -465,7 +468,7 @@ PUBLIC void openio P2(int, argc, char **, argv)
 	    if (fd != 0)
 		fatalerror("more than one input file");
 	    fname = arg;
-	    if ((fd = open00(arg)) < 0)
+	    if (_LIBC_HAS_OPEN_FAILED(fd = open00(arg)))
 		fatalerror("cannot open input");
 	}
 	else

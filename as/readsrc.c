@@ -8,6 +8,9 @@
 #  include <stdlib.h>
 #  include <unistd.h>
 #endif
+#ifndef _LIBC_HAS_OPEN_FAILED
+#  define _LIBC_HAS_OPEN_FAILED(fdr) ((fdr) < 0)
+#endif
 #ifndef _AUTOC_H
 #  include "autoc.h"  /* For INT32T. */
 #endif
@@ -110,7 +113,7 @@ PUBLIC fd_t open_input P1(char *, name)
 {
     int fd;
 
-    if ((fd = open00(name)) < 0)  /* TODO(pts): Display filename. */
+    if (_LIBC_HAS_OPEN_FAILED(fd = open00(name)))  /* TODO(pts): Display filename. */
 	as_abort("error opening input file");
     clearsource();
     return (fd_t) fd;

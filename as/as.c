@@ -14,6 +14,9 @@
 #  include <unistd.h>
 #  include <string.h>
 #endif
+#ifndef _LIBC_HAS_OPEN_FAILED
+#  define _LIBC_HAS_OPEN_FAILED(fdr) ((fdr) < 0)
+#endif
 #include "const.h"
 #include "type.h"
 #include "macro.h"
@@ -178,7 +181,7 @@ PRIVATE int my_creat P2(_CONST char *, name, _CONST char *, message)
 {
     int fd;
 
-    if ((fd = creat(name, CREAT_PERMS)) < 0)
+    if (_LIBC_HAS_OPEN_FAILED(fd = creat(name, CREAT_PERMS)))
 	as_abort(message);
     return fd;
 }

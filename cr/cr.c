@@ -12,6 +12,9 @@
 #  include <string.h>
 #  include <stdlib.h>
 #endif
+#ifndef _LIBC_HAS_OPEN_FAILED
+#  define _LIBC_HAS_OPEN_FAILED(fdr) ((fdr) < 0)
+#endif
 #ifndef _AUTOC_H
 #  include "autoc.h"  /* For INT32T. */
 #endif
@@ -163,7 +166,7 @@ int main_P2(int, argc, char **, argv) {
     }
   }
   if (!afn) fatal2("missing archive filename (-o)", (_CONST char*)0);
-  if ((afd = creat(afn, 0666)) < 0) fatal2("error creating archive file", afn);
+  if (_LIBC_HAS_OPEN_FAILED(afd = creat(afn, 0666))) fatal2("error creating archive file", afn);
   hdrbuf[0] = '\145';  /* '\x65'. Low  byte of MINIXARMAG. */
   hdrbuf[1] = '\377';  /* '\xff'. High byte of MINIXARMAG. */
   hdrp0 = hdrbuf + 2;
@@ -171,7 +174,7 @@ int main_P2(int, argc, char **, argv) {
   mfd = 0;   /* Pacify useless GCC 4.5 warning -Wmaybe-uninitialized. */
   size = 0;  /* Pacify useless GCC 4.5 warning -Wmaybe-uninitialized. */
   while ((arg = *argv++) != (char*)0) {
-    if ((mfd = open00(arg)) < 0) fatal2("error opening member file", arg);
+    if (_LIBC_HAS_OPEN_FAILED(mfd = open00(arg))) fatal2("error opening member file", arg);
     /* K&R C is much more unsafe than ANSI C (C89): The caller must remember to add cast_lseek_offset(...). */
     if ((size = lseek(mfd, const_lseek_offset(0), 2)) < 0) fatal2("error getting member file size", arg);
     if ((INT32T) size < 0 || (size >> 15 >> 15 >> 1) != 0) fatal2("member file too large", arg);
