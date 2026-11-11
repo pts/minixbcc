@@ -34,10 +34,12 @@
 #  endif
 #endif
 
-#ifdef OPEN00
-  extern int open00 P((_CONST char *pathname));  /* flags and mode are both 0. */
-#else
-#  define open00(pathname) open(pathname, 0  /* O_RDONLY */)
+#ifndef _LIBC_HAVE_OPEN00
+#  ifdef OPEN00
+    extern int open00 P((_CONST char *pathname));  /* flags and mode are both 0. */
+#  else
+#    define open00(pathname) open(pathname, 0  /* O_RDONLY */)
+#  endif
 #endif
 
 #define PUSHBACK 3

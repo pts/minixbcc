@@ -6,6 +6,9 @@
  * is using `#include "libc.h"' instead, which declares the bare minimum.
  */
 
+#ifndef _ALL_LIBC_INCLUDED
+#define _ALL_LIBC_INCLUDED 1
+
 #if __STDC__
 #  define _LIBCP(x) x
 #else
@@ -33,3 +36,5 @@ off_t lseek _LIBCP((int _fd, off_t _offset, int _whence));
 int close _LIBCP((int _fd));
 
 #undef _LIBCP
+
+#endif  /* #ifndef _ALL_LIBC_INCLUDED */
