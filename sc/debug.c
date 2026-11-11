@@ -196,7 +196,14 @@ PRIVATE void outindchars P2(int, byte, indn_pt, count)
 
 #else  /* DEBUG */
 
-extern int foo;  /* Pacify GCC warning -pedantic: ISO C forbids an empty translation unit */
-/*char debugc;*/  /* Pacify OpenWatcm v2 error owcc -std=c89: E1123: File must contain at least one external definition */  /* However, many other source files don't compile with that. */
+#ifdef __WATCOMC__
+#  ifdef _NO_EXT_KEYS  /* wcc386 -za; owcc -std=c89 */
+    int debug_foo;  /* Pacify OpenWatcom v2 error: E1123: File must contain at least one external definition */
+#  else
+    extern int foo;  /* Not needed. */
+#  endif
+#else
+  extern int foo;  /* Pacify GCC warning -pedantic: ISO C forbids an empty translation unit */
+#endif
 
 #endif  /* else DEBUG */
